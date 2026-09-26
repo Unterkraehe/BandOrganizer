@@ -1,0 +1,19 @@
+{
+  "title": "Einstellungen",
+  "appearance": {
+    "title": "Darstellung",
+    "theme": "Farbschema",
+    "system": "Wie System",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "systemHint": "Folgt der Einstellung deines Geräts."
+  },
+  "about": {
+    "title": "Über die App",
+    "version": "Version",
+    "checkUpdates": "Nach Updates suchen",
+    "checking": "Suche läuft …",
+    "upToDate": "Du hast die aktuelle Version.",
+    "offline": "Keine Verbindung – Suche nicht möglich."
+  }
+}

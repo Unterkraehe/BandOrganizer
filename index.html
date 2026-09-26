@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0E0E10" />
+    <meta name="description" content="Songs, Termine, Setlists und Chat für die Band" />
+    <link rel="icon" type="image/svg+xml" href="/BandOrganizer/icons/favicon.svg" />
+    <link rel="apple-touch-icon" href="/BandOrganizer/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Overload App</title>
+    <script>
+      // Apply the theme before the first paint (no white flash, design system §2).
+      (function () {
+        var pref = 'system';
+        try { pref = localStorage.getItem('bandapp.theme') || 'system'; } catch (e) {}
+        var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>Diese App benötigt JavaScript.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

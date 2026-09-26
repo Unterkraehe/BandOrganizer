@@ -1,0 +1,196 @@
+/* Phone (< 768 px): content + fixed bottom bar */
+.shell {
+  min-height: 100dvh;
+}
+
+.main {
+  padding-bottom: calc(var(--bottom-bar-h) + env(safe-area-inset-bottom));
+}
+
+.nav {
+  position: fixed;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.brand {
+  display: none;
+}
+
+.list {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  height: var(--bottom-bar-h);
+}
+
+.list > li {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Items placed in "Mehr" are hidden on phones; "Mehr" itself only exists on phones. */
+.moreOnly {
+  display: none;
+}
+
+.link {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: var(--fs-xs);
+  font-weight: 500;
+}
+
+.link:hover {
+  color: var(--text);
+}
+
+.link[aria-current='page'] {
+  color: var(--text);
+}
+
+/* Active marker: a short accent bar, echoing an active tab underline */
+.link[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 28px;
+  height: 3px;
+  margin-left: -14px;
+  border-radius: 0 0 3px 3px;
+  background: var(--accent);
+}
+
+.link[aria-current='page'] .icon {
+  color: var(--accent);
+}
+
+.label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Tablet (768–1199 px): navigation rail */
+@media (min-width: 768px) {
+  .shell {
+    display: grid;
+    grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  }
+
+  .main {
+    padding-bottom: 0;
+  }
+
+  .nav {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    border-top: none;
+    border-right: 1px solid var(--border);
+  }
+
+  .list {
+    flex-direction: column;
+    height: auto;
+    gap: var(--space-1);
+    padding: var(--space-4) var(--space-1);
+  }
+
+  .list > li {
+    flex: none;
+  }
+
+  .moreOnly {
+    display: block;
+  }
+
+  .moreLink {
+    display: none;
+  }
+
+  .link {
+    height: 64px;
+    border-radius: var(--radius-md);
+  }
+
+  .link:hover {
+    background: var(--surface-2);
+  }
+
+  .link[aria-current='page'] {
+    background: var(--surface-2);
+  }
+
+  .label {
+    white-space: normal;
+    text-align: center;
+    hyphens: auto;
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  .link[aria-current='page']::before {
+    top: 50%;
+    left: 0;
+    width: 3px;
+    height: 28px;
+    margin: -14px 0 0;
+    border-radius: 0 3px 3px 0;
+  }
+}
+
+/* Desktop (≥ 1200 px): full sidebar */
+@media (min-width: 1200px) {
+  .shell {
+    grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  }
+
+  .brand {
+    display: block;
+    padding: var(--space-8) var(--space-6) var(--space-4);
+  }
+
+  .brandName {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--fs-xl);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .list {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .link {
+    height: 48px;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-3);
+    padding: 0 var(--space-3);
+    font-size: var(--fs-md);
+  }
+
+  .label {
+    font-size: var(--fs-md);
+    text-align: left;
+    white-space: nowrap;
+  }
+}

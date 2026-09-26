@@ -1,0 +1,23 @@
+{
+  "greeting": {
+    "morning": "Guten Morgen",
+    "day": "Hallo",
+    "evening": "Guten Abend",
+    "night": "Noch wach?"
+  },
+  "empty": {
+    "title": "Hier entsteht eure Übersicht",
+    "text": "Bald siehst du hier neue Nachrichten und die nächsten Termine. Songs, Kalender und Chat kommen mit den nächsten Updates dazu."
+  },
+  "whatsNew": {
+    "title": "Neu in Version {{version}}",
+    "dismiss": "Ausblenden"
+  },
+  "install": {
+    "title": "App auf dem Startbildschirm",
+    "text": "Installiere die App, dann startet sie wie jede andere App – ohne Browserleiste.",
+    "action": "App installieren",
+    "ios": "Tippe unten auf „Teilen“ und dann auf „Zum Home-Bildschirm“.",
+    "dismiss": "Nicht mehr anzeigen"
+  }
+}

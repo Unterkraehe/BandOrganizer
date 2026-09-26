@@ -1,0 +1,30 @@
+{
+  "app": {
+    "name": "Overload App"
+  },
+  "nav": {
+    "start": "Start",
+    "songs": "Songs",
+    "calendar": "Kalender",
+    "chat": "Chat",
+    "more": "Mehr",
+    "setlists": "Setlists",
+    "members": "Mitglieder",
+    "settings": "Einstellungen",
+    "main": "Hauptmenü"
+  },
+  "actions": {
+    "close": "Schließen",
+    "back": "Zurück",
+    "toStart": "Zur Startseite"
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "text": "Diese Adresse gibt es in der App nicht. Vielleicht ist der Link veraltet."
+  },
+  "error": {
+    "title": "Da ist etwas schiefgelaufen",
+    "text": "Lade die App neu. Wenn der Fehler bleibt, gib der Band Bescheid.",
+    "reload": "Neu laden"
+  }
+}

@@ -1,0 +1,32 @@
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import common from '@/locales/de/common.json';
+import pwa from '@/locales/de/pwa.json';
+import settings from '@/locales/de/settings.json';
+import start from '@/locales/de/start.json';
+import whatsNew from '@/locales/de/whatsNew.json';
+
+/**
+ * i18n setup (R-I18N-01/02). German only for now; another language = another folder in
+ * src/locales/<lang>/ with the same namespaces, registered here.
+ */
+export const resources = {
+  de: { common, pwa, settings, start, whatsNew },
+} as const;
+
+export const defaultNS = 'common';
+export const LOCALE = 'de-DE';
+export const TIME_ZONE = 'Europe/Berlin';
+
+void i18n.use(initReactI18next).init({
+  resources,
+  lng: 'de',
+  fallbackLng: 'de',
+  defaultNS,
+  ns: Object.keys(resources.de),
+  interpolation: { escapeValue: false },
+  returnNull: false,
+  showSupportNotice: false,
+});
+
+export default i18n;
