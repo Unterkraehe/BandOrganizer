@@ -7,7 +7,7 @@ export const config = {
     authorizeUrl: 'https://my.hidrive.com/client/authorize',
     apiBase: 'https://api.hidrive.strato.com/2.1',
     /** Client ID from the HiDrive developer registration. Empty = login not set up yet. */
-    clientId: '',
+    clientId: 'dbdf5d5bf6a835e8d50862ead898ff2b',
     /** Read + write access to the user's files (docs/features/10 §4). */
     scope: 'user,rw',
   },
