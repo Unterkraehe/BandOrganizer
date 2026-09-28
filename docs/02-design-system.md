@@ -134,6 +134,7 @@ Line height 1.5 for body, 1.2 for headings; lyrics 1.6 for readability.
 - **Spacing:** 4 px grid (`--space-1` = 4 px … `--space-8` = 32 px, `--space-12` = 48 px).
 - **Radius:** cards/sheets 12 px, buttons/inputs 10 px, chips/badges full pill, avatars circle.
 - **Elevation:** mostly flat with borders; shadows only for floating elements (mini player, sheets, dialogs, menus). In dark mode, elevation = lighter surface instead of shadow.
+- **No `backdrop-filter`** (blur) on sticky or fixed elements: it causes repaint bugs with fixed bars in mobile Chrome (seen on Android in v0.3.0). Fixed bars get their own compositing layer (`transform: translateZ(0)`).
 - **Touch targets:** min. 44 × 44 px (R-UI-04); primary actions in practice/stage views min. 56 px.
 - **Content width:** reading content (lyrics, chat, forms) max. ~720 px on desktop; lists and calendars may use the full width.
 

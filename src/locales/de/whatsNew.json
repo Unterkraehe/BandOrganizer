@@ -1,4 +1,10 @@
 {
+  "0.4.0": [
+    "Songs bearbeiten: Titel, Tonart, BPM (auch per Tippen) und Stimmung.",
+    "Notizen für alle und nur für dich – anheften und an eine Stelle im Song knüpfen („▶ 1:32“ springt dorthin).",
+    "Versionen: Demo, Live und Probe als ein Song, mit ★ Band-Version für alle.",
+    "Archiv, eigene Tags mit Filter und „Ist kein Song – ausblenden“."
+  ],
   "0.3.0": [
     "Songs: alle Audiodateien aus eurem HiDrive in einer Liste – mit Suche, Sortierung und „Neu“-Filter.",
     "Abspielen direkt aus der Liste, Mini-Player bleibt beim Wechseln der Seite.",

@@ -3,13 +3,20 @@
 | | |
 |---|---|
 | **ID** | F4 |
-| **Status** | M2 part implemented (v0.3.0): list, search, sort, "Neu", player, detail (file info). Rest in M3. Spike: HiDrive file ID stability (§6.1) |
+| **Status** | M2 + M3a implemented (v0.4.0). M3b open: lyrics (§6.3) and uploads (F10). Spike: HiDrive file ID stability (§6.1) |
 
 > **M2 implementation notes (v0.3.0)**
 > - "Zuletzt hinzugefügt"/"Neu" use the file's modification time until `firstSeenAt` in `meta.json` exists (M3).
 > - Durations are cached per device until they are stored in `meta.json` (M3).
 > - Desktop master–detail layout and excluded-folder management are moved to M3.
 > - Song IDs: `song_` + FNV-1a hash of the HiDrive file ID (fallback: path).
+>
+> **M3a implementation notes (v0.4.0)**
+> - Recording IDs are deterministic too (`r_` + same hash), so the Band-Version and note markers stay valid on every device.
+> - `meta.json` updates are read–modify–write on the latest file; only fields the user changed are written. The edit form fails with a conflict message only if someone changed *the same* field meanwhile (R-DATA-07). Durations are now stored in `meta.json`.
+> - Merging writes `mergedInto` on the source song first; the list shows files of merged songs under the target even if the second write fails.
+> - Moved/renamed files whose ID changed are re-matched by file name + size (§6.1 fallback) until spike S2 tells us whether this is needed.
+> - Not yet: "Mit Notizen" filter (needs note counts without loading every song – with search index M8), chat info line for Band-Version changes (M7), desktop master–detail.
 | **Depends on** | F1 (file scan), F2 (members), F3 (shell, setlist mode), F9 (audio engine), F10 (uploads) |
 | **Used by** | F7 Setlists, F8 Search, F3 Dashboard |
 

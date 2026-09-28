@@ -1,9 +1,12 @@
+import type { Versioned } from '@/core/band/band';
 import { scanAudioFiles, type ScannedFile } from '@/core/files/scan';
-import type { SafeStorage } from '@/core/storage';
+import { ConflictError, type SafeStorage } from '@/core/storage';
+import { buildSongs, type Song, type SongMeta, type Tag } from './model';
+import { createTag, listSongMetas, listTags, saveTag, seedMeta, updateSongMeta } from './repository';
 
 /**
- * Song library store: cached scan result shown immediately, fresh scan in the background
- * (F1 §4, R-UX-07). One instance per band session.
+ * Song library store (F4): scanned files + meta.json + tags → songs.
+ * Cached data is shown immediately, fresh data loads in the background (R-UX-07).
  */
 
 export interface LibraryState {
@@ -11,15 +14,27 @@ export interface LibraryState {
   files: ScannedFile[];
   scannedAt: string | null;
   progress: { folders: number; found: number } | null;
-  durations: Record<string, number>;
+  metas: Record<string, Versioned<SongMeta>>;
+  tags: Versioned<Tag>[];
+  songs: Song[];
 }
 
 interface LibraryOptions {
   storage: SafeStorage;
   home: string;
+  appRoot: string;
   skip: string[];
   /** localStorage key prefix; null = no persistence (demo mode) */
   cacheKey: string | null;
+  memberId: () => string;
+}
+
+export interface DetailsChange {
+  displayTitle: string | null;
+  key: string | null;
+  bpm: number | null;
+  tuning: string | null;
+  tagIds: string[];
 }
 
 export class LibraryStore {
@@ -28,13 +43,17 @@ export class LibraryStore {
   private abort: AbortController | null = null;
 
   constructor(private options: LibraryOptions) {
-    const cached = this.readCache();
+    const cached = this.read<{ files: ScannedFile[]; scannedAt: string }>('scan');
+    const metas = this.read<Record<string, Versioned<SongMeta>>>('metas') ?? {};
+    const files = cached?.files ?? [];
     this.state = {
       status: cached ? 'ready' : 'idle',
-      files: cached?.files ?? [],
+      files,
       scannedAt: cached?.scannedAt ?? null,
       progress: null,
-      durations: this.readDurations(),
+      metas,
+      tags: this.read<Versioned<Tag>[]>('tags') ?? [],
+      songs: this.build(files, metas),
     };
   }
 
@@ -45,9 +64,46 @@ export class LibraryStore {
     return () => this.listeners.delete(listener);
   };
 
+  get storage() {
+    return this.options.storage;
+  }
+
+  get appRoot() {
+    return this.options.appRoot;
+  }
+
+  song(songId: string): Song | undefined {
+    return this.state.songs.find((s) => s.id === songId);
+  }
+
+  private build(files: ScannedFile[], metas: Record<string, Versioned<SongMeta>>) {
+    return buildSongs(files, Object.fromEntries(Object.entries(metas).map(([id, m]) => [id, m.value])), this.options.home);
+  }
+
   private set(patch: Partial<LibraryState>) {
-    this.state = { ...this.state, ...patch };
+    const next = { ...this.state, ...patch };
+    if (patch.files || patch.metas) next.songs = this.build(next.files, next.metas);
+    this.state = next;
     this.listeners.forEach((listener) => listener());
+  }
+
+  /** Initial load: metadata + tags + fresh scan, in parallel. */
+  async load(): Promise<void> {
+    await Promise.all([this.reloadMeta(), this.scan()]);
+  }
+
+  async reloadMeta(): Promise<void> {
+    try {
+      const [metas, tags] = await Promise.all([
+        listSongMetas(this.options.storage, this.options.appRoot),
+        listTags(this.options.storage, this.options.appRoot),
+      ]);
+      this.write('metas', metas);
+      this.write('tags', tags);
+      this.set({ metas, tags });
+    } catch (error) {
+      console.error('Loading song data failed', error);
+    }
   }
 
   async scan(): Promise<void> {
@@ -62,39 +118,183 @@ export class LibraryStore {
         onProgress: (progress) => this.set({ progress }),
       });
       const scannedAt = new Date().toISOString();
-      this.writeCache({ files, scannedAt });
+      this.write('scan', { files, scannedAt });
       this.set({ status: 'ready', files, scannedAt, progress: null });
     } catch (error) {
       if ((error as Error).name === 'AbortError') return;
       console.error('Scan failed', error);
-      // Keep showing the cached list if there is one.
       this.set({ status: this.state.files.length > 0 ? 'ready' : 'error', progress: null });
     }
   }
 
-  /** Durations are measured on first play (F4 §6.6). Device-local until meta.json exists (M3). */
-  setDuration(songId: string, seconds: number) {
-    if (!Number.isFinite(seconds) || this.state.durations[songId] === Math.round(seconds)) return;
-    const durations = { ...this.state.durations, [songId]: Math.round(seconds) };
-    this.set({ durations });
-    this.write('durations', durations);
+  /* ---------------- song changes ---------------- */
+
+  private async update(songId: string, mutate: (meta: SongMeta) => SongMeta, guard?: (latest: SongMeta) => void) {
+    const memberId = this.options.memberId();
+    const saved = await updateSongMeta(
+      this.options.storage,
+      this.options.appRoot,
+      songId,
+      () => seedMeta(songId, this.song(songId), memberId),
+      mutate,
+      memberId,
+      guard,
+    );
+    const metas = { ...this.state.metas, [songId]: saved };
+    this.write('metas', metas);
+    this.set({ metas });
+    return saved;
+  }
+
+  /** Makes sure a recording has an entry in the song's meta (for labels/durations). */
+  private withRecording(meta: SongMeta, songId: string, recordingId: string): SongMeta {
+    if (meta.recordings.some((r) => r.id === recordingId)) return meta;
+    const rec = this.song(songId)?.recordings.find((r) => r.id === recordingId);
+    if (!rec) return meta;
+    meta.recordings.push({ id: rec.id, path: rec.path, size: rec.size, label: rec.label, firstSeenAt: rec.addedAt });
+    return meta;
+  }
+
+  /** Stored once, so every device shows the length (F4 §6.6). */
+  async recordDuration(songId: string, recordingId: string, seconds: number) {
+    const rounded = Math.round(seconds);
+    const current = this.song(songId)?.recordings.find((r) => r.id === recordingId);
+    if (!current || current.durationSec === rounded || !Number.isFinite(rounded)) return;
+    await this.update(songId, (meta) => {
+      const m = this.withRecording(meta, songId, recordingId);
+      m.recordings = m.recordings.map((r) => (r.id === recordingId ? { ...r, durationSec: rounded } : r));
+      return m;
+    }).catch((error) => console.warn('Saving duration failed', error));
+  }
+
+  /** Edit form (F4 §4.4). Fails with ConflictError if someone changed the same fields meanwhile. */
+  async updateDetails(songId: string, change: DetailsChange, original: DetailsChange) {
+    const fields: (keyof DetailsChange)[] = ['displayTitle', 'key', 'bpm', 'tuning'];
+    // Only fields the user actually changed are written; others keep their latest value.
+    const changed: Partial<DetailsChange> = {};
+    for (const field of fields) if (change[field] !== original[field]) Object.assign(changed, { [field]: change[field] });
+    if (change.tagIds.join() !== original.tagIds.join()) changed.tagIds = change.tagIds;
+    await this.update(
+      songId,
+      (meta) => ({ ...meta, ...changed }),
+      (latest) => {
+        const changedByOthers = fields.some(
+          (field) => change[field] !== original[field] && (latest[field] ?? null) !== (original[field] ?? null),
+        );
+        if (changedByOthers) throw new ConflictError(songId, undefined);
+      },
+    );
+  }
+
+  setTags(songId: string, tagIds: string[]) {
+    return this.update(songId, (meta) => ({ ...meta, tagIds }));
+  }
+
+  setArchived(songId: string, archived: boolean) {
+    const now = new Date().toISOString();
+    const by = this.options.memberId();
+    return this.update(songId, (meta) => ({
+      ...meta,
+      archived,
+      archivedAt: archived ? now : null,
+      archivedBy: archived ? by : null,
+    }));
+  }
+
+  setHidden(songId: string, hidden: boolean) {
+    return this.update(songId, (meta) => ({ ...meta, hidden }));
+  }
+
+  setBandVersion(songId: string, recordingId: string) {
+    const setBy = this.options.memberId();
+    return this.update(songId, (meta) => ({
+      ...this.withRecording(meta, songId, recordingId),
+      bandVersion: { recordingId, setBy, setAt: new Date().toISOString() },
+    }));
+  }
+
+  setRecordingLabel(songId: string, recordingId: string, label: string | null) {
+    return this.update(songId, (meta) => {
+      const m = this.withRecording(meta, songId, recordingId);
+      m.recordings = m.recordings.map((r) => (r.id === recordingId ? { ...r, label: label?.trim() || null } : r));
+      return m;
+    });
+  }
+
+  /** Group `sourceId` as version(s) of `targetId` (F4 §6.8). Only links data, never moves files. */
+  async mergeInto(sourceId: string, targetId: string) {
+    const source = this.song(sourceId);
+    const target = this.song(targetId);
+    if (!source || !target || sourceId === targetId) return;
+    await this.update(sourceId, (meta) => ({ ...meta, mergedInto: targetId }));
+    await this.update(targetId, (meta) => {
+      const m = { ...meta, mergedSongIds: [...new Set([...meta.mergedSongIds, sourceId, ...source.mergedSongIds])] };
+      for (const rec of source.recordings) {
+        if (!m.recordings.some((r) => r.id === rec.id)) {
+          m.recordings.push({ id: rec.id, path: rec.path, size: rec.size, label: rec.label, durationSec: rec.durationSec, firstSeenAt: rec.addedAt });
+        }
+      }
+      return m;
+    });
+  }
+
+  /** "Als eigenen Song abtrennen": the recording's original song becomes independent again. */
+  async split(songId: string, recordingId: string) {
+    const song = this.song(songId);
+    const rec = song?.recordings.find((r) => r.id === recordingId);
+    if (!song || !rec || rec.originSongId === songId) return;
+    const originId = rec.originSongId;
+    const moving = song.recordings.filter((r) => r.originSongId === originId).map((r) => r.id);
+    await this.update(originId, (meta) => ({ ...meta, mergedInto: null }));
+    await this.update(songId, (meta) => ({
+      ...meta,
+      mergedSongIds: meta.mergedSongIds.filter((id) => id !== originId),
+      recordings: meta.recordings.filter((r) => !moving.includes(r.id)),
+      bandVersion: meta.bandVersion && moving.includes(meta.bandVersion.recordingId) ? null : meta.bandVersion,
+    }));
+  }
+
+  /* ---------------- tags ---------------- */
+
+  async createTag(name: string): Promise<Tag> {
+    const created = await createTag(
+      this.options.storage,
+      this.options.appRoot,
+      name,
+      this.state.tags.map((t) => t.value),
+      this.options.memberId(),
+    );
+    const tags = [...this.state.tags, created].sort((a, b) => a.value.name.localeCompare(b.value.name, 'de'));
+    this.write('tags', tags);
+    this.set({ tags });
+    return created.value;
+  }
+
+  async renameTag(tagId: string, name: string) {
+    const current = this.state.tags.find((t) => t.value.id === tagId);
+    if (!current) return;
+    const saved = await saveTag(this.options.storage, this.options.appRoot, current, this.options.memberId(), {
+      rename: name,
+      existing: this.state.tags.map((t) => t.value),
+    });
+    const tags = this.state.tags.map((t) => (t.value.id === tagId ? saved : t)).sort((a, b) => a.value.name.localeCompare(b.value.name, 'de'));
+    this.write('tags', tags);
+    this.set({ tags });
+  }
+
+  /** Soft delete; songs simply stop showing the tag (F4 §6.11). */
+  async deleteTag(tagId: string) {
+    const current = this.state.tags.find((t) => t.value.id === tagId);
+    if (!current) return;
+    await saveTag(this.options.storage, this.options.appRoot, current, this.options.memberId(), 'delete');
+    const tags = this.state.tags.filter((t) => t.value.id !== tagId);
+    this.write('tags', tags);
+    this.set({ tags });
   }
 
   dispose() {
     this.abort?.abort();
     this.listeners.clear();
-  }
-
-  private readCache(): { files: ScannedFile[]; scannedAt: string } | null {
-    return this.read<{ files: ScannedFile[]; scannedAt: string }>('scan');
-  }
-
-  private writeCache(value: { files: ScannedFile[]; scannedAt: string }) {
-    this.write('scan', value);
-  }
-
-  private readDurations(): Record<string, number> {
-    return this.read<Record<string, number>>('durations') ?? {};
   }
 
   private read<T>(suffix: string): T | null {
@@ -112,7 +312,7 @@ export class LibraryStore {
     try {
       localStorage.setItem(`${this.options.cacheKey}.${suffix}`, JSON.stringify(value));
     } catch {
-      // storage full or unavailable – the next start just scans again
+      // storage full or unavailable – the next start just loads again
     }
   }
 }

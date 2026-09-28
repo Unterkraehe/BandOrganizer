@@ -3,7 +3,7 @@
 A Progressive Web App for band organization: songs, lyrics, notes, practice tools, calendar, setlists and a band chat – all stored on the band's own HiDrive.
 
 - **Live:** https://unterkraehe.github.io/BandOrganizer/
-- **Status:** v0.3.0 – M1 (connection, band setup, profiles) and M2 (song list, player) built; HiDrive login pending the client ID. Demo mode with sample songs available. See [`docs/03-roadmap.md`](docs/03-roadmap.md).
+- **Status:** v0.4.0 – M1 (connection, band setup, profiles), M2 (song list, player) and M3a (notes, versions, archive, tags) built; HiDrive login pending the client ID. Demo mode with sample songs available. See [`docs/03-roadmap.md`](docs/03-roadmap.md).
 - **UI language:** German. Code, comments and docs: English.
 
 ## Documentation

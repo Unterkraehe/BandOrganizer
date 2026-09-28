@@ -9,7 +9,10 @@ import { extensionOf } from '@/core/files/scan';
  */
 
 export interface Track {
+  /** recording id */
   id: string;
+  /** song the recording belongs to (for links) */
+  songId?: string;
   title: string;
   subtitle?: string;
   path: string;
@@ -27,7 +30,7 @@ export interface PlayerState {
 
 interface EngineOptions {
   loadBlob: (path: string) => Promise<Blob>;
-  onDuration?: (trackId: string, seconds: number) => void;
+  onDuration?: (track: Track, seconds: number) => void;
   /** Artist line on the lock screen (band name) */
   artist?: string;
   createAudio?: () => HTMLAudioElement;
@@ -54,6 +57,7 @@ export class AudioEngine {
   private urls = new Map<string, string>(); // path → object URL (small LRU)
   private loadToken = 0;
   private unlocked = false;
+  private pendingSeek: number | null = null;
 
   constructor(private options: EngineOptions) {
     this.audio = options.createAudio?.() ?? new Audio();
@@ -95,11 +99,15 @@ export class AudioEngine {
   }
 
   /** Load a track and start playing. Toggling the current track pauses/resumes instead. */
-  async playTrack(track: Track): Promise<void> {
+  async playTrack(track: Track, startAt?: number): Promise<void> {
     if (this.state.track?.id === track.id && this.state.status !== 'error') {
-      this.toggle();
+      if (startAt !== undefined) {
+        this.seek(startAt);
+        this.play();
+      } else this.toggle();
       return;
     }
+    this.pendingSeek = startAt ?? null;
     const token = ++this.loadToken;
     this.audio.pause();
     this.set({ track, status: 'loading', position: 0, duration: 0, error: null });
@@ -195,8 +203,18 @@ export class AudioEngine {
   private onDuration() {
     const d = this.audio.duration;
     if (!Number.isFinite(d) || d <= 0) return;
+    if (this.pendingSeek !== null) {
+      const target = Math.min(this.pendingSeek, d);
+      this.pendingSeek = null;
+      try {
+        this.audio.currentTime = target;
+      } catch {
+        // ignore
+      }
+      this.state = { ...this.state, position: target };
+    }
     this.set({ duration: d });
-    if (this.state.track) this.options.onDuration?.(this.state.track.id, d);
+    if (this.state.track) this.options.onDuration?.(this.state.track, d);
   }
 
   private set(patch: Partial<PlayerState>) {

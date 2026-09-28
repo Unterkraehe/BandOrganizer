@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/core/theme/ThemeProvider';
 import { features as registeredFeatures } from '@/features';
 import { LibraryProvider } from '@/features/songs/LibraryProvider';
 import { ErrorBoundary } from './ErrorBoundary';
+import { NotifyProvider } from './notify/NotifyProvider';
 import { BandSetupScreen } from './gate/BandSetupScreen';
 import { ProfileSelectScreen } from './gate/ProfileSelectScreen';
 import { ConnectionErrorScreen, LoadingScreen } from './gate/StatusScreens';
@@ -23,9 +24,11 @@ export function App({ initialPath, autoStart = true }: AppProps) {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <SessionProvider autoStart={autoStart}>
-          <Gate initialPath={initialPath} />
-        </SessionProvider>
+        <NotifyProvider>
+          <SessionProvider autoStart={autoStart}>
+            <Gate initialPath={initialPath} />
+          </SessionProvider>
+        </NotifyProvider>
         <UpdateToast />
       </ThemeProvider>
     </ErrorBoundary>

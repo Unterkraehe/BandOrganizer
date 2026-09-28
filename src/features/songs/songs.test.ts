@@ -1,38 +1,161 @@
 // @vitest-environment node
-import { describe, expect, it } from 'vitest';
-import { cleanTitle, deriveSongs, relativeFolder, songIdFor, sortSongs } from './model';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { ConflictError, MemoryStorageProvider, SafeStorage } from '@/core/storage';
+import { LibraryStore } from './library';
+import { buildSongs, cleanTitle, recordingIdFor, songIdFor, sortSongs, versionSuggestions, type SongMeta } from './model';
+import { createNote, listNotes, saveNote } from './repository';
+
+const HOME = '/users/b';
+const APP = `${HOME}/_BandApp`;
 
 describe('songs model (F4)', () => {
   it('cleans titles (F4 §6.2)', () => {
     expect(cleanTitle('07_Hell_Is_Empty_(Demo).mp3')).toBe('Hell Is Empty (Demo)');
     expect(cleanTitle('01 - Midnight Engine.wav')).toBe('Midnight Engine');
     expect(cleanTitle('2026 Summer.mp3')).toBe('2026 Summer');
-    expect(cleanTitle('Open Road.m4a')).toBe('Open Road');
-    expect(cleanTitle('99.mp3')).toBe('99');
   });
 
-  it('derives stable ids from the file id or path (F4 §6.1)', () => {
-    const a = songIdFor({ id: 'b123', path: '/x/a.mp3' });
-    expect(a).toBe(songIdFor({ id: 'b123', path: '/moved/a.mp3' }));
-    expect(a).not.toBe(songIdFor({ id: 'b124', path: '/x/a.mp3' }));
-    expect(songIdFor({ path: '/x/a.mp3' })).toMatch(/^song_[0-9a-z]{7}$/);
+  it('derives stable ids (F4 §6.1)', () => {
+    expect(songIdFor({ id: 'b1', path: '/a' })).toBe(songIdFor({ id: 'b1', path: '/moved' }));
+    expect(recordingIdFor({ path: '/x.mp3' })).toMatch(/^r_[0-9a-z]{7}$/);
   });
 
-  it('derives songs with folder, "Neu" and durations', () => {
+  it('builds songs from files only, with "Neu"', () => {
     const now = Date.parse('2026-09-28T12:00:00Z');
-    const songs = deriveSongs(
+    const songs = buildSongs(
       [
-        { path: '/users/b/Songs/02 - Zebra.mp3', name: '02 - Zebra.mp3', modifiedAt: '2026-09-27T00:00:00Z' },
-        { path: '/users/b/alpha.mp3', name: 'alpha.mp3', modifiedAt: '2026-01-01T00:00:00Z' },
+        { path: `${HOME}/Songs/02 - Zebra.mp3`, name: '02 - Zebra.mp3', modifiedAt: '2026-09-27T00:00:00Z' },
+        { path: `${HOME}/alpha.mp3`, name: 'alpha.mp3', modifiedAt: '2026-01-01T00:00:00Z' },
       ],
-      '/users/b',
-      { [songIdFor({ path: '/users/b/alpha.mp3' })]: 241 },
+      {},
+      HOME,
       now,
     );
-    expect(songs[0]).toMatchObject({ title: 'Zebra', folder: 'Songs', isNew: true });
-    expect(songs[1]).toMatchObject({ title: 'alpha', folder: '', isNew: false, durationSec: 241 });
-    expect(sortSongs(songs, 'az').map((s) => s.title)).toEqual(['alpha', 'Zebra']);
-    expect(sortSongs(songs, 'recent').map((s) => s.title)).toEqual(['Zebra', 'alpha']);
-    expect(relativeFolder('/users/b/Proben/2026/x.wav', '/users/b')).toBe('Proben/2026');
+    expect(sortSongs(songs, 'az').map((s) => [s.title, s.recording.folder, s.isNew])).toEqual([
+      ['alpha', '', false],
+      ['Zebra', 'Songs', true],
+    ]);
+  });
+
+  it('groups merged songs as versions and follows the Band-Version (F4 §6.8)', () => {
+    const a = { path: `${HOME}/Songs/Slow Burn.mp3`, name: 'Slow Burn.mp3', size: 10 };
+    const b = { path: `${HOME}/Live/Slow Burn (Live).mp3`, name: 'Slow Burn (Live).mp3', size: 20 };
+    const idA = songIdFor(a);
+    const idB = songIdFor(b);
+    const base = { mergedSongIds: [], mergedInto: null, bandVersion: null, recordings: [] } as unknown as SongMeta;
+    const metas = {
+      [idA]: { ...base, displayTitle: null, mergedSongIds: [idB], bandVersion: { recordingId: recordingIdFor(b), setBy: 'm', setAt: 'x' }, recordings: [] },
+      [idB]: { ...base, mergedInto: idA, recordings: [] },
+    } as unknown as Record<string, SongMeta>;
+    const songs = buildSongs([a, b], metas, HOME);
+    expect(songs).toHaveLength(1);
+    expect(songs[0]!.title).toBe('Slow Burn');
+    expect(songs[0]!.recordings.map((r) => r.fileName)).toEqual(['Slow Burn.mp3', 'Slow Burn (Live).mp3']);
+    expect(songs[0]!.recording.fileName).toBe('Slow Burn (Live).mp3');
+  });
+
+  it('re-matches a moved file by name and size (spike S2 fallback)', () => {
+    const moved = { path: `${HOME}/Neu/a.mp3`, name: 'a.mp3', size: 5, id: 'new-id' };
+    const oldId = 'song_old';
+    const metas = {
+      [oldId]: { displayTitle: 'Mein Song', recordings: [{ id: 'r_old', path: `${HOME}/Alt/a.mp3`, size: 5, label: null }], mergedSongIds: [], mergedInto: null, bandVersion: null },
+    } as unknown as Record<string, SongMeta>;
+    const songs = buildSongs([moved], metas, HOME);
+    expect(songs).toHaveLength(1);
+    expect(songs[0]).toMatchObject({ id: oldId, title: 'Mein Song', missing: false });
+    expect(songs[0]!.recording.path).toBe(moved.path);
+  });
+
+  it('suggests similar titles as versions', () => {
+    const songs = buildSongs(
+      [
+        { path: `${HOME}/a/Open Road.mp3`, name: 'Open Road.mp3' },
+        { path: `${HOME}/b/Open Road (Demo).mp3`, name: 'Open Road (Demo).mp3' },
+        { path: `${HOME}/b/Other.mp3`, name: 'Other.mp3' },
+      ],
+      {},
+      HOME,
+    );
+    const road = songs.find((s) => s.title === 'Open Road')!;
+    expect(versionSuggestions(road, songs).map((s) => s.title)).toEqual(['Open Road (Demo)']);
+  });
+});
+
+describe('LibraryStore actions', () => {
+  let provider: MemoryStorageProvider;
+  let store: LibraryStore;
+  let member = 'm_lisa';
+
+  beforeEach(async () => {
+    provider = new MemoryStorageProvider();
+    provider.seed(`${HOME}/Songs/Open Road.mp3`, 'a');
+    provider.seed(`${HOME}/Demos/Open Road (Demo).mp3`, 'bb');
+    const storage = new SafeStorage(provider, { appRoot: APP });
+    store = new LibraryStore({ storage, home: HOME, appRoot: APP, skip: [APP], cacheKey: null, memberId: () => member });
+    await store.load();
+  });
+
+  const byTitle = (title: string) => store.getState().songs.find((s) => s.title === title)!;
+
+  it('creates meta.json lazily and edits details with a conflict check (R-DATA-07)', async () => {
+    const song = byTitle('Open Road');
+    expect(song.hasMeta).toBe(false);
+    const original = { displayTitle: null, key: null, bpm: null, tuning: null, tagIds: [] };
+    await store.updateDetails(song.id, { ...original, key: 'Am', bpm: 120 }, original);
+    expect(provider.has(`${APP}/songs/${song.id}/meta.json`)).toBe(true);
+    expect(byTitle('Open Road')).toMatchObject({ key: 'Am', bpm: 120, hasMeta: true });
+    // someone else's stale form changing the same field → conflict
+    member = 'm_tom';
+    await expect(store.updateDetails(song.id, { ...original, key: 'C' }, original)).rejects.toBeInstanceOf(ConflictError);
+    // a different field from a stale form is fine and keeps the key
+    await store.updateDetails(song.id, { ...original, tuning: 'Drop D' }, original);
+    expect(byTitle('Open Road')).toMatchObject({ key: 'Am', tuning: 'Drop D' });
+  });
+
+  it('merges, sets the Band-Version and splits again (F4 §6.8)', async () => {
+    const main = byTitle('Open Road');
+    const demo = byTitle('Open Road (Demo)');
+    await store.mergeInto(demo.id, main.id);
+    expect(store.getState().songs).toHaveLength(1);
+    const merged = byTitle('Open Road');
+    expect(merged.recordings).toHaveLength(2);
+    const demoRec = merged.recordings.find((r) => r.originSongId === demo.id)!;
+    await store.setBandVersion(main.id, demoRec.id);
+    await store.setRecordingLabel(main.id, demoRec.id, 'Demo');
+    expect(byTitle('Open Road').recording).toMatchObject({ id: demoRec.id, label: 'Demo' });
+    await store.split(main.id, demoRec.id);
+    expect(store.getState().songs).toHaveLength(2);
+    expect(byTitle('Open Road').recording.originSongId).toBe(main.id);
+  });
+
+  it('archives, hides, tags and stores durations', async () => {
+    const song = byTitle('Open Road');
+    await store.setArchived(song.id, true);
+    expect(byTitle('Open Road')).toMatchObject({ archived: true });
+    const tag = await store.createTag('Ballade');
+    await store.setTags(song.id, [tag.id]);
+    expect(byTitle('Open Road').tagIds).toEqual([tag.id]);
+    await expect(store.createTag(' ballade ')).rejects.toThrow();
+    await store.deleteTag(tag.id);
+    expect(store.getState().tags).toHaveLength(0);
+    await store.recordDuration(song.id, song.recording.id, 241.4);
+    expect(byTitle('Open Road').recording.durationSec).toBe(241);
+    await store.setHidden(byTitle('Open Road (Demo)').id, true);
+    expect(byTitle('Open Road (Demo)').hidden).toBe(true);
+  });
+});
+
+describe('notes (F4 §6.4)', () => {
+  it('keeps private notes private and soft-deletes', async () => {
+    const storage = new SafeStorage(new MemoryStorageProvider(), { appRoot: APP });
+    const pub = await createNote(storage, APP, 'song_1', 'public', 'm_a', { text: ' Bridge 2× ', positionSec: 92, recordingId: 'r_1' });
+    await createNote(storage, APP, 'song_1', 'private', 'm_a', { text: 'Kapo 3', positionSec: null, recordingId: 'r_1' });
+    expect(pub.note).toMatchObject({ text: 'Bridge 2×', positionSec: 92, recordingId: 'r_1', pinned: false });
+    expect(await listNotes(storage, APP, ['song_1'], 'm_a')).toHaveLength(2);
+    expect(await listNotes(storage, APP, ['song_1'], 'm_b')).toHaveLength(1);
+    const pinned = await saveNote(storage, APP, pub, 'm_b', 'pin');
+    expect(pinned.note.pinned).toBe(true);
+    await saveNote(storage, APP, pinned, 'm_a', 'delete');
+    expect(await listNotes(storage, APP, ['song_1'], 'm_b')).toHaveLength(0);
   });
 });

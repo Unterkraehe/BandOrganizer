@@ -76,3 +76,14 @@ const longDateFmt = new Intl.DateTimeFormat(LOCALE, { timeZone: TIME_ZONE, weekd
 export function formatLongDate(value: DateInput): string {
   return longDateFmt.format(toDate(value));
 }
+
+/** "vor 2 Tagen", "gerade eben" style relative time for notes etc. */
+export function formatAgo(value: DateInput, now: DateInput = new Date()): string {
+  const seconds = Math.round((toDate(value).getTime() - toDate(now).getTime()) / 1000);
+  const abs = Math.abs(seconds);
+  if (abs < 60) return relativeFmt.format(0, 'second');
+  if (abs < 3600) return relativeFmt.format(Math.round(seconds / 60), 'minute');
+  if (abs < 86_400) return relativeFmt.format(Math.round(seconds / 3600), 'hour');
+  if (abs < 30 * 86_400) return relativeFmt.format(Math.round(seconds / 86_400), 'day');
+  return formatDateWithYear(value);
+}

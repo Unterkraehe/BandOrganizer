@@ -42,3 +42,14 @@
   color: var(--danger);
   font-weight: 500;
 }
+
+.textarea {
+  min-height: 88px;
+  padding: var(--space-3);
+  resize: vertical;
+  line-height: var(--lh-body);
+}
+
+select.input {
+  appearance: auto;
+}

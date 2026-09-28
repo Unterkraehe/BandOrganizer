@@ -1,4 +1,4 @@
-import { Outlet, type RouteObject } from 'react-router-dom';
+import { Outlet, ScrollRestoration, type RouteObject } from 'react-router-dom';
 import type { FeatureRegistration } from '@/core/features/registry';
 import { MorePage } from '@/features/more/MorePage';
 import { MiniPlayer } from '@/features/songs/MiniPlayer';
@@ -12,6 +12,8 @@ export function buildRoutes(features: FeatureRegistration[]): RouteObject[] {
       element: (
         <AppShell features={features} bottomSlot={<MiniPlayer />}>
           <Outlet />
+          {/* New screens start at the top; going back restores the list position (F3 §6.3) */}
+          <ScrollRestoration />
         </AppShell>
       ),
       children: [

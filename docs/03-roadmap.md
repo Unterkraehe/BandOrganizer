@@ -1,6 +1,6 @@
 # Implementation Roadmap
 
-> **Status:** M0 ✅ · M1 🟡 v0.2.0 (real login pending client ID) · M2 🟡 v0.3.0 built in demo mode (spike S3 on iPhone running; real files pending)
+> **Status:** M0 ✅ · M1 🟡 (real login pending client ID) · M2 🟡 (S3 iPhone test pending) · M3a ✅ v0.4.0 (demo) · next: M3b lyrics + uploads
 > Order and scope of the build, from an empty repository to v1.0. Each milestone ends with a **deployed version the band can use and test**.
 
 ## 1. Principles
@@ -18,7 +18,7 @@
 | M0 ✅ | **Fundament** | Project setup, deployment, design system, i18n, storage abstraction + safety guard | Open the (empty) app, install it, switch themes | M |
 | M1 🟡 | **Verbinden** | Token helper, HiDrive login, band setup, member profiles, settings | Connect every device, create profiles, set band color/logo | M |
 | M2 🟡 | **Hören** | File scan, song list, basic player, mini player, song detail | Browse and play all songs on any device | M |
-| M3 | **Songbibliothek** | Lyrics, notes, metadata, versions/Band-Version, archive, tags, **new songs & uploads** | Read lyrics, write notes, organize the repertoire, add new songs and recordings from the app | L |
+| M3 🟡 | **Songbibliothek** (3a ✅, 3b open) | Lyrics, notes, metadata, versions/Band-Version, archive, tags, **new songs & uploads** | Read lyrics, write notes, organize the repertoire, add new songs and recordings from the app | L |
 | M4 | **Üben** | Pitch/tempo engine, A–B loop, practice view | Practice with tempo, pitch and loops | M |
 | M5 | **Planen** | Calendar, recurring events, answers, absences, .ics export, dashboard events | Plan rehearsals and gigs, answer, export dates | L |
 | M6 | **Setlists** | Setlist editor, print, stage view, setlist mode, suggestions | Build setlists, print them, use them on stage and for practice | L |

@@ -95,6 +95,7 @@ export function createDemoSongs(short = false): Record<string, Blob> {
     'Songs/Open Road.wav': { bpm: 104, root: 43, progression: [0, 5, 9, 7], minor: false, seconds: s(80), drive: 1 },
     'Proben/2026-09-17/Slow Burn (Probe).wav': { bpm: 76, root: 38, progression: [0, 3, 5, 3], minor: true, seconds: s(90), drive: 0.5 },
     'Demos/Neon Nights (Demo).wav': { bpm: 124, root: 42, progression: [0, 7, 9, 5], minor: false, seconds: s(60), drive: 1.5 },
+    'Live/2025 Stadtfest/Midnight Engine (Live).wav': { bpm: 138, root: 40, progression: [0, 0, 5, 7], minor: true, seconds: s(70), drive: 3.5 },
   };
   return Object.fromEntries(Object.entries(specs).map(([path, spec]) => [path, toWav(render(spec))]));
 }

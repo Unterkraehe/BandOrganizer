@@ -11,7 +11,7 @@ export function createDemoProvider(): MemoryStorageProvider {
   const provider = new MemoryStorageProvider();
   const short = import.meta.env.MODE === 'test';
   const daysAgo = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString();
-  const ages = [120, 90, 60, 3, 30];
+  const ages = [120, 90, 60, 3, 30, 200];
   Object.entries(createDemoSongs(short)).forEach(([path, blob], index) =>
     provider.seed(`${DEMO_HOME}/${path}`, blob, daysAgo(ages[index] ?? 100)),
   );

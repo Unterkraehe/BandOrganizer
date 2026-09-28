@@ -1,7 +1,7 @@
 # Overload App – Project Overview
 
 > **App name:** Overload App (may change later – the name is only set in config/translations, see R-I18N-07)
-> **Status:** Implementation – v0.3.0: M0 live, M1 + M2 built and usable in demo mode; waiting for the HiDrive client ID
+> **Status:** Implementation – v0.4.0: M0 live; M1, M2, M3a built and usable in demo mode; waiting for the HiDrive client ID
 > **Last updated:** 2026-09-24
 
 This file is the entry point for the whole project. Read it first, then `01-general-rules.md` and `02-design-system.md`, then the feature file you are working on. The build order is defined in `03-roadmap.md`.
@@ -234,6 +234,8 @@ This list grows with the feature plans. Consistent wording is a rule (R-I18N-05)
 | 2026-09-24 | Files can be uploaded from the app into a configurable upload root (one folder per song), create-only (never overwrite/move/delete); typed lyrics saved as new `.txt` per edit | Add content without opening HiDrive; data safety kept |
 | 2026-09-26 | Styling with design tokens + CSS Modules instead of Tailwind | Tokens are the single source of truth; simpler to enforce R-UI-07 |
 | 2026-09-26 | Neutral default band color "Messing" until a band sets its own | No pre-branding for other bands (R-UI-10) |
+| 2026-09-28 | Song metadata updates are field-level read–modify–write on the latest `meta.json`; conflict only when the same field changed | Fewer false conflicts, still R-DATA-07 |
+| 2026-09-28 | Deterministic recording IDs (`r_` + hash of file ID/path) | Band-Version and note markers identical on all devices |
 | 2026-09-28 | Demo mode ships generated demo songs (WAV, no copyright) | Test playback incl. iPhone lock screen (S3) before HiDrive access |
 | 2026-09-28 | Player v0 = `<audio>` + blob URL; Web Audio only while effects are active (M4) | iOS background playback |
 | 2026-09-28 | App data folder fixed at `<home>/_BandApp` (not configurable) | New devices must find it without asking |

@@ -7,9 +7,9 @@
   top: 0;
   z-index: 10;
   padding: env(safe-area-inset-top) var(--space-4) 0;
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  /* Solid instead of backdrop-filter: blur on sticky elements causes repaint bugs
+     with fixed bars in mobile Chrome. */
+  background: var(--bg);
 }
 
 .topBarInner {
@@ -28,8 +28,6 @@
 
 .topBar[data-hidden-title] {
   background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
 }
 
 .title {

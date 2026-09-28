@@ -1,4 +1,4 @@
-import { Cloud, LogOut, Music, Palette, RefreshCw, UserRoundPen, Users } from 'lucide-react';
+import { Cloud, LogOut, Music, Palette, RefreshCw, Tags, UserRoundPen, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -125,13 +125,19 @@ export function SettingsPage() {
 /** "Songs finden" (F3 §4.3): last scan and manual rescan. Excluded folders follow in M3. */
 function SongScanSection() {
   const { t } = useTranslation('songs');
-  const { store, state, songs } = useLibrary();
+  const navigate = useNavigate();
+  const { store, state, songs, tags } = useLibrary();
   const when = state.scannedAt ? `${formatRelativeDay(state.scannedAt)}, ${formatTime(state.scannedAt)}` : null;
   return (
     <Section title={t('settings.title')}>
       <SettingRow label={when ? t('settings.summary', { count: songs.length, when }) : t('settings.never')}>
         <Button icon={<Music size={18} />} onClick={() => void store.scan()} disabled={state.status === 'scanning'}>
           {state.status === 'scanning' ? t('scanning', { count: state.progress?.found ?? 0 }) : t('settings.rescan')}
+        </Button>
+      </SettingRow>
+      <SettingRow label={t('tagsSettings.title')} hint={t('tagsSettings.summary', { count: tags.length })}>
+        <Button icon={<Tags size={18} />} onClick={() => navigate('/settings/tags')}>
+          {t('tagsSettings.manage')}
         </Button>
       </SettingRow>
     </Section>

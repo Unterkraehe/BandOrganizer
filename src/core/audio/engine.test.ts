@@ -31,7 +31,7 @@ describe('AudioEngine (F9 v0)', () => {
     await engine.playTrack({ id: 's1', title: 'A', path: '/x/a.mp3' });
     expect(engine.getState()).toMatchObject({ status: 'playing', track: { id: 's1' }, duration: 120 });
     expect((createObjectURL.mock.calls[0] as unknown as [Blob])[0].type).toBe('audio/mpeg');
-    expect(onDuration).toHaveBeenCalledWith('s1', 120);
+    expect(onDuration).toHaveBeenCalledWith(expect.objectContaining({ id: 's1' }), 120);
 
     await engine.playTrack({ id: 's1', title: 'A', path: '/x/a.mp3' }); // same song → pause
     expect(engine.getState().status).toBe('paused');

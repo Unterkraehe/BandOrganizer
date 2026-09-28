@@ -21,7 +21,9 @@
     "cancel": "Abbrechen",
     "confirm": "Bestätigen",
     "save": "Speichern",
-    "edit": "Bearbeiten"
+    "edit": "Bearbeiten",
+    "more": "Weitere Aktionen",
+    "ok": "OK"
   },
   "notFound": {
     "title": "Seite nicht gefunden",

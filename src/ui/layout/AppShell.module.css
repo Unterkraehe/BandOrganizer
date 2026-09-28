@@ -16,6 +16,10 @@
   padding-bottom: env(safe-area-inset-bottom);
   background: var(--surface);
   border-top: 1px solid var(--border);
+  /* Own compositing layer: prevents Chrome on Android from dropping the bar's
+     content while the page scrolls or the address bar resizes the viewport. */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .brand {
@@ -100,6 +104,7 @@
   .nav {
     position: sticky;
     top: 0;
+    transform: none;
     height: 100dvh;
     padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
     border-top: none;
@@ -222,6 +227,8 @@
 .bottomSlot {
   position: fixed;
   z-index: 19;
+  transform: translateZ(0);
+  backface-visibility: hidden;
   left: 0;
   right: 0;
   bottom: calc(var(--bottom-bar-h) + env(safe-area-inset-bottom));

@@ -8,14 +8,21 @@ interface SeekBarProps {
   duration: number;
   disabled?: boolean;
   onSeek: (seconds: number) => void;
+  /** Positions of time-marked notes (F4 §4.2) */
+  markers?: number[];
 }
 
 /** Seek slider with elapsed / remaining time (F4 §4.2). Keyboard: arrows = 5 s steps. */
-export function SeekBar({ label, position, duration, disabled, onSeek }: SeekBarProps) {
+export function SeekBar({ label, position, duration, disabled, onSeek, markers = [] }: SeekBarProps) {
   const max = duration > 0 ? duration : 1;
   const percent = Math.min(100, (position / max) * 100);
   return (
     <div className={styles.seek}>
+      <div className={styles.trackWrap}>
+        {duration > 0 &&
+          markers
+            .filter((m) => m >= 0 && m <= duration)
+            .map((m) => <span key={m} className={styles.marker} style={{ left: `${(m / duration) * 100}%` }} aria-hidden="true" />)}
       <input
         type="range"
         className={styles.range}
@@ -29,6 +36,7 @@ export function SeekBar({ label, position, duration, disabled, onSeek }: SeekBar
         aria-valuetext={`${formatDuration(position)} / ${formatDuration(duration)}`}
         style={{ '--progress': `${percent}%` } as CSSProperties}
       />
+      </div>
       <div className={styles.times}>
         <span>{formatDuration(position)}</span>
         <span>{duration > 0 ? `-${formatDuration(Math.max(0, duration - position))}` : '–:–'}</span>
