@@ -60,6 +60,8 @@ HiDrive app type **"server"** + **token helper** on Cloudflare Workers.
 | Token storage | `localStorage` key `bandapp.hidrive.tokens` on the device |
 | Home folder | `GET /user/me?fields=home,alias` → e.g. `root/users/overload` |
 | Path format | The API expects paths relative to the storage root: `root/users/overload/…`. Inside the app all paths are absolute (`/users/overload/…`); `HiDriveProvider` translates both ways (found in the first real login, v0.4.1) |
+| Encoding | Names and paths in API responses are URL-encoded (`Neue%20Songs`) and are decoded by `HiDriveProvider` (v0.4.2) |
+| Scan report | Settings → Songs finden shows how many folders were searched and lists folders that could not be read |
 | Folder creation | The provider creates one folder at a time; `SafeStorage` creates missing parents only from a zone root downwards, never above it |
 | App data folder | fixed: `<home>/_BandApp` (every device must find it without extra input) |
 | Conflict check | `version = "<mtime>:<chash>"` compared before writing (no `If-Match`, see CORS test) |

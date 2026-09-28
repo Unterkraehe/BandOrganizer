@@ -77,7 +77,7 @@ export class HiDriveProvider implements StorageProvider {
   async getUserInfo(): Promise<{ home: string; alias: string }> {
     const data = await this.json<{ home?: string; alias?: string }>('GET', '/user/me', { fields: 'home,alias' });
     const alias = data.alias ?? '';
-    const home = data.home ? fromApiPath(data.home) : `/users/${alias}`;
+    const home = data.home ? fromApiPath(decodeHiDrive(data.home)) : `/users/${alias}`;
     return { home, alias };
   }
 
@@ -220,9 +220,18 @@ export class HiDriveProvider implements StorageProvider {
   }
 }
 
+/** HiDrive returns names and paths URL-encoded ("Neue%20Songs"). */
+export function decodeHiDrive(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value; // not encoded / malformed – use as is
+  }
+}
+
 function toEntry(object: HiDriveObject, parentPath: string): FileEntry {
-  const name = object.name ?? '';
-  const path = object.path ? fromApiPath(object.path) : normalizePath(`${parentPath}/${name}`);
+  const name = object.name !== undefined ? decodeHiDrive(object.name) : '';
+  const path = object.path ? fromApiPath(decodeHiDrive(object.path)) : normalizePath(`${parentPath}/${name}`);
   return {
     path,
     name: name || basename(path),

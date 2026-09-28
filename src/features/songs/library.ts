@@ -1,5 +1,5 @@
 import type { Versioned } from '@/core/band/band';
-import { scanAudioFiles, type ScannedFile } from '@/core/files/scan';
+import { scanAudioFiles, type ScannedFile, type ScanReport } from '@/core/files/scan';
 import { ConflictError, type SafeStorage } from '@/core/storage';
 import { buildSongs, type Song, type SongMeta, type Tag } from './model';
 import { createTag, listSongMetas, listTags, saveTag, seedMeta, updateSongMeta } from './repository';
@@ -14,6 +14,8 @@ export interface LibraryState {
   files: ScannedFile[];
   scannedAt: string | null;
   progress: { folders: number; found: number } | null;
+  /** Result of the last scan in this session (not cached) */
+  report: ScanReport | null;
   metas: Record<string, Versioned<SongMeta>>;
   tags: Versioned<Tag>[];
   songs: Song[];
@@ -51,6 +53,7 @@ export class LibraryStore {
       files,
       scannedAt: cached?.scannedAt ?? null,
       progress: null,
+      report: null,
       metas,
       tags: this.read<Versioned<Tag>[]>('tags') ?? [],
       songs: this.build(files, metas),
@@ -110,16 +113,18 @@ export class LibraryStore {
     if (this.state.status === 'scanning') return;
     this.abort = new AbortController();
     this.set({ status: 'scanning', progress: { folders: 0, found: 0 } });
+    const report: ScanReport = { folders: 0, failedFolders: [] };
     try {
       const files = await scanAudioFiles(this.options.storage, {
         root: this.options.home,
         skip: this.options.skip,
         signal: this.abort.signal,
         onProgress: (progress) => this.set({ progress }),
+        report,
       });
       const scannedAt = new Date().toISOString();
       this.write('scan', { files, scannedAt });
-      this.set({ status: 'ready', files, scannedAt, progress: null });
+      this.set({ status: 'ready', files, scannedAt, progress: null, report });
     } catch (error) {
       if ((error as Error).name === 'AbortError') return;
       console.error('Scan failed', error);

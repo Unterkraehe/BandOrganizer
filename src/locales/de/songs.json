@@ -46,7 +46,11 @@
     "title": "Songs finden",
     "summary": "{{count}} Songs · zuletzt gesucht {{when}}",
     "never": "Noch nicht gesucht",
-    "rescan": "Jetzt neu suchen"
+    "rescan": "Jetzt neu suchen",
+    "folders_one": "{{count}} Ordner durchsucht",
+    "folders_other": "{{count}} Ordner durchsucht",
+    "failed_one": "{{count}} Ordner konnte nicht gelesen werden:",
+    "failed_other": "{{count}} Ordner konnten nicht gelesen werden:"
   },
   "versionsCount_one": "{{count}} Version",
   "versionsCount_other": "{{count}} Versionen",

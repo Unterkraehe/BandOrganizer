@@ -97,3 +97,16 @@ describe('HiDrive path format', () => {
     expect(fromApiPath('/users/overload')).toBe('/users/overload');
   });
 });
+
+describe('URL-encoded names from HiDrive', () => {
+  it('decodes names and paths of listed objects', async () => {
+    const { provider } = setup(() =>
+      json({ members: [{ name: 'Neue%20Songs', path: 'root/users/band/Neue%20Songs', type: 'dir' }, { name: 'L%C3%BCgen%20(Live).mp3', type: 'file' }] }),
+    );
+    const entries = await provider.list('/users/band');
+    expect(entries.map((e) => [e.name, e.path])).toEqual([
+      ['Neue Songs', '/users/band/Neue Songs'],
+      ['Lügen (Live).mp3', '/users/band/Lügen (Live).mp3'],
+    ]);
+  });
+});

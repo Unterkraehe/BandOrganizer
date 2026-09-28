@@ -135,6 +135,21 @@ function SongScanSection() {
           {state.status === 'scanning' ? t('scanning', { count: state.progress?.found ?? 0 }) : t('settings.rescan')}
         </Button>
       </SettingRow>
+      {state.report && (
+        <div className={styles.info} style={{ paddingTop: 'var(--space-2)' }}>
+          <p>{t('settings.folders', { count: state.report.folders })}</p>
+          {state.report.failedFolders.length > 0 && (
+            <>
+              <p style={{ color: 'var(--warning)', fontWeight: 600 }}>{t('settings.failed', { count: state.report.failedFolders.length })}</p>
+              <ul style={{ margin: 0, paddingLeft: 'var(--space-5)', overflowWrap: 'anywhere' }}>
+                {state.report.failedFolders.slice(0, 20).map((folder) => (
+                  <li key={folder}>{folder}</li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      )}
       <SettingRow label={t('tagsSettings.title')} hint={t('tagsSettings.summary', { count: tags.length })}>
         <Button icon={<Tags size={18} />} onClick={() => navigate('/settings/tags')}>
           {t('tagsSettings.manage')}

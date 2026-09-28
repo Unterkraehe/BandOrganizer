@@ -43,3 +43,21 @@ describe('audio scan (F1 §4)', () => {
     expect(isAudioFile('.mp3')).toBe(false);
   });
 });
+
+describe('scan report', () => {
+  it('counts folders and reports unreadable ones instead of stopping', async () => {
+    const provider = new MemoryStorageProvider();
+    provider.seed('/users/band/A/x.mp3', 'x');
+    provider.seed('/users/band/B/y.mp3', 'y');
+    const storage = new SafeStorage(provider, { appRoot: '/users/band/_BandApp' });
+    const original = provider.list.bind(provider);
+    provider.list = async (path: string) => {
+      if (path === '/users/band/B') throw new Error('403');
+      return original(path);
+    };
+    const report = { folders: 0, failedFolders: [] as string[] };
+    const files = await scanAudioFiles(storage, { root: '/users/band', skip: [], report });
+    expect(files.map((f) => f.name)).toEqual(['x.mp3']);
+    expect(report).toEqual({ folders: 2, failedFolders: ['/users/band/B'] });
+  });
+});

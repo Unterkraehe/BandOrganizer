@@ -16,12 +16,20 @@ export interface ScannedFile {
   modifiedAt?: string;
 }
 
+export interface ScanReport {
+  folders: number;
+  /** Folders that could not be listed (shown in the settings, F1 §7) */
+  failedFolders: string[];
+}
+
 export interface ScanOptions {
   root: string;
   skip: string[];
   onProgress?: (progress: { folders: number; found: number }) => void;
   concurrency?: number;
   signal?: AbortSignal;
+  /** Filled in during the scan */
+  report?: ScanReport;
 }
 
 export function extensionOf(name: string): string {
@@ -51,9 +59,11 @@ export async function scanAudioFiles(storage: SafeStorage, options: ScanOptions)
       } catch (error) {
         // An unreadable folder must not stop the whole scan.
         console.warn('Scan: cannot list folder', folder, error);
+        options.report?.failedFolders.push(folder);
         continue;
       }
       folders += 1;
+      if (options.report) options.report.folders = folders;
       for (const entry of entries) {
         if (shouldSkip(entry)) continue;
         const path = entry.path || joinPath(folder, entry.name);
