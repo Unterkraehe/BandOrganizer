@@ -1,0 +1,16 @@
+{
+  "title": "Mitglieder",
+  "you": "Das bist du",
+  "former": "Ehemalige Mitglieder",
+  "formerSuffix": "(ehemalig)",
+  "memberSince": "Mitglied seit {{date}}",
+  "deactivate": "Ist nicht mehr in der Band",
+  "deactivateConfirmTitle": "{{name}} als ehemaliges Mitglied markieren?",
+  "deactivateConfirm": "Nachrichten und Notizen bleiben erhalten. Du kannst das jederzeit rückgängig machen.",
+  "deactivateAction": "Als ehemalig markieren",
+  "reactivate": "Wieder aktivieren",
+  "editOwn": "Profil bearbeiten",
+  "notFound": "Dieses Mitglied gibt es nicht.",
+  "failed": "Das hat nicht geklappt. Bitte prüfe deine Verbindung.",
+  "empty": "Noch keine Mitglieder."
+}

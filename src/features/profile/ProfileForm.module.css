@@ -1,0 +1,53 @@
+.form {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.taken {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.preview {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.previewLabel {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.bubbleRow {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.bubble {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
+  background: var(--surface-2);
+  max-width: 280px;
+}
+
+.bubbleName {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  filter: saturate(1.1);
+}
+
+.failed {
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

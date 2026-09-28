@@ -1,0 +1,13 @@
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+.sm { width: 28px; height: 28px; font-size: 11px; }
+.md { width: 40px; height: 40px; font-size: 14px; }
+.lg { width: 56px; height: 56px; font-size: 19px; }
+.xl { width: 88px; height: 88px; font-size: 30px; }

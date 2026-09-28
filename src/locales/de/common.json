@@ -11,12 +11,17 @@
     "setlists": "Setlists",
     "members": "Mitglieder",
     "settings": "Einstellungen",
-    "main": "Hauptmenü"
+    "main": "Hauptmenü",
+    "profile": "Mein Profil"
   },
   "actions": {
     "close": "Schließen",
     "back": "Zurück",
-    "toStart": "Zur Startseite"
+    "toStart": "Zur Startseite",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "save": "Speichern",
+    "edit": "Bearbeiten"
   },
   "notFound": {
     "title": "Seite nicht gefunden",

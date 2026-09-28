@@ -3,7 +3,7 @@
 A Progressive Web App for band organization: songs, lyrics, notes, practice tools, calendar, setlists and a band chat – all stored on the band's own HiDrive.
 
 - **Live:** https://unterkraehe.github.io/BandOrganizer/
-- **Status:** Milestone M0 (foundation). See [`docs/03-roadmap.md`](docs/03-roadmap.md).
+- **Status:** v0.2.0 – M1 (connection, band setup, profiles) built; HiDrive login pending the client ID. Demo mode available. See [`docs/03-roadmap.md`](docs/03-roadmap.md).
 - **UI language:** German. Code, comments and docs: English.
 
 ## Documentation
@@ -45,7 +45,11 @@ Repository setting required: **Settings → Pages → Source: GitHub Actions**.
 src/
 ├─ app/          app shell, routing, error boundary, update toast
 ├─ core/
-│  ├─ storage/   StorageProvider interface + safety guard (R-DATA-04)
+│  ├─ auth/      HiDrive OAuth login + token refresh
+│  ├─ band/      band config (app.json), logo
+│  ├─ color/     band color → accent tokens
+│  ├─ session/   connection, band and member session, demo mode
+│  ├─ storage/   StorageProvider interface + safety guard (R-DATA-04), HiDrive provider
 │  ├─ data/      record fields, IDs, schema migrations (R-DATA-08/09)
 │  ├─ i18n/      i18next setup + date/number formatters (R-I18N)
 │  ├─ theme/     light / dark / system theme
@@ -54,4 +58,5 @@ src/
 ├─ features/     one folder per feature (start, settings, …)
 ├─ ui/           design tokens, base styles, shared components
 └─ locales/de/   German texts, one JSON file per namespace
+token-helper/    Cloudflare Worker for the HiDrive token exchange (see its README)
 ```

@@ -1,0 +1,8 @@
+# Optional: deploy with the Wrangler CLI instead of the dashboard (see README.md).
+name = "bandorganizer-auth"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+[vars]
+ALLOWED_ORIGINS = "https://unterkraehe.github.io"
+# HIDRIVE_CLIENT_ID and HIDRIVE_CLIENT_SECRET are set in the dashboard, never in this file.

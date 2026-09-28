@@ -1,7 +1,7 @@
 # Overload App – Project Overview
 
 > **App name:** Overload App (may change later – the name is only set in config/translations, see R-I18N-07)
-> **Status:** Implementation – M0 (Fundament) built, awaiting first deploy
+> **Status:** Implementation – M0 live; M1 built (v0.2.0), waiting for the HiDrive client ID for the real login
 > **Last updated:** 2026-09-24
 
 This file is the entry point for the whole project. Read it first, then `01-general-rules.md` and `02-design-system.md`, then the feature file you are working on. The build order is defined in `03-roadmap.md`.
@@ -154,7 +154,7 @@ features/<name>/
 
 ## 8. App Data Folder on HiDrive
 
-All data the app creates lives in one folder: `_BandApp/` (underscore so it sorts to the top and is clearly technical). The name stays generic on purpose, so renaming the app or supporting other bands later doesn't require moving data. Location in the HiDrive tree is configurable during setup. The audio file scan (F4) always skips this folder.
+All data the app creates lives in one folder: `_BandApp/` (underscore so it sorts to the top and is clearly technical). The name stays generic on purpose, so renaming the app or supporting other bands later doesn't require moving data. Location: always directly in the HiDrive home folder (`<home>/_BandApp`), so every device finds it without extra input. The audio file scan (F4) always skips this folder.
 
 ```
 _BandApp/
@@ -234,6 +234,9 @@ This list grows with the feature plans. Consistent wording is a rule (R-I18N-05)
 | 2026-09-24 | Files can be uploaded from the app into a configurable upload root (one folder per song), create-only (never overwrite/move/delete); typed lyrics saved as new `.txt` per edit | Add content without opening HiDrive; data safety kept |
 | 2026-09-26 | Styling with design tokens + CSS Modules instead of Tailwind | Tokens are the single source of truth; simpler to enforce R-UI-07 |
 | 2026-09-26 | Neutral default band color "Messing" until a band sets its own | No pre-branding for other bands (R-UI-10) |
+| 2026-09-28 | App data folder fixed at `<home>/_BandApp` (not configurable) | New devices must find it without asking |
+| 2026-09-28 | Demo mode with in-memory storage | Try the app without HiDrive; UI tests; band preview before login works |
+| 2026-09-28 | Token helper deployed at `bandorganizer-auth.ostworkers.workers.dev` | Cloudflare subdomain `ostworkers` |
 | 2026-09-24 | App name: "Overload App" | May change later, kept in config only |
 | 2026-09-24 | Target band size: 3–12 members | Drives UI for member lists, chat, availability |
 
@@ -263,7 +266,7 @@ This list grows with the feature plans. Consistent wording is a rule (R-I18N-05)
 |---|---|---|---|
 | P1 | Register the app at the HiDrive developer portal: type **"server"**, redirect URL `https://unterkraehe.github.io/BandOrganizer/callback.html` | Band | F1 and everything else |
 | P2 | Create GitHub repo `Unterkraehe/BandOrganizer` (public) and enable GitHub Pages | Band | Deployment |
-| P3 | Create a free Cloudflare account for the token helper | Band | F1 login |
+| P3 | ✅ Cloudflare account (`ostworkers.workers.dev`) – deploy token helper via dashboard (`token-helper/README.md`) | Band | F1 login |
 | S1 | Real-token API check: `ETag`/`Access-Control-Expose-Headers`, file metadata for conflict checks | Dev | F1, R-DATA-07 |
 | S2 | Are HiDrive file IDs stable across rename/move? | Dev | F4 song identity |
 | S3 | Audio engine on a real iPhone (installed PWA): background/lock-screen playback, CPU with pitch/tempo | Dev + band member with iPhone | F9, F4 |

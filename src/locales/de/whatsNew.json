@@ -1,4 +1,10 @@
 {
+  "0.2.0": [
+    "Band einrichten: Name, Bandfarbe und Logo.",
+    "Profile für alle Bandmitglieder – „Wer bist du?“ nur einmal pro Gerät.",
+    "Mitglieder-Übersicht, ehemalige Mitglieder bleiben erhalten.",
+    "Demo-Modus zum Ausprobieren ohne HiDrive."
+  ],
   "0.1.0": [
     "Die App lässt sich auf dem Startbildschirm installieren.",
     "Hell- und Dunkelmodus – oder automatisch wie dein Gerät.",

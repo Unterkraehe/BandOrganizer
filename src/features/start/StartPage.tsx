@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatLongDate, localHour } from '@/core/i18n/format';
 import { useInstallHint } from '@/core/pwa/usePwa';
-import { Button, EmptyState, IconButton, Page } from '@/ui';
+import { useSession } from '@/core/session/BandSession';
+import { BandMark, Button, EmptyState, IconButton, Page } from '@/ui';
 import styles from './StartPage.module.css';
 
 const WHATS_NEW_KEY = 'bandapp.whatsNewSeen';
@@ -18,14 +19,20 @@ function greetingKey(hour: number) {
 /** Start screen (F3 §4.1). Dashboard widgets are added by later features. */
 export function StartPage() {
   const { t } = useTranslation('start');
+  const { currentMember } = useSession();
   const now = new Date();
+  const greeting = t(greetingKey(localHour(now)));
 
   return (
     <Page title={t('common:nav.start')} hideTitle>
       <header className={styles.hero}>
+        <div className={styles.band}>
+          <BandMark size="lg" />
+        </div>
         <p className={styles.date}>{formatLongDate(now)}</p>
-        <p className={styles.greeting}>{t(greetingKey(localHour(now)))}</p>
-        <p className={styles.appName}>{t('common:app.name')}</p>
+        <p className={styles.greeting}>
+          {currentMember ? t('greetingName', { greeting, name: currentMember.displayName }) : greeting}
+        </p>
       </header>
 
       <WhatsNew />

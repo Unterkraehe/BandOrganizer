@@ -1,6 +1,10 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import auth from '@/locales/de/auth.json';
+import band from '@/locales/de/band.json';
 import common from '@/locales/de/common.json';
+import members from '@/locales/de/members.json';
+import profile from '@/locales/de/profile.json';
 import pwa from '@/locales/de/pwa.json';
 import settings from '@/locales/de/settings.json';
 import start from '@/locales/de/start.json';
@@ -11,7 +15,7 @@ import whatsNew from '@/locales/de/whatsNew.json';
  * src/locales/<lang>/ with the same namespaces, registered here.
  */
 export const resources = {
-  de: { common, pwa, settings, start, whatsNew },
+  de: { auth, band, common, members, profile, pwa, settings, start, whatsNew },
 } as const;
 
 export const defaultNS = 'common';

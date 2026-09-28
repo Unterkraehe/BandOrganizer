@@ -15,5 +15,16 @@
     "checking": "Suche läuft …",
     "upToDate": "Du hast die aktuelle Version.",
     "offline": "Keine Verbindung – Suche nicht möglich."
+  },
+  "hidrive": {
+    "title": "HiDrive",
+    "connectedAs": "Verbunden als {{alias}}",
+    "connected": "Verbunden",
+    "demo": "Demo-Modus",
+    "demoHint": "Nichts wird gespeichert.",
+    "disconnect": "Verbindung trennen",
+    "disconnectConfirmTitle": "Verbindung zu HiDrive trennen?",
+    "disconnectConfirm": "Auf diesem Gerät musst du dich danach neu anmelden. Eure Daten auf HiDrive bleiben unverändert.",
+    "demoEnd": "Demo beenden"
   }
 }

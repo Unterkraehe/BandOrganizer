@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **ID** | F1 |
-| **Status** | Planned – spikes pending (need real API access) |
+| **Status** | Implemented (v0.2.0) except the real login test – waiting for HiDrive client ID; spikes S1/S2 pending |
 | **Depends on** | – |
 | **Used by** | all features |
 
@@ -48,7 +48,24 @@ HiDrive app type **"server"** + **token helper** on Cloudflare Workers.
 
 **Refresh flow:** shortly before the access token expires (or on a 401 response), the app sends the refresh token to the helper and gets a new access token. The member notices nothing. If refreshing fails (e.g. 60 days unused, password changed), the app shows "Verbindung zu HiDrive erneuern" and starts the login flow again.
 
-**Token helper endpoints (draft):**
+**Implementation details (v0.2.0):**
+
+| Item | Value |
+|---|---|
+| Authorize URL | `https://my.hidrive.com/client/authorize` (`client_id`, `response_type=code`, `scope=user,rw`, `redirect_uri`, `state`, `lang=de`) |
+| Token URL (used by the helper only) | `https://my.hidrive.com/oauth2/token` |
+| API base | `https://api.hidrive.strato.com/2.1` |
+| Token helper | `https://bandorganizer-auth.ostworkers.workers.dev` (`token-helper/worker.js`) |
+| Config | `src/config.ts` (client ID is not secret) |
+| Token storage | `localStorage` key `bandapp.hidrive.tokens` on the device |
+| Home folder | `GET /user/me?fields=home,alias` |
+| App data folder | fixed: `<home>/_BandApp` (every device must find it without extra input) |
+| Conflict check | `version = "<mtime>:<chash>"` compared before writing (no `If-Match`, see CORS test) |
+| Uploads | `POST /file?dir=&name=` without `on_exist` → HiDrive refuses existing names (create-only) |
+
+**Demo mode:** "Demo ausprobieren" on the welcome screen runs the whole app against an in-memory storage with a few sample files. Nothing is saved; useful for trying the app without an account and for UI tests.
+
+**Token helper endpoints:**
 
 | Endpoint | Input | Output |
 |---|---|---|

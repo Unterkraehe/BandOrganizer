@@ -194,3 +194,26 @@
     white-space: nowrap;
   }
 }
+
+.demoBanner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1) var(--space-3);
+  padding: calc(env(safe-area-inset-top) + var(--space-2)) var(--space-4) var(--space-2);
+  background: var(--accent-soft);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  text-align: center;
+}
+
+.demoEnd {
+  border: none;
+  background: none;
+  padding: var(--space-1);
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+}

@@ -1,0 +1,18 @@
+.logo {
+  display: block;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: left center;
+}
+.logo.md { height: 32px; }
+.logo.lg { height: 56px; }
+
+.name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+}
+.name.md { font-size: var(--fs-xl); }
+.name.lg { font-size: var(--fs-2xl); }

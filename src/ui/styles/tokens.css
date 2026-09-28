@@ -77,6 +77,20 @@
   --segue: #d1141e;
 
   --shadow-float: 0 8px 24px rgb(22 22 26 / 0.14), 0 2px 6px rgb(22 22 26 / 0.08);
+
+  /* Member colors (design system §3.5): background + text on it */
+  --member-c01: #c83c3c; --member-c01-on: #ffffff;
+  --member-c02: #c2620f; --member-c02-on: #ffffff;
+  --member-c03: #e2b33a; --member-c03-on: #16161a;
+  --member-c04: #2f8a3a; --member-c04-on: #ffffff;
+  --member-c05: #0f7d75; --member-c05-on: #ffffff;
+  --member-c06: #1b74a8; --member-c06-on: #ffffff;
+  --member-c07: #3557cc; --member-c07-on: #ffffff;
+  --member-c08: #6a47c9; --member-c08-on: #ffffff;
+  --member-c09: #9636ad; --member-c09-on: #ffffff;
+  --member-c10: #c02c74; --member-c10-on: #ffffff;
+  --member-c11: #845638; --member-c11-on: #ffffff;
+  --member-c12: #55626f; --member-c12-on: #ffffff;
 }
 
 /* ---------- Dark ---------- */
@@ -105,4 +119,17 @@
 
   /* In dark mode, elevation = lighter surface; shadows stay subtle */
   --shadow-float: 0 8px 24px rgb(0 0 0 / 0.5);
+
+  --member-c01: #ff7a7a; --member-c01-on: #16161a;
+  --member-c02: #ffa45c; --member-c02-on: #16161a;
+  --member-c03: #f2c94c; --member-c03-on: #16161a;
+  --member-c04: #7bd67b; --member-c04-on: #16161a;
+  --member-c05: #4fd1c5; --member-c05-on: #16161a;
+  --member-c06: #5cc3f5; --member-c06-on: #16161a;
+  --member-c07: #8aa4ff; --member-c07-on: #16161a;
+  --member-c08: #b19cff; --member-c08-on: #16161a;
+  --member-c09: #e08af5; --member-c09-on: #16161a;
+  --member-c10: #ff85bd; --member-c10-on: #16161a;
+  --member-c11: #d4a27f; --member-c11-on: #16161a;
+  --member-c12: #a9b4c2; --member-c12-on: #16161a;
 }

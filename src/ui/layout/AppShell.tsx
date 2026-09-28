@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, matchPath, NavLink, useLocation } from 'react-router-dom';
 import type { FeatureRegistration } from '@/core/features/registry';
+import { useSession } from '@/core/session/BandSession';
+import { BandMark } from '../components/BandMark';
 import styles from './AppShell.module.css';
 
 interface AppShellProps {
@@ -17,6 +19,7 @@ interface AppShellProps {
 export function AppShell({ features, children }: AppShellProps) {
   const { t } = useTranslation();
   const { pathname } = useLocation();
+  const { mode, band, disconnect } = useSession();
   const moreFeatures = features.filter((feature) => feature.placement === 'more');
   const hasMore = moreFeatures.length > 0;
   // On phones, "Mehr" is highlighted while one of its screens is open.
@@ -27,7 +30,7 @@ export function AppShell({ features, children }: AppShellProps) {
     <div className={styles.shell}>
       <nav className={styles.nav} aria-label={t('nav.main')}>
         <div className={styles.brand}>
-          <span className={styles.brandName}>{t('app.name')}</span>
+          {band ? <BandMark /> : <span className={styles.brandName}>{t('app.name')}</span>}
         </div>
         <ul className={styles.list}>
           {features.map((feature) => (
@@ -48,7 +51,17 @@ export function AppShell({ features, children }: AppShellProps) {
           )}
         </ul>
       </nav>
-      <main className={styles.main}>{children}</main>
+      <main className={styles.main}>
+        {mode === 'demo' && (
+          <div className={styles.demoBanner} role="note">
+            <span>{t('auth:demoBanner')}</span>
+            <button type="button" className={styles.demoEnd} onClick={disconnect}>
+              {t('auth:demoEnd')}
+            </button>
+          </div>
+        )}
+        {children}
+      </main>
     </div>
   );
 }

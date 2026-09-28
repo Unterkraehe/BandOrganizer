@@ -1,0 +1,56 @@
+{
+  "setup": {
+    "title": "Band einrichten",
+    "lead": "Das passiert nur einmal. Danach können alle Bandmitglieder direkt loslegen.",
+    "name": "Bandname",
+    "color": "Bandfarbe",
+    "colorHint": "Die Farbe für Buttons und Markierungen. Du kannst sie später ändern.",
+    "uploadFolder": "Ordner für Uploads",
+    "uploadFolderHint": "Neue Songs und Songtexte aus der App landen in diesem Ordner in eurem HiDrive.",
+    "submit": "Band einrichten",
+    "working": "Wird eingerichtet …",
+    "joined": "Jemand aus der Band war schneller – du bist jetzt dabei.",
+    "failed": "Die Band konnte nicht eingerichtet werden. Bitte versuch es noch einmal."
+  },
+  "color": {
+    "custom": "Eigene Farbe (Hex)",
+    "customPlaceholder": "#E30613",
+    "invalid": "Bitte als Hex-Wert eingeben, z. B. #E30613.",
+    "adjusted": "Farbe für bessere Lesbarkeit leicht angepasst.",
+    "preview": "Vorschau",
+    "names": {
+      "#C9A13B": "Messing",
+      "#E30613": "Signalrot",
+      "#F2711C": "Orange",
+      "#2FA84F": "Grün",
+      "#12A4A4": "Petrol",
+      "#2D7FF9": "Blau",
+      "#5B5BD6": "Indigo",
+      "#9B51E0": "Violett",
+      "#D6336C": "Magenta",
+      "#8C6D4F": "Holz",
+      "#6B7A8F": "Stahl",
+      "#1F1F24": "Schwarz"
+    }
+  },
+  "settings": {
+    "title": "Band",
+    "edit": "Band bearbeiten",
+    "save": "Speichern",
+    "saved": "Gespeichert.",
+    "conflict": "Jemand hat die Band-Einstellungen gerade geändert. Lade die App neu und versuch es noch einmal.",
+    "failed": "Speichern nicht möglich. Bitte prüfe deine Verbindung.",
+    "logo": "Band-Logo",
+    "logoHint": "SVG oder PNG mit transparentem Hintergrund, höchstens 2 MB.",
+    "logoDark": "Logo für dunklen Hintergrund",
+    "logoLight": "Logo für hellen Hintergrund",
+    "logoUpload": "Hochladen",
+    "logoReplace": "Ersetzen",
+    "logoRemove": "Entfernen",
+    "logoNone": "Kein Logo – der Bandname wird angezeigt.",
+    "logoInvalidType": "Bitte eine SVG- oder PNG-Datei wählen.",
+    "logoTooLarge": "Die Datei ist größer als 2 MB.",
+    "logoFailed": "Upload fehlgeschlagen. Bitte versuch es noch einmal.",
+    "uploadFolderNote": "Gilt nur für künftige Uploads."
+  }
+}

@@ -100,7 +100,7 @@ Always combined with an icon (never color alone, R-UI-05).
 
 ### 3.5 Member colors (F2 §7)
 
-- 12 tokens `--member-c01` … `--member-c12`, each with light/dark variants, maximally distinguishable, avoiding clashes with the semantic colors where possible.
+- 12 tokens `--member-c01` … `--member-c12` plus `--member-cXX-on` (text color on it), each with light/dark variants (values in `src/ui/styles/tokens.css`).
 - Initials on member colors must meet AA contrast.
 
 ## 4. Typography

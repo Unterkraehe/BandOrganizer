@@ -1,0 +1,37 @@
+{
+  "select": {
+    "title": "Wer bist du?",
+    "subtitle": "Wähle dein Profil. Du musst das auf diesem Gerät nur einmal machen.",
+    "new": "Ich bin neu",
+    "showFormer": "Ehemalige Mitglieder anzeigen ({{count}})",
+    "hideFormer": "Ehemalige ausblenden",
+    "reactivate": "Wieder aktivieren"
+  },
+  "form": {
+    "createTitle": "Profil anlegen",
+    "createFirstLead": "Die Band ist eingerichtet. Jetzt noch dein Profil – dann geht's los.",
+    "createLead": "So sehen dich die anderen in der App.",
+    "editTitle": "Profil bearbeiten",
+    "name": "Name",
+    "role": "Instrument / Rolle",
+    "roleOptional": "optional",
+    "color": "Farbe",
+    "colorUsed": "schon vergeben",
+    "preview": "So siehst du im Chat aus",
+    "previewText": "Probe am Donnerstag passt!",
+    "submitCreate": "Los geht's",
+    "submitEdit": "Speichern",
+    "cancel": "Abbrechen",
+    "nameRequired": "Bitte gib deinen Namen ein (höchstens 30 Zeichen).",
+    "nameTaken": "Diesen Namen gibt es schon. Bist du das?",
+    "nameTakenAction": "Zu diesem Profil",
+    "failed": "Speichern nicht möglich. Bitte prüfe deine Verbindung."
+  },
+  "settings": {
+    "title": "Mein Profil",
+    "edit": "Profil bearbeiten",
+    "switch": "Profil wechseln",
+    "logout": "Abmelden",
+    "info": "Dein Profil zeigt den anderen, wer etwas geschrieben hat. Es ist kein Passwortschutz – alle Bandmitglieder teilen sich den HiDrive-Zugang."
+  }
+}

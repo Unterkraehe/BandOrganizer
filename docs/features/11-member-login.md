@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **ID** | F2 |
-| **Status** | Planned – ready for implementation |
+| **Status** | Implemented (v0.2.0) |
 | **Depends on** | F1 (HiDrive connection) |
 | **Used by** | Songs (note authors, private notes), Chat, Calendar (absences), Setlists, Audio engine (practice settings) |
 

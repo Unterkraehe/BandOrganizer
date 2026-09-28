@@ -1,0 +1,80 @@
+.form {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.error {
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.note {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  margin-top: calc(-1 * var(--space-5));
+}
+
+.logoRow {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.logoRow + .logoRow {
+  border-top: 1px solid var(--border);
+}
+
+.logoText {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.logoLabel {
+  font-weight: 500;
+}
+
+.logoPreviewDark,
+.logoPreviewLight {
+  display: flex;
+  align-items: center;
+  min-height: 72px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+}
+
+/* Previews always show the real background the logo is meant for */
+.logoPreviewDark {
+  background: #0e0e10;
+  color: #a1a1aa;
+}
+
+.logoPreviewLight {
+  background: #ffffff;
+  color: #5e5e66;
+  box-shadow: inset 0 0 0 1px #dedee2;
+}
+
+.logoPreviewDark img,
+.logoPreviewLight img {
+  max-height: 48px;
+  max-width: 100%;
+}
+
+.profileRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.info {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  padding: 0 var(--space-4) var(--space-4);
+}

@@ -1,6 +1,12 @@
+export { Avatar } from './components/Avatar';
+export { BandColorPicker } from './components/BandColorPicker';
+export { BandMark } from './components/BandMark';
 export { Button, IconButton } from './components/Button';
+export { ColorSwatches } from './components/ColorSwatches';
+export { ConfirmDialog } from './components/ConfirmDialog';
 export { EmptyState } from './components/EmptyState';
 export { Section, SettingRow } from './components/Section';
 export { SegmentedControl } from './components/SegmentedControl';
+export { TextField } from './components/TextField';
 export { Toast } from './components/Toast';
 export { Page } from './layout/Page';
