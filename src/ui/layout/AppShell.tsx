@@ -9,6 +9,8 @@ import styles from './AppShell.module.css';
 
 interface AppShellProps {
   features: FeatureRegistration[];
+  /** Persistent bar above the navigation, e.g. the mini player (R-UX-08) */
+  bottomSlot?: ReactNode;
   children: ReactNode;
 }
 
@@ -16,7 +18,7 @@ interface AppShellProps {
  * App frame (F3 §3): bottom bar on phones, navigation rail on tablets, sidebar on desktops.
  * One <nav>, restyled per breakpoint; phone-only "Mehr" collects the items placed in "more".
  */
-export function AppShell({ features, children }: AppShellProps) {
+export function AppShell({ features, bottomSlot, children }: AppShellProps) {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const { mode, band, disconnect } = useSession();
@@ -62,6 +64,7 @@ export function AppShell({ features, children }: AppShellProps) {
         )}
         {children}
       </main>
+      <div className={styles.bottomSlot}>{bottomSlot}</div>
     </div>
   );
 }

@@ -3,7 +3,9 @@
 | | |
 |---|---|
 | **ID** | F9 |
-| **Status** | Planned – spikes pending (§7) |
+| **Status** | v0 implemented (v0.3.0): playback, seek, ±10 s, Media Session. Pitch/tempo/loop in M4. Spike S3 running |
+
+> **v0 decisions (M2):** playback uses a plain `<audio>` element with a typed blob URL (best background behaviour on iOS). A silent sound is played inside the first tap (`unlock()`) because iOS only allows playback started by a gesture and the download is asynchronous. Last 3 songs stay cached as blob URLs. Web Audio + signalsmith-stretch will only be switched on while tempo/pitch/loop are active (M4, §7 fallback plan).
 | **Type** | Core module (`src/core/audio/`), no own menu entry |
 | **Depends on** | F1 (file access) |
 | **Used by** | F4 Songs (player, mini player, fullscreen song view), F7 Setlists (later: practice playlist) |

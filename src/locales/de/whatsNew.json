@@ -1,4 +1,10 @@
 {
+  "0.3.0": [
+    "Songs: alle Audiodateien aus eurem HiDrive in einer Liste – mit Suche, Sortierung und „Neu“-Filter.",
+    "Abspielen direkt aus der Liste, Mini-Player bleibt beim Wechseln der Seite.",
+    "Steuerung auch vom Sperrbildschirm und mit Kopfhörer-Tasten.",
+    "Im Demo-Modus gibt es jetzt Beispielsongs zum Ausprobieren."
+  ],
   "0.2.0": [
     "Band einrichten: Name, Bandfarbe und Logo.",
     "Profile für alle Bandmitglieder – „Wer bist du?“ nur einmal pro Gerät.",

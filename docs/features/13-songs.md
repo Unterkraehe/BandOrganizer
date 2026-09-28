@@ -3,7 +3,13 @@
 | | |
 |---|---|
 | **ID** | F4 |
-| **Status** | Planned – ready for implementation (spike: HiDrive file ID stability, §6.1) |
+| **Status** | M2 part implemented (v0.3.0): list, search, sort, "Neu", player, detail (file info). Rest in M3. Spike: HiDrive file ID stability (§6.1) |
+
+> **M2 implementation notes (v0.3.0)**
+> - "Zuletzt hinzugefügt"/"Neu" use the file's modification time until `firstSeenAt` in `meta.json` exists (M3).
+> - Durations are cached per device until they are stored in `meta.json` (M3).
+> - Desktop master–detail layout and excluded-folder management are moved to M3.
+> - Song IDs: `song_` + FNV-1a hash of the HiDrive file ID (fallback: path).
 | **Depends on** | F1 (file scan), F2 (members), F3 (shell, setlist mode), F9 (audio engine), F10 (uploads) |
 | **Used by** | F7 Setlists, F8 Search, F3 Dashboard |
 

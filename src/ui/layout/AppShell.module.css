@@ -217,3 +217,39 @@
   cursor: pointer;
   font-weight: 600;
 }
+
+/* Mini player slot: above the bottom bar on phones, at the bottom of the content area otherwise */
+.bottomSlot {
+  position: fixed;
+  z-index: 19;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--bottom-bar-h) + env(safe-area-inset-bottom));
+}
+
+.bottomSlot:empty {
+  display: none;
+}
+
+.shell:has(.bottomSlot > *) .main {
+  padding-bottom: calc(var(--bottom-bar-h) + var(--mini-player-h) + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 768px) {
+  .bottomSlot {
+    left: var(--rail-w);
+    bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--surface-2);
+  }
+
+  .shell:has(.bottomSlot > *) .main {
+    padding-bottom: calc(var(--mini-player-h) + env(safe-area-inset-bottom));
+  }
+}
+
+@media (min-width: 1200px) {
+  .bottomSlot {
+    left: var(--sidebar-w);
+  }
+}

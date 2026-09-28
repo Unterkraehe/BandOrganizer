@@ -1,6 +1,7 @@
 import { Outlet, type RouteObject } from 'react-router-dom';
 import type { FeatureRegistration } from '@/core/features/registry';
 import { MorePage } from '@/features/more/MorePage';
+import { MiniPlayer } from '@/features/songs/MiniPlayer';
 import { AppShell } from '@/ui/layout/AppShell';
 import { NotFoundPage } from './NotFoundPage';
 
@@ -9,7 +10,7 @@ export function buildRoutes(features: FeatureRegistration[]): RouteObject[] {
   return [
     {
       element: (
-        <AppShell features={features}>
+        <AppShell features={features} bottomSlot={<MiniPlayer />}>
           <Outlet />
         </AppShell>
       ),

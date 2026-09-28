@@ -86,3 +86,33 @@ describe('App (M1 flow in demo mode)', () => {
     expect(await screen.findByRole('button', { name: 'Zur Startseite' })).toBeInTheDocument();
   });
 });
+
+describe('Songs (M2 in demo mode)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('finds the demo songs, searches and plays one', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/songs');
+    expect(await screen.findByText('5 Songs')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Midnight Engine/ })).toBeInTheDocument();
+    // hidden folders are skipped
+    expect(screen.queryByText(/nicht-scannen/)).not.toBeInTheDocument();
+
+    await user.type(screen.getByRole('searchbox', { name: 'Songs durchsuchen' }), 'rust thund');
+    expect(await screen.findByText('1 Song')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Rust and Thunder abspielen' }));
+    expect(await screen.findByRole('region', { name: 'Läuft gerade' })).toHaveTextContent('Rust and Thunder');
+    expect(screen.getByRole('button', { name: 'Rust and Thunder pausieren' })).toBeInTheDocument();
+  });
+
+  it('filters new songs and opens the detail page', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/songs');
+    await screen.findByText('5 Songs');
+    await user.click(screen.getByRole('button', { name: 'Neu' }));
+    expect(screen.getByText('1 Song')).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: /Slow Burn/ }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Slow Burn (Probe)' })).toBeInTheDocument();
+    expect(screen.getByText('Proben/2026-09-17')).toBeInTheDocument();
+  });
+});

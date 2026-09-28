@@ -1,12 +1,14 @@
-import { Cloud, LogOut, Palette, RefreshCw, UserRoundPen, Users } from 'lucide-react';
+import { Cloud, LogOut, Music, Palette, RefreshCw, UserRoundPen, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { formatRelativeDay, formatTime } from '@/core/i18n/format';
 import { usePwaUpdate } from '@/core/pwa/usePwa';
 import { useSession } from '@/core/session/BandSession';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import type { ThemePreference } from '@/core/theme/theme';
 import { basename } from '@/core/storage';
+import { useLibrary } from '@/features/songs/LibraryProvider';
 import { Avatar, BandMark, Button, ConfirmDialog, Page, Section, SegmentedControl, SettingRow } from '@/ui';
 import styles from './Settings.module.css';
 
@@ -73,6 +75,8 @@ export function SettingsPage() {
         </Section>
       )}
 
+      <SongScanSection />
+
       <Section title={t('hidrive.title')}>
         <SettingRow
           label={mode === 'demo' ? t('hidrive.demo') : alias ? t('hidrive.connectedAs', { alias }) : t('hidrive.connected')}
@@ -115,5 +119,21 @@ export function SettingsPage() {
         onCancel={() => setConfirmDisconnect(false)}
       />
     </Page>
+  );
+}
+
+/** "Songs finden" (F3 §4.3): last scan and manual rescan. Excluded folders follow in M3. */
+function SongScanSection() {
+  const { t } = useTranslation('songs');
+  const { store, state, songs } = useLibrary();
+  const when = state.scannedAt ? `${formatRelativeDay(state.scannedAt)}, ${formatTime(state.scannedAt)}` : null;
+  return (
+    <Section title={t('settings.title')}>
+      <SettingRow label={when ? t('settings.summary', { count: songs.length, when }) : t('settings.never')}>
+        <Button icon={<Music size={18} />} onClick={() => void store.scan()} disabled={state.status === 'scanning'}>
+          {state.status === 'scanning' ? t('scanning', { count: state.progress?.found ?? 0 }) : t('settings.rescan')}
+        </Button>
+      </SettingRow>
+    </Section>
   );
 }

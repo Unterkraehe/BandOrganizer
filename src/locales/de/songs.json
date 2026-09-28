@@ -1,0 +1,51 @@
+{
+  "title": "Songs",
+  "search": "Songs durchsuchen",
+  "sort": {
+    "label": "Sortierung",
+    "az": "A–Z",
+    "recent": "Neueste"
+  },
+  "filter": {
+    "new": "Neu"
+  },
+  "count_one": "{{count}} Song",
+  "count_other": "{{count}} Songs",
+  "newBadge": "Neu",
+  "scanning": "Songs werden gesucht … {{count}} gefunden",
+  "rescan": "Neu suchen",
+  "empty": {
+    "title": "Keine Songs gefunden",
+    "text": "In eurem HiDrive wurden keine Audiodateien gefunden (MP3, M4A, WAV, OGG, FLAC)."
+  },
+  "noResults": "Kein Song gefunden für „{{query}}“",
+  "scanError": "Die Songs konnten nicht geladen werden. Prüfe deine Verbindung.",
+  "retry": "Erneut versuchen",
+  "rootFolder": "Hauptordner",
+  "play": "{{title}} abspielen",
+  "pause": "{{title}} pausieren",
+  "notFound": "Diesen Song gibt es nicht mehr.",
+  "toList": "Zur Songliste",
+  "file": "Datei",
+  "folder": "Ordner",
+  "size": "Größe",
+  "player": {
+    "play": "Abspielen",
+    "pause": "Pause",
+    "back10": "10 Sekunden zurück",
+    "forward10": "10 Sekunden vor",
+    "position": "Position im Song",
+    "loading": "Wird geladen …",
+    "loadError": "Die Datei konnte nicht geladen werden. Prüfe deine Verbindung.",
+    "decodeError": "Diese Datei kann hier nicht abgespielt werden.",
+    "blocked": "Tippe auf Abspielen, um zu starten.",
+    "nowPlaying": "Läuft gerade",
+    "open": "Song öffnen"
+  },
+  "settings": {
+    "title": "Songs finden",
+    "summary": "{{count}} Songs · zuletzt gesucht {{when}}",
+    "never": "Noch nicht gesucht",
+    "rescan": "Jetzt neu suchen"
+  }
+}

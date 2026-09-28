@@ -27,10 +27,10 @@ export class MemoryStorageProvider implements StorageProvider {
   private clock = 0;
 
   /** Test helper: put a file without going through the guard (simulates existing HiDrive data). */
-  seed(path: string, content: FileContent): void {
+  seed(path: string, content: FileContent, modifiedAt?: string): void {
     const p = normalizePath(path);
     this.ensureParents(p);
-    this.files.set(p, { content: toBlob(content), modifiedAt: this.tick(), version: 1 });
+    this.files.set(p, { content: toBlob(content), modifiedAt: modifiedAt ?? this.tick(), version: 1 });
   }
 
   has(path: string): boolean {

@@ -3,6 +3,7 @@ import { createBrowserRouter, createMemoryRouter, RouterProvider } from 'react-r
 import { SessionProvider, useSession } from '@/core/session/BandSession';
 import { ThemeProvider } from '@/core/theme/ThemeProvider';
 import { features as registeredFeatures } from '@/features';
+import { LibraryProvider } from '@/features/songs/LibraryProvider';
 import { ErrorBoundary } from './ErrorBoundary';
 import { BandSetupScreen } from './gate/BandSetupScreen';
 import { ProfileSelectScreen } from './gate/ProfileSelectScreen';
@@ -46,7 +47,11 @@ function Gate({ initialPath }: { initialPath?: string }) {
     case 'selectMember':
       return <ProfileSelectScreen />;
     case 'ready':
-      return <AppRouter initialPath={initialPath} />;
+      return (
+        <LibraryProvider>
+          <AppRouter initialPath={initialPath} />
+        </LibraryProvider>
+      );
   }
 }
 

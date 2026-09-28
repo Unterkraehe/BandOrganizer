@@ -1,0 +1,64 @@
+.seek {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.range {
+  --track: 6px;
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.range:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.range::-webkit-slider-runnable-track {
+  height: var(--track);
+  border-radius: var(--radius-pill);
+  background: linear-gradient(to right, var(--accent) var(--progress), var(--surface-2) var(--progress));
+}
+
+.range::-moz-range-track {
+  height: var(--track);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+}
+
+.range::-moz-range-progress {
+  height: var(--track);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+}
+
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: calc((var(--track) - 18px) / 2);
+  border-radius: 50%;
+  background: var(--text);
+  border: none;
+}
+
+.range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--text);
+  border: none;
+}
+
+.times {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
