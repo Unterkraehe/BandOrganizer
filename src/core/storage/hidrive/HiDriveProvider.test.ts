@@ -32,7 +32,7 @@ describe('HiDriveProvider (request shapes, to be verified in S1)', () => {
     );
     const entries = await provider.list('/users/band/Songs');
     expect(calls[0]!.url.pathname).toBe('/2.1/dir');
-    expect(calls[0]!.url.searchParams.get('path')).toBe('/users/band/Songs');
+    expect(calls[0]!.url.searchParams.get('path')).toBe('root/users/band/Songs');
     expect(calls[0]!.url.searchParams.get('fields')).toContain('members.mtime');
     expect(calls[0]!.auth).toBe('Bearer t1');
     expect(entries).toEqual([
@@ -56,13 +56,13 @@ describe('HiDriveProvider (request shapes, to be verified in S1)', () => {
 
   it('creates new files with POST dir/name and never overwrites (409 → AlreadyExists)', async () => {
     const { provider, calls } = setup((method, url) => {
-      if (url.pathname.endsWith('/meta')) return url.searchParams.get('path') === '/up/Songs' ? json({ type: 'dir' }) : json({}, 404);
+      if (url.pathname.endsWith('/meta')) return url.searchParams.get('path') === 'root/up/Songs' ? json({ type: 'dir' }) : json({}, 404);
       if (method === 'POST' && url.pathname.endsWith('/file')) return json({}, 409);
       return json({});
     });
     await expect(provider.createFile('/up/Songs/a.mp3', 'x')).rejects.toBeInstanceOf(AlreadyExistsError);
     const post = calls.find((c) => c.method === 'POST')!;
-    expect(post.url.searchParams.get('dir')).toBe('/up/Songs');
+    expect(post.url.searchParams.get('dir')).toBe('root/up/Songs');
     expect(post.url.searchParams.get('name')).toBe('a.mp3');
     expect(post.url.searchParams.has('on_exist')).toBe(false);
   });
@@ -76,12 +76,24 @@ describe('HiDriveProvider (request shapes, to be verified in S1)', () => {
   });
 
   it('reads the home folder of the account', async () => {
-    const { provider } = setup(() => json({ home: '/users/overload', alias: 'overload' }));
+    const { provider } = setup(() => json({ home: 'root/users/overload', alias: 'overload' }));
     await expect(provider.getUserInfo()).resolves.toEqual({ home: '/users/overload', alias: 'overload' });
   });
 
   it('throws NotFound for missing files', async () => {
     const { provider } = setup(() => json({}, 404));
     await expect(provider.readText('/nope.txt')).rejects.toBeInstanceOf(NotFoundError);
+  });
+});
+
+describe('HiDrive path format', () => {
+  it('sends paths relative to the storage root ("root/…") and reads them back', async () => {
+    const { toApiPath, fromApiPath } = await import('./HiDriveProvider');
+    expect(toApiPath('/users/overload/_BandApp')).toBe('root/users/overload/_BandApp');
+    expect(toApiPath('/')).toBe('root');
+    expect(fromApiPath('root/users/overload')).toBe('/users/overload');
+    expect(fromApiPath('/root/users/overload')).toBe('/users/overload');
+    expect(fromApiPath('root')).toBe('/');
+    expect(fromApiPath('/users/overload')).toBe('/users/overload');
   });
 });

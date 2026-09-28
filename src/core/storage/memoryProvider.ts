@@ -33,6 +33,12 @@ export class MemoryStorageProvider implements StorageProvider {
     this.files.set(p, { content: toBlob(content), modifiedAt: modifiedAt ?? this.tick(), version: 1 });
   }
 
+  /** Test helper: an existing (empty) folder, e.g. the HiDrive home. */
+  seedFolder(path: string): void {
+    const p = normalizePath(path);
+    this.ensureParents(p + '/x');
+  }
+
   has(path: string): boolean {
     const p = normalizePath(path);
     return this.files.has(p) || this.folders.has(p);
@@ -75,7 +81,7 @@ export class MemoryStorageProvider implements StorageProvider {
     if (options?.expectedVersion !== undefined && String(existing?.version) !== options.expectedVersion) {
       throw new ConflictError(p, existing ? String(existing.version) : undefined);
     }
-    this.ensureParents(p);
+    this.requireParent(p);
     const file = { content: toBlob(content), modifiedAt: this.tick(), version: (existing?.version ?? 0) + 1 };
     this.files.set(p, file);
     return this.fileEntry(p, file);
@@ -84,7 +90,7 @@ export class MemoryStorageProvider implements StorageProvider {
   async createFile(path: string, content: FileContent, options?: CreateOptions): Promise<FileEntry> {
     const p = normalizePath(path);
     if (this.files.has(p) || this.folders.has(p)) throw new AlreadyExistsError(p);
-    this.ensureParents(p);
+    this.requireParent(p);
     const blob = toBlob(content);
     options?.onProgress?.(blob.size, blob.size);
     const file = { content: blob, modifiedAt: this.tick(), version: 1 };
@@ -95,7 +101,9 @@ export class MemoryStorageProvider implements StorageProvider {
   async createFolder(path: string): Promise<FileEntry> {
     const p = normalizePath(path);
     if (this.files.has(p)) throw new AlreadyExistsError(p);
-    this.ensureParents(p + '/x');
+    // Like HiDrive: creates ONE folder, the parent must exist.
+    this.requireParent(p);
+    this.folders.add(p);
     return this.folderEntry(p);
   }
 
@@ -105,8 +113,8 @@ export class MemoryStorageProvider implements StorageProvider {
     const file = this.files.get(f);
     if (!file) throw new NotFoundError(f);
     if (this.files.has(t)) throw new AlreadyExistsError(t);
+    this.requireParent(t);
     this.files.delete(f);
-    this.ensureParents(t);
     this.files.set(t, file);
     return this.fileEntry(t, file);
   }
@@ -117,6 +125,10 @@ export class MemoryStorageProvider implements StorageProvider {
     if (!this.folders.has(p)) throw new NotFoundError(p);
     for (const filePath of [...this.files.keys()]) if (isWithin(filePath, p)) this.files.delete(filePath);
     for (const folder of [...this.folders]) if (isWithin(folder, p)) this.folders.delete(folder);
+  }
+
+  private requireParent(path: string): void {
+    if (!this.folders.has(dirname(path))) throw new NotFoundError(dirname(path));
   }
 
   private ensureParents(filePath: string): void {

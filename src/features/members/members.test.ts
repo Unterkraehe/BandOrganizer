@@ -56,7 +56,9 @@ describe('band setup (F1 §3)', () => {
 describe('members (F2)', () => {
   let storage: SafeStorage;
   beforeEach(() => {
-    storage = new SafeStorage(new MemoryStorageProvider(), { appRoot: APP });
+    const provider = new MemoryStorageProvider();
+    provider.seedFolder(HOME);
+    storage = new SafeStorage(provider, { appRoot: APP });
   });
 
   it('creates members with free colors and lists them sorted', async () => {

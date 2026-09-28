@@ -1,4 +1,4 @@
-import { isWithin, normalizePath } from './paths';
+import { dirname, isWithin, normalizePath } from './paths';
 import type { CreateOptions, FileContent, FileEntry, StorageProvider, WriteOptions } from './types';
 
 /**
@@ -88,31 +88,35 @@ export class SafeStorage {
   /** Create or update a text file inside the app data folder. */
   async writeText(path: string, content: string, options?: WriteOptions): Promise<FileEntry> {
     const p = this.require('writeText', path, ['app']);
+    await this.ensureFolder(dirname(p));
     return this.provider.writeText(p, content, options);
   }
 
   /** Create or update a JSON record inside the app data folder. */
   async writeJson(path: string, data: unknown, options?: WriteOptions): Promise<FileEntry> {
     const p = this.require('writeJson', path, ['app']);
+    await this.ensureFolder(dirname(p));
     return this.provider.writeText(p, JSON.stringify(data, null, 2) + '\n', options);
   }
 
   /** Create a NEW file in the app data folder or the upload root. Never overwrites. */
   async createFile(path: string, content: FileContent, options?: CreateOptions): Promise<FileEntry> {
     const p = this.require('createFile', path, ['app', 'upload']);
+    await this.ensureFolder(dirname(p));
     return this.provider.createFile(p, content, options);
   }
 
-  /** Create a folder in the app data folder or the upload root. */
+  /** Create a folder (and missing parents) in the app data folder or the upload root. */
   async createFolder(path: string): Promise<FileEntry> {
     const p = this.require('createFolder', path, ['app', 'upload']);
-    return this.provider.createFolder(p);
+    return this.ensureFolder(p);
   }
 
   /** Move/rename – only within the app data folder. */
   async move(from: string, to: string): Promise<FileEntry> {
     const f = this.require('move', from, ['app']);
     const t = this.require('move', to, ['app']);
+    await this.ensureFolder(dirname(t));
     return this.provider.move(f, t);
   }
 
@@ -120,6 +124,29 @@ export class SafeStorage {
   async delete(path: string): Promise<void> {
     const p = this.require('delete', path, ['app']);
     return this.provider.delete(p);
+  }
+
+  /**
+   * Creates a folder and its missing parents – but only from the zone root downwards.
+   * The zone root's parent (the HiDrive home) must already exist; nothing above a zone
+   * is ever created.
+   */
+  private async ensureFolder(folder: string): Promise<FileEntry> {
+    const p = normalizePath(folder);
+    const zone = this.zoneOf(p);
+    const root = zone === 'app' ? this.appRoot : zone === 'upload' ? this.uploadRoot : undefined;
+    if (!root) throw new GuardViolationError('createFolder', p, 'folders can only be created inside the app data folder or the upload root');
+    const chain: string[] = [];
+    for (let current = p; ; current = dirname(current)) {
+      chain.unshift(current);
+      if (current === root) break;
+    }
+    let entry: FileEntry | null = null;
+    for (const path of chain) {
+      entry = await this.provider.stat(path);
+      if (!entry) entry = await this.provider.createFolder(path);
+    }
+    return entry!;
   }
 
   private require(operation: WriteOperation, path: string, allowed: Zone[]): string {

@@ -49,6 +49,20 @@ export interface HiDriveProviderOptions {
 
 const OBJECT_FIELDS = ['name', 'path', 'type', 'id', 'size', 'mtime', 'chash'];
 
+/**
+ * HiDrive API paths are relative to the storage root and start with "root"
+ * ("root/users/overload/Songs"). Inside the app all paths are absolute ("/users/overload/Songs").
+ */
+export function toApiPath(path: string): string {
+  const p = normalizePath(path);
+  return p === '/' ? 'root' : `root${p}`;
+}
+
+export function fromApiPath(apiPath: string): string {
+  const withoutRoot = apiPath.replace(/^\/?root(?=\/|$)/, '');
+  return normalizePath(withoutRoot.startsWith('/') ? withoutRoot || '/' : `/${withoutRoot}`);
+}
+
 export class HiDriveProvider implements StorageProvider {
   readonly id = 'hidrive';
   private readonly fetchImpl: typeof fetch;
@@ -63,7 +77,7 @@ export class HiDriveProvider implements StorageProvider {
   async getUserInfo(): Promise<{ home: string; alias: string }> {
     const data = await this.json<{ home?: string; alias?: string }>('GET', '/user/me', { fields: 'home,alias' });
     const alias = data.alias ?? '';
-    const home = data.home ? normalizePath(data.home.startsWith('/') ? data.home : `/${data.home}`) : `/users/${alias}`;
+    const home = data.home ? fromApiPath(data.home) : `/users/${alias}`;
     return { home, alias };
   }
 
@@ -71,7 +85,7 @@ export class HiDriveProvider implements StorageProvider {
 
   async list(path: string): Promise<FileEntry[]> {
     const data = await this.json<{ members?: HiDriveObject[] }>('GET', '/dir', {
-      path,
+      path: toApiPath(path),
       members: 'all',
       fields: OBJECT_FIELDS.map((field) => `members.${field}`).join(','),
     });
@@ -80,7 +94,7 @@ export class HiDriveProvider implements StorageProvider {
 
   async stat(path: string): Promise<FileEntry | null> {
     try {
-      const data = await this.json<HiDriveObject>('GET', '/meta', { path, fields: OBJECT_FIELDS.join(',') });
+      const data = await this.json<HiDriveObject>('GET', '/meta', { path: toApiPath(path), fields: OBJECT_FIELDS.join(',') });
       return toEntry(data, dirname(path));
     } catch (error) {
       if (error instanceof NotFoundError) return null;
@@ -93,7 +107,7 @@ export class HiDriveProvider implements StorageProvider {
   }
 
   async readBlob(path: string): Promise<Blob> {
-    const response = await this.request('GET', '/file', { path });
+    const response = await this.request('GET', '/file', { path: toApiPath(path) });
     return response.blob();
   }
 
@@ -106,19 +120,18 @@ export class HiDriveProvider implements StorageProvider {
       throw new ConflictError(path, existing?.version);
     }
     const body = new Blob([content], { type: 'application/octet-stream' });
+    // Parent folders are created by SafeStorage, only inside the allowed zones.
     if (existing) {
-      await this.request('PUT', '/file', { path }, body);
+      await this.request('PUT', '/file', { path: toApiPath(path) }, body);
     } else {
-      await this.createFolder(dirname(path));
-      await this.request('POST', '/file', { dir: dirname(path), name: basename(path) }, body);
+      await this.request('POST', '/file', { dir: toApiPath(dirname(path)), name: basename(path) }, body);
     }
     return (await this.stat(path)) ?? { path, name: basename(path), type: 'file' };
   }
 
   async createFile(path: string, content: FileContent, options?: CreateOptions): Promise<FileEntry> {
-    await this.createFolder(dirname(path));
     const body = content instanceof Blob ? content : new Blob([typeof content === 'string' ? content : content.slice()]);
-    const params = { dir: dirname(path), name: basename(path) }; // no on_exist → HiDrive refuses existing names
+    const params = { dir: toApiPath(dirname(path)), name: basename(path) }; // no on_exist → HiDrive refuses existing names
     if (options?.onProgress || options?.signal) {
       await this.uploadWithProgress(params, body, options);
     } else {
@@ -127,6 +140,7 @@ export class HiDriveProvider implements StorageProvider {
     return (await this.stat(path)) ?? { path, name: basename(path), type: 'file' };
   }
 
+  /** Creates ONE folder; the parent must exist (SafeStorage creates parents within its zones). */
   async createFolder(path: string): Promise<FileEntry> {
     const p = normalizePath(path);
     const existing = await this.stat(p);
@@ -134,9 +148,8 @@ export class HiDriveProvider implements StorageProvider {
       if (existing.type !== 'folder') throw new AlreadyExistsError(p);
       return existing;
     }
-    if (dirname(p) !== p) await this.createFolder(dirname(p));
     try {
-      await this.request('POST', '/dir', { path: p });
+      await this.request('POST', '/dir', { path: toApiPath(p) });
     } catch (error) {
       if (!(error instanceof AlreadyExistsError)) throw error; // created in parallel – fine
     }
@@ -146,15 +159,15 @@ export class HiDriveProvider implements StorageProvider {
   async move(from: string, to: string): Promise<FileEntry> {
     const source = await this.stat(from);
     if (!source) throw new NotFoundError(from);
-    await this.request('POST', source.type === 'folder' ? '/dir/move' : '/file/move', { src: from, dst: to });
+    await this.request('POST', source.type === 'folder' ? '/dir/move' : '/file/move', { src: toApiPath(from), dst: toApiPath(to) });
     return (await this.stat(to)) ?? { ...source, path: to, name: basename(to) };
   }
 
   async delete(path: string): Promise<void> {
     const target = await this.stat(path);
     if (!target) throw new NotFoundError(path);
-    if (target.type === 'folder') await this.request('DELETE', '/dir', { path, recursive: 'true' });
-    else await this.request('DELETE', '/file', { path });
+    if (target.type === 'folder') await this.request('DELETE', '/dir', { path: toApiPath(path), recursive: 'true' });
+    else await this.request('DELETE', '/file', { path: toApiPath(path) });
   }
 
   // ---------- HTTP ----------
@@ -181,7 +194,7 @@ export class HiDriveProvider implements StorageProvider {
       body,
     });
     if (response.status === 401 && !retried) return this.request(method, endpoint, params, body, true);
-    if (!response.ok) throw await toError(response, params.path ?? params.src ?? `${params.dir}/${params.name}`);
+    if (!response.ok) throw await toError(response, fromApiPath(params.path ?? params.src ?? `${params.dir}/${params.name}`));
     return response;
   }
 
@@ -209,7 +222,7 @@ export class HiDriveProvider implements StorageProvider {
 
 function toEntry(object: HiDriveObject, parentPath: string): FileEntry {
   const name = object.name ?? '';
-  const path = object.path ? normalizePath(object.path) : normalizePath(`${parentPath}/${name}`);
+  const path = object.path ? fromApiPath(object.path) : normalizePath(`${parentPath}/${name}`);
   return {
     path,
     name: name || basename(path),

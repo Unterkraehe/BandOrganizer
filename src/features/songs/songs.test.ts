@@ -147,7 +147,9 @@ describe('LibraryStore actions', () => {
 
 describe('notes (F4 §6.4)', () => {
   it('keeps private notes private and soft-deletes', async () => {
-    const storage = new SafeStorage(new MemoryStorageProvider(), { appRoot: APP });
+    const provider = new MemoryStorageProvider();
+    provider.seedFolder(HOME);
+    const storage = new SafeStorage(provider, { appRoot: APP });
     const pub = await createNote(storage, APP, 'song_1', 'public', 'm_a', { text: ' Bridge 2× ', positionSec: 92, recordingId: 'r_1' });
     await createNote(storage, APP, 'song_1', 'private', 'm_a', { text: 'Kapo 3', positionSec: null, recordingId: 'r_1' });
     expect(pub.note).toMatchObject({ text: 'Bridge 2×', positionSec: 92, recordingId: 'r_1', pinned: false });

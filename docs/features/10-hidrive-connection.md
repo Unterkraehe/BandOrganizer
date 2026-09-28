@@ -58,7 +58,9 @@ HiDrive app type **"server"** + **token helper** on Cloudflare Workers.
 | Token helper | `https://bandorganizer-auth.ostworkers.workers.dev` (`token-helper/worker.js`) |
 | Config | `src/config.ts` (client ID is not secret) |
 | Token storage | `localStorage` key `bandapp.hidrive.tokens` on the device |
-| Home folder | `GET /user/me?fields=home,alias` |
+| Home folder | `GET /user/me?fields=home,alias` → e.g. `root/users/overload` |
+| Path format | The API expects paths relative to the storage root: `root/users/overload/…`. Inside the app all paths are absolute (`/users/overload/…`); `HiDriveProvider` translates both ways (found in the first real login, v0.4.1) |
+| Folder creation | The provider creates one folder at a time; `SafeStorage` creates missing parents only from a zone root downwards, never above it |
 | App data folder | fixed: `<home>/_BandApp` (every device must find it without extra input) |
 | Conflict check | `version = "<mtime>:<chash>"` compared before writing (no `If-Match`, see CORS test) |
 | Uploads | `POST /file?dir=&name=` without `on_exist` → HiDrive refuses existing names (create-only) |

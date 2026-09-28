@@ -130,3 +130,22 @@ describe('SafeStorage (R-DATA-04)', () => {
     });
   });
 });
+
+describe('folder creation stays inside the zones', () => {
+  it('creates missing parents from the zone root down, never above it', async () => {
+    const provider = new MemoryStorageProvider();
+    provider.seed('/users/band/Songs/a.mp3', 'x'); // home exists
+    const storage = new SafeStorage(provider, { appRoot: APP, uploadRoot: UPLOADS });
+    await storage.writeJson(`${APP}/songs/s1/notes/public/n1.json`, {});
+    expect(provider.has(`${APP}/songs/s1/notes/public`)).toBe(true);
+    await storage.createFile(`${UPLOADS}/Songs/Neu/a.mp3`, 'x');
+    expect(provider.has(`${UPLOADS}/Songs/Neu`)).toBe(true);
+  });
+
+  it('fails instead of creating folders above a zone when the home is missing', async () => {
+    const provider = new MemoryStorageProvider();
+    const storage = new SafeStorage(provider, { appRoot: '/users/nobody/_BandApp' });
+    await expect(storage.writeJson('/users/nobody/_BandApp/app.json', {})).rejects.toThrow();
+    expect(provider.has('/users/nobody')).toBe(false);
+  });
+});
