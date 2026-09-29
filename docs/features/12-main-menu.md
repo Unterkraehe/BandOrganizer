@@ -89,6 +89,12 @@ Simple list of the remaining navigation items (Setlists, Mitglieder, Einstellung
 | Sprache | hidden until a second language exists (R-I18N-01) |
 | Über die App | App name, version, "Nach Updates suchen" |
 
+### 4.3a Swipe navigation, keyboard (phones, v0.11.0)
+- **Swipe left/right** on Start, Songs, Kalender, Chat or Mehr moves to the neighbouring bottom-bar tab (short fade). Ignored: vertical-ish moves, starts within 24 px of a screen edge, text fields, sliders, dialogs/menus, horizontally scrollable areas (chip rows, PDF) and elements marked `data-no-swipe` (month grid). Not active on detail screens and on tablet/desktop.
+- **On-screen keyboard:** while it is open the bottom bar and mini player step aside (`--kb-inset`, `data-keyboard` on `<html>`), so the chat input sits right above the keyboard.
+- **Bottom space:** the mini player's space is always reserved; `--dock-h` (bar + mini player if shown) tells pinned elements where the bottom edge of the free area is.
+- Top bar titles stay on one line (ellipsis); the "+" buttons of Songs/Kalender/Setlists show only the icon on narrow phones.
+
 ### 4.4 Top bar
 
 - Left: screen title (on sub-screens: back arrow + title).

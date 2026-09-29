@@ -92,6 +92,15 @@ Nothing band-specific (colors, logo, name) is hardcoded. Band identity comes onl
 **R-UI-08 — Safe areas and installability.**
 Respect device safe areas (notches), provide app icons and a manifest so the app can be installed to the home screen.
 
+**R-UI-11 — Calm layout: nothing moves under the finger.**
+An element that is tapped repeatedly or "blindly" (answer buttons, +/−, play/pause, tabs, filters, reset) must never change its position or size because of the tap or because data arrives. Rules of thumb: (1) content that appears/disappears **above or beside** a tap target reserves its space (blank line, disabled button, `visibility: hidden`) or moves **below** the target; (2) counts/values in fixed-width slots (tabular numbers); (3) titles and list rows keep one line (ellipsis), so header and row heights are constant; (4) bottom space for the mini player is always reserved; (5) floating things (toasts, upload indicator, chat input) sit above the bottom bar / mini player / keyboard, never on top of controls; (6) spinner and icon swaps keep the same size. Verified with the layout-shift audit (see docs §Quality checks).
+
+**R-UI-12 — Touch behaviour.**
+No pinch/double-tap zoom (meta viewport + iOS gesture events + `touch-action: manipulation`); inputs are at least 16 px so iOS never zooms into them; no rubber-band/pull-to-refresh on the app frame; every tap gives immediate press feedback; the app chrome is not text-selectable. Swiping horizontally on a bottom-bar screen moves to the neighbouring tab – but never inside sliders, text fields, dialogs, scrollable rows or within 24 px of the screen edge (system back gesture).
+
+**R-UI-13 — Long lists are windowed.**
+Lists that can exceed ~60 rows (songs, chat history in the future) render only the rows around the viewport (`VirtualList`) with fixed row heights, memoized rows and lazily built row menus. Tapping a tab must respond in well under 150 ms on a mid-range phone with 300 songs.
+
 **R-UI-09 — Designed for 3–12 members.**
 Anything that lists members (chat, absences, availability, note authors) must stay readable with 12 people on a phone screen. Member colors come from a fixed palette of at least 12 clearly distinguishable colors.
 
@@ -137,6 +146,9 @@ The HiDrive client secret and similar credentials live only in the token helper'
 
 **R-CODE-10 — Token helper stays tiny.**
 The token helper only exchanges authorization codes and refresh tokens. It stores nothing, logs no tokens, accepts requests only from the app's own origin, and never handles files. Any new responsibility for it needs a decision-log entry first.
+
+**R-CODE-10 — Subscribe to slices, not to everything.**
+Frequently changing state (player position ~4×/s, chat polling) must be read through selectors (`usePlayerSelect`, `useSyncExternalStore` with a stable snapshot). A screen that only needs "which song is playing" must not re-render while the position ticks. Dialogs and menus render in a portal at the top level of the page.
 
 **R-CODE-05 — TypeScript strict mode.**
 No `any` without a comment explaining why.

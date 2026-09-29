@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import { useEffect, useId, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { IconButton } from './Button';
 import styles from './ConfirmDialog.module.css';
 
@@ -13,7 +14,9 @@ export function Dialog({ open, title, closeLabel, onClose, children, fullScreenO
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
   if (!open) return null;
-  return (
+  // Rendered at the top level of the page: inside a sticky/positioned parent (e.g. the chat input bar)
+  // the dialog would otherwise be painted BELOW the bottom bar.
+  return createPortal(
     <div className={fullScreenOnPhone ? `${styles.backdrop} ${styles.fullBackdrop}` : styles.backdrop} onClick={onClose}>
       <div className={fullScreenOnPhone ? `${styles.dialog} ${styles.full}` : styles.dialog} role="dialog" aria-modal="true" aria-labelledby={titleId} onClick={(event) => event.stopPropagation()}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)' }}>
@@ -22,6 +25,7 @@ export function Dialog({ open, title, closeLabel, onClose, children, fullScreenO
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

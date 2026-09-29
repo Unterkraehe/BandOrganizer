@@ -31,15 +31,25 @@
 }
 
 .title {
+  flex: 1;
+  min-width: 0;
   font-family: var(--font-display);
   font-weight: 600;
   font-size: var(--fs-xl);
   text-transform: uppercase;
   letter-spacing: 0.02em;
+  /* One line always: a title wrapping onto two lines changes the header height and moves every button */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .actions {
+  flex: none;
+  /* stays on the right even when the title is visually hidden (start screen) */
+  margin-left: auto;
   display: flex;
+  align-items: center;
   gap: var(--space-1);
 }
 
@@ -47,7 +57,7 @@
   width: 100%;
   max-width: calc(var(--content-max) + 2 * var(--space-4));
   margin: 0 auto;
-  padding: var(--space-4) var(--space-4) var(--space-12);
+  padding: var(--space-4) var(--space-4) var(--space-4);
   display: grid;
   gap: var(--space-8);
 }
@@ -63,7 +73,7 @@
     font-size: var(--fs-2xl);
   }
   .content {
-    padding: var(--space-6) var(--space-8) var(--space-12);
+    padding: var(--space-6) var(--space-8) var(--space-6);
     max-width: calc(var(--content-max) + 2 * var(--space-8));
   }
 }

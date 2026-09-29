@@ -18,3 +18,16 @@
   border-color: var(--accent);
   color: var(--text);
 }
+
+/* Colored chips (event types): a colored border while off, filled with the type's color while on */
+.chip[data-tone] {
+  border-color: var(--chip-color);
+  color: var(--text);
+}
+
+.chip[data-tone][aria-pressed='true'] {
+  background: var(--chip-color);
+  border-color: var(--chip-color);
+  color: var(--chip-on);
+  font-weight: 600;
+}

@@ -3,7 +3,8 @@
   z-index: 50;
   left: var(--space-3);
   right: var(--space-3);
-  bottom: calc(var(--bottom-bar-h) + env(safe-area-inset-bottom) + var(--space-3));
+  /* above the bottom bar, mini player, chat input and keyboard – never on top of them */
+  bottom: calc(var(--dock-h) + var(--kb-inset) + var(--composer-h, 0px) + var(--space-3));
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -30,7 +31,7 @@
   .toast {
     left: auto;
     right: var(--space-6);
-    bottom: var(--space-6);
+    bottom: calc(var(--dock-h) + var(--composer-h, 0px) + var(--space-6));
     max-width: 480px;
   }
 }

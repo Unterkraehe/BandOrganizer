@@ -1,6 +1,6 @@
 # Implementation Roadmap
 
-> **Status:** M0–M8 ✅ (v0.10.0) · open tests: S1/S2, S5, S6, iPhone with effects · next: M9 v1.0 (calendar subscription, polish, band test phase)
+> **Status:** M0–M8 ✅ · UI polish pass ✅ (v0.11.0: performance, calm layout, touch behaviour, swipe tabs) · open tests: S1/S2, S5, S6, iPhone with effects + keyboard/chat · next: M9 v1.0 (calendar subscription, final review, band test phase)
 > Order and scope of the build, from an empty repository to v1.0. Each milestone ends with a **deployed version the band can use and test**.
 
 ## 1. Principles

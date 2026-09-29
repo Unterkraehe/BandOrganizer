@@ -113,10 +113,13 @@ export function EventDetailPage() {
       {answering && (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>{t('answer.title')}</h2>
-          {data.review && <p className={styles.conflict}>{t('answer.review')}</p>}
           {!occ.cancelled && (
             <>
               <AnswerButtons occ={occ} current={data.mine?.status} comment={comment ?? data.mine?.comment} />
+              {/* below the buttons and always present: nothing above them may appear or disappear when tapping */}
+              <p className={styles.conflict} style={{ minHeight: '1.5em' }}>
+                {data.review ? t('answer.review') : '\u00a0'}
+              </p>
               <div className={styles.commentRow}>
                 <TextField
                   label={t('answer.comment')}

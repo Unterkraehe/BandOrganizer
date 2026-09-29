@@ -1,4 +1,5 @@
 import { Loader2, Pause, Play, SkipForward } from 'lucide-react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { usePlayer } from '@/core/audio/PlayerProvider';
@@ -17,7 +18,13 @@ export function MiniPlayer() {
   const track = state.track;
   // track.id is the recording; links go to the song (since M3a)
   const songPath = track ? `/songs/${track.songId ?? track.id}` : '';
-  if (!track || pathname === songPath || pathname === `${songPath}/practice`) return null;
+  const visible = Boolean(track) && pathname !== songPath && pathname !== `${songPath}/practice`;
+  // Tells things pinned to the bottom (chat input, upload indicator) to sit above the mini player
+  useEffect(() => {
+    document.documentElement.toggleAttribute('data-miniplayer', visible);
+    return () => document.documentElement.removeAttribute('data-miniplayer');
+  }, [visible]);
+  if (!visible || !track) return null;
 
   const playing = state.status === 'playing';
   const loading = state.status === 'loading';

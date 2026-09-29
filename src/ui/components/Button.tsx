@@ -7,17 +7,19 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   size?: 'md' | 'lg';
   icon?: ReactNode;
+  /** On narrow phones only the icon is shown (the text stays as the accessible name) – keeps top bars uncluttered. */
+  iconOnlyOnPhone?: boolean;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = 'secondary', size = 'md', icon, className, children, type = 'button', ...rest },
+  { variant = 'secondary', size = 'md', icon, iconOnlyOnPhone, className, children, type = 'button', ...rest },
   ref,
 ) {
-  const classes = [styles.button, styles[variant], size === 'lg' && styles.lg, className].filter(Boolean).join(' ');
+  const classes = [styles.button, styles[variant], size === 'lg' && styles.lg, icon && iconOnlyOnPhone && styles.iconOnlyPhone, className].filter(Boolean).join(' ');
   return (
     <button ref={ref} type={type} className={classes} {...rest}>
       {icon && <span className={styles.icon} aria-hidden="true">{icon}</span>}
-      {children}
+      {icon && iconOnlyOnPhone ? <span className={styles.phoneHidden}>{children}</span> : children}
     </button>
   );
 });

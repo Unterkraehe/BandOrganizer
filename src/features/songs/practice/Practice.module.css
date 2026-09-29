@@ -43,7 +43,7 @@
 }
 
 .pitchValue {
-  min-width: 3ch;
+  min-width: 3.6ch;
   text-align: center;
   font-size: var(--fs-xl);
   font-weight: 700;

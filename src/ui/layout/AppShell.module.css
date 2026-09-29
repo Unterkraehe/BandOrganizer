@@ -3,8 +3,9 @@
   min-height: 100dvh;
 }
 
+/* The space for the mini player is always reserved, so content never jumps when it appears or disappears. */
 .main {
-  padding-bottom: calc(var(--bottom-bar-h) + env(safe-area-inset-bottom));
+  padding-bottom: calc(var(--bottom-bar-h) + var(--mini-player-h) + env(safe-area-inset-bottom));
 }
 
 .nav {
@@ -98,7 +99,7 @@
   }
 
   .main {
-    padding-bottom: 0;
+    padding-bottom: calc(var(--mini-player-h) + env(safe-area-inset-bottom));
   }
 
   .nav {
@@ -238,10 +239,6 @@
   display: none;
 }
 
-.shell:has(.bottomSlot > *) .main {
-  padding-bottom: calc(var(--bottom-bar-h) + var(--mini-player-h) + env(safe-area-inset-bottom));
-}
-
 @media (min-width: 768px) {
   .bottomSlot {
     left: var(--rail-w);
@@ -249,9 +246,17 @@
     padding-bottom: env(safe-area-inset-bottom);
     background: var(--surface-2);
   }
+}
 
-  .shell:has(.bottomSlot > *) .main {
-    padding-bottom: calc(var(--mini-player-h) + env(safe-area-inset-bottom));
+/* Phones: while the keyboard is open the bottom bar and mini player step aside (more room for typing) */
+@media (max-width: 767px) {
+  :global(:root[data-keyboard]) .nav,
+  :global(:root[data-keyboard]) .bottomSlot {
+    display: none;
+  }
+
+  :global(:root[data-keyboard]) .main {
+    padding-bottom: 0;
   }
 }
 
@@ -281,5 +286,19 @@
   .badge {
     position: static;
     margin-left: auto;
+  }
+}
+
+/* Screen change by swipe: a short fade (opacity only – a transform would re-anchor fixed elements such as the chat input) */
+.screen[data-swipe] {
+  animation: screen-in 160ms var(--ease);
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

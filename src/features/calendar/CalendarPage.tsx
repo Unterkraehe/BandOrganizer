@@ -12,7 +12,7 @@ import { EventCard } from './EventCard';
 import { occurrenceTitle, TYPE_ICON_COLOR } from './format';
 import { buildIcs, deliverIcs } from './ics';
 import { EVENT_TYPES, occurrenceId, type EventType, type Occurrence } from './model';
-import { addDays, addMonths, daysInMonth, todayLocal, weekday } from './time';
+import { addDays, addMonths, todayLocal, weekday } from './time';
 import { useOccurrenceData } from './useOccurrenceData';
 import styles from './Calendar.module.css';
 
@@ -59,13 +59,13 @@ export function CalendarPage() {
       actions={
         <>
           <Menu label={t('menu')} items={[{ label: t('exportAll'), onSelect: exportAll }]} />
-          <Button variant="primary" icon={<Plus size={18} />} onClick={() => navigate('/calendar/new')}>
+          <Button variant="primary" icon={<Plus size={18} />} iconOnlyOnPhone onClick={() => navigate('/calendar/new')}>
             {t('new')}
           </Button>
         </>
       }
     >
-      <div className={styles.tools}>
+      <div className={styles.tools} style={{ display: 'grid' }}>
         <SegmentedControl
           label={t('view.label')}
           value={view}
@@ -75,9 +75,9 @@ export function CalendarPage() {
             { value: 'month', label: t('view.month') },
           ]}
         />
-        <div className={styles.chips} role="group" aria-label={t('filter')}>
+        <div className={styles.filterRow} role="group" aria-label={t('filter')}>
           {EVENT_TYPES.map((type) => (
-            <Chip key={type} pressed={types.has(type)} onClick={() => toggleType(type)}>
+            <Chip key={type} pressed={types.has(type)} tone={type} onClick={() => toggleType(type)}>
               {t(`types.${type}`)}
             </Chip>
           ))}
@@ -167,7 +167,7 @@ function MonthView({ types, today }: { types: Set<EventType>; today: string }) {
   const selected = params.get('day') ?? today;
   const first = `${month}-01`;
   const gridStart = addDays(first, -weekday(first));
-  const cells = Math.ceil((weekday(first) + daysInMonth(first)) / 7) * 7;
+  const cells = 42; // always six weeks: the calendar keeps its height when switching months
   const days = Array.from({ length: cells }, (_, i) => addDays(gridStart, i));
   const occs = useMemo(
     () => store.occurrences(days[0]!, days[days.length - 1]!).filter((o) => types.has(o.type)),

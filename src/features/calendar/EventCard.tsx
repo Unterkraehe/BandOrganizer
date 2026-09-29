@@ -46,12 +46,17 @@ export function EventCard({ occ, data }: { occ: Occurrence; data: ReturnType<Ret
             </span>
           )}
           {answering && (
-            <span className={styles.cardMeta}>
-              {t('answer.summary', { yes: summary.yes.length, maybe: summary.maybe.length, no: summary.no.length, open: summary.open.length })}
-              {!mine && !absentMe && <strong className={styles.missing}> · {t('answer.missing')}</strong>}
-              {mine?.status === 'maybe' && <span className={styles.missing}> · {t('answer.unsure')}</span>}
-              {review && <strong className={styles.missing}> · {t('answer.review')}</strong>}
-            </span>
+            <>
+              <span className={`${styles.cardMeta} ${styles.oneLine}`}>
+                {t('answer.summary', { yes: summary.yes.length, maybe: summary.maybe.length, no: summary.no.length, open: summary.open.length })}
+              </span>
+              {/* Always one line (blank when nothing to say): the answer buttons below must not move after tapping */}
+              <span className={`${styles.cardMeta} ${styles.missing} ${styles.oneLine}`}>
+                <strong>
+                  {review ? t('answer.review') : !mine && !absentMe ? t('answer.missing') : mine?.status === 'maybe' ? t('answer.unsure') : '\u00a0'}
+                </strong>
+              </span>
+            </>
           )}
         </span>
       </Link>

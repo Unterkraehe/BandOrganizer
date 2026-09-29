@@ -1,11 +1,15 @@
 import { useCallback } from 'react';
-import { usePlayer } from '@/core/audio/PlayerProvider';
+import { usePlayerEngine, usePlayerSelect } from '@/core/audio/PlayerProvider';
 import { useLibrary } from './LibraryProvider';
 import type { Recording, Song } from './model';
 
-/** Plays a song (Band-Version by default) from a tap: unlocks audio synchronously first (iOS). */
+/**
+ * Plays a song (Band-Version by default) from a tap: unlocks audio synchronously first (iOS).
+ * `state` only holds track + status (NOT the position) so screens using it don't re-render while playing.
+ */
 export function usePlaySong() {
-  const { engine, state } = usePlayer();
+  const engine = usePlayerEngine();
+  const state = usePlayerSelect((s) => ({ track: s.track, status: s.status }));
   const { store } = useLibrary();
   const play = useCallback(
     (song: Song, recording: Recording | null = song.recording, startAt?: number) => {

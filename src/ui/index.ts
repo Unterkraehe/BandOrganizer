@@ -16,3 +16,4 @@ export { TextArea } from './components/TextArea';
 export { TextField } from './components/TextField';
 export { Toast } from './components/Toast';
 export { Page } from './layout/Page';
+export { VirtualList } from './components/VirtualList';

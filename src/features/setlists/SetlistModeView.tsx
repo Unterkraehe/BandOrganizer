@@ -1,7 +1,7 @@
 import { AudioLines, Pause, Play, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { usePlayer } from '@/core/audio/PlayerProvider';
+import { usePlayerEngine, usePlayerSelect } from '@/core/audio/PlayerProvider';
 import { formatDuration, formatMinutes } from '@/core/i18n/format';
 import { Button, IconButton } from '@/ui';
 import { durations, numbering } from './model';
@@ -15,7 +15,8 @@ export function SetlistModeView() {
   const navigate = useNavigate();
   const mode = useSetlistMode();
   const { songById } = useSetlistInfo();
-  const { engine, state } = usePlayer();
+  const engine = usePlayerEngine();
+  const state = usePlayerSelect((s) => ({ track: s.track, status: s.status }));
   const setlist = mode.setlist;
   if (!setlist) return null;
   const numbers = numbering(setlist);

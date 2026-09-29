@@ -179,7 +179,7 @@ export function SongDetailPage() {
           onChange={setTab}
           tabs={[
             { value: 'lyrics', label: t('lyrics.tab') },
-            { value: 'public', label: `${t('notes.public')}${publicCount ? ` (${publicCount})` : ''}` },
+            { value: 'public', label: t('notes.public'), count: publicCount },
             { value: 'private', label: t('notes.private') },
           ]}
         />

@@ -5,6 +5,8 @@
 | **ID** | F4 |
 | **Status** | Implemented (v0.6.0) incl. lyrics, folder view and practice view (§4.3). Open: desktop master–detail, "Mit Notizen" filter (M8). Spike: HiDrive file ID stability (§6.1) |
 
+> **v0.11.0 performance:** the song list is windowed (`VirtualList`, above 60 rows), rows are memoized with fixed heights (title and details on one line), row menus are built lazily, sorting/filtering use one shared collator and pre-normalized search text, and the list no longer re-renders on playback position ticks. Measured with 300 songs at 4× CPU slowdown: tab tap 510–640 ms → 75–100 ms. Test with `?demo-songs=300` in demo mode.
+>
 > **M3b implementation notes (v0.5.0)**
 > - Detail tabs: **Songtext · Notizen für alle · Meine Notizen** (last tab remembered per device).
 > - Lyrics renderers in `src/core/lyrics/renderers.ts`: TXT (UTF-8, fallback Windows-1252), DOCX (mammoth, HTML sanitised to simple formatting), PDF (pdf.js **v4 legacy build**, works on older iOS Safari; v5+ needs very new JS features). Other formats: "Datei öffnen".

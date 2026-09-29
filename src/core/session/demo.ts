@@ -7,7 +7,7 @@ export const DEMO_HOME = '/users/demo';
  * Demo mode: an in-memory HiDrive with generated songs and a few other "existing band files",
  * so the app can be tried without an account. Nothing is saved – reloading ends the demo.
  */
-export function createDemoProvider(): MemoryStorageProvider {
+export function createDemoProvider(extraSongs = demoSongCountFromUrl()): MemoryStorageProvider {
   const provider = new MemoryStorageProvider();
   const short = import.meta.env.MODE === 'test';
   const daysAgo = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString();
@@ -19,7 +19,25 @@ export function createDemoProvider(): MemoryStorageProvider {
   provider.seed(`${DEMO_HOME}/Texte/Open Road - Text.pdf`, makePdf('Open Road', OPEN_ROAD.split('\n')));
   provider.seed(`${DEMO_HOME}/Fotos/Proberaum.jpg`, 'demo photo');
   provider.seed(`${DEMO_HOME}/.versteckt/nicht-scannen.mp3`, 'hidden');
+  seedManySongs(provider, extraSongs);
   return provider;
+}
+
+/** `?demo-songs=300` fills the demo with many songs – for testing list performance with a realistic repertoire. */
+function demoSongCountFromUrl(): number {
+  if (typeof location === 'undefined') return 0;
+  const n = Number(new URLSearchParams(location.search).get('demo-songs'));
+  return Number.isFinite(n) ? Math.min(2000, Math.max(0, Math.floor(n))) : 0;
+}
+
+function seedManySongs(provider: MemoryStorageProvider, count: number) {
+  const words = ['Midnight', 'Rust', 'Thunder', 'Neon', 'Open', 'Road', 'Slow', 'Burn', 'Electric', 'Highway', 'Shadow', 'River', 'Broken', 'Glass', 'Silver', 'Storm', 'Golden', 'Fire', 'Lonely', 'Heart', 'Wild', 'Night', 'Iron', 'Sky'];
+  const folders = ['Songs/Rock', 'Songs/Balladen', 'Songs/Cover', 'Proben/2024', 'Proben/2025', 'Live/2023/Stadtfest', 'Live/2024', 'Demos', 'Archiv/Alt', 'Neu'];
+  for (let i = 0; i < count; i++) {
+    const title = `${words[i % words.length]} ${words[(i * 7 + 3) % words.length]} ${Math.floor(i / words.length) + 1}`;
+    const folder = folders[i % folders.length]!;
+    provider.seed(`${DEMO_HOME}/${folder}/${String(i + 1).padStart(3, '0')} ${title}.mp3`, 'x', new Date(Date.now() - (i % 400) * 86_400_000).toISOString());
+  }
 }
 
 // Invented demo lyrics (no copyrighted material)

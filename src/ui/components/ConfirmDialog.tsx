@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from './Button';
 import styles from './ConfirmDialog.module.css';
 
@@ -30,7 +31,7 @@ export function ConfirmDialog({ open, title, text, confirmLabel, cancelLabel, da
   }, [open, onCancel]);
 
   if (!open) return null;
-  return (
+  return createPortal(
     <div className={styles.backdrop} onClick={onCancel}>
       <div
         className={styles.dialog}
@@ -50,6 +51,7 @@ export function ConfirmDialog({ open, title, text, confirmLabel, cancelLabel, da
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

@@ -1,4 +1,12 @@
 {
+  "0.11.0": [
+    "Schneller: die Songliste öffnet auch mit 300 Songs sofort und ruckelt nicht mehr, während Musik läuft.",
+    "Ruhigeres Layout: Buttons und Elemente springen nicht mehr, wenn du tippst oder Daten nachladen.",
+    "Kein Zoomen mehr auf dem Handy; Tippen gibt sofort Rückmeldung.",
+    "Wischen nach links/rechts wechselt zwischen Start, Songs, Kalender, Chat und Mehr.",
+    "Chat-Eingabe bleibt immer unten – über der Leiste und über der Tastatur.",
+    "Kalender-Filter in den Farben der Termine, hellere Flächen im Dunkelmodus."
+  ],
   "0.10.0": [
     "Suche: ein Feld für Songs, Songtexte, Notizen, Termine, Setlists, Chat und Mitglieder – oben rechts oder mit Strg + K.",
     "Findet auch bei Tippfehlern und Umlauten, versteht Datumsangaben wie „okt“, „morgen“ oder „10.10.“.",

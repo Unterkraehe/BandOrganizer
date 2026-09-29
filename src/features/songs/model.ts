@@ -340,10 +340,14 @@ export const recordingName = (recording: Recording) => recording.label ?? record
 
 export type SongSort = 'az' | 'recent';
 
+// One shared collator: `localeCompare(…, 'de', options)` builds a new one on every call (slow with hundreds of songs).
+const titleCollator = new Intl.Collator('de', { sensitivity: 'base', numeric: true });
+const plainCollator = new Intl.Collator('de');
+
 export function sortSongs(songs: Song[], sort: SongSort): Song[] {
   const copy = [...songs];
-  if (sort === 'recent') return copy.sort((a, b) => (b.addedAt ?? '').localeCompare(a.addedAt ?? '') || a.title.localeCompare(b.title, 'de'));
-  return copy.sort((a, b) => a.title.localeCompare(b.title, 'de', { sensitivity: 'base', numeric: true }));
+  if (sort === 'recent') return copy.sort((a, b) => (b.addedAt ?? '').localeCompare(a.addedAt ?? '') || plainCollator.compare(a.title, b.title));
+  return copy.sort((a, b) => titleCollator.compare(a.title, b.title));
 }
 
 /** Other songs that look like versions of this one (same title without bracket additions). */

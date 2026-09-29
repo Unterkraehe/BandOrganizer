@@ -100,7 +100,7 @@ export function SetlistsPage() {
     <Page
       title={t('title')}
       actions={
-        <Button variant="primary" icon={<Plus size={18} />} onClick={() => setCreating(true)}>
+        <Button variant="primary" icon={<Plus size={18} />} iconOnlyOnPhone onClick={() => setCreating(true)}>
           {t('new')}
         </Button>
       }

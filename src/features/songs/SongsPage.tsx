@@ -1,11 +1,11 @@
-import { AudioLines, Loader2, Music, Pause, Play, Plus, RefreshCw, Search } from 'lucide-react';
-import { useDeferredValue, useMemo, useState, type ReactNode } from 'react';
+import { Loader2, Music, Pause, Play, Plus, RefreshCw, Search } from 'lucide-react';
+import { memo, useDeferredValue, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { kindOf } from '@/core/uploads/validate';
 import { formatDuration } from '@/core/i18n/format';
-import { matchesQuery } from '@/core/search/normalize';
-import { Button, Chip, EmptyState, IconButton, Menu, Page, SegmentedControl } from '@/ui';
+import { normalizeText } from '@/core/search/normalize';
+import { Button, Chip, EmptyState, IconButton, Menu, Page, SegmentedControl, VirtualList, type MenuItem } from '@/ui';
 import { useLibrary } from './LibraryProvider';
 import { recordingName, sortSongs, type Recording, type Song, type SongSort, type Tag } from './model';
 import { SongFolders } from './SongFolders';
@@ -25,7 +25,7 @@ type View = 'list' | 'folders';
 export function SongsPage() {
   const { t } = useTranslation('songs');
   const { store, state, songs, tags } = useLibrary();
-  const { play, isCurrent, state: player } = usePlaySong();
+  const { play, state: player } = usePlaySong();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const [view, setViewState] = useState<View>(() => (localStorage.getItem(VIEW_KEY) === 'folders' ? 'folders' : 'list'));
@@ -69,18 +69,25 @@ export function SongsPage() {
     setParams(next, { replace: true });
   };
 
+  // Normalized once per data change, not on every keystroke (typing stays fast with hundreds of songs).
+  const haystacks = useMemo(
+    () => new Map(songs.map((s) => [s.id, normalizeText(`${s.searchText} ${s.tagIds.map((id) => tagById.get(id)?.name ?? '').join(' ')}`)])),
+    [songs, tagById],
+  );
+
   const { active, archived, hidden } = useMemo(() => {
+    const words = normalizeText(deferredQuery).split(' ').filter(Boolean);
     const matches = (song: Song) =>
       (!onlyNew || song.isNew) &&
       selectedTags.every((id) => song.tagIds.includes(id)) &&
-      matchesQuery(`${song.searchText} ${song.tagIds.map((id) => tagById.get(id)?.name ?? '').join(' ')}`, deferredQuery);
+      (words.length === 0 || words.every((w) => haystacks.get(song.id)?.includes(w)));
     const filtered = songs.filter(matches);
     return {
       active: sortSongs(filtered.filter((s) => !s.archived && !s.hidden), sort),
       archived: sortSongs(filtered.filter((s) => s.archived && !s.hidden), sort),
       hidden: sortSongs(songs.filter((s) => s.hidden), 'az'),
     };
-  }, [songs, onlyNew, selectedTags, deferredQuery, sort, tagById]);
+  }, [songs, onlyNew, selectedTags, deferredQuery, sort, haystacks]);
 
   const scanning = state.status === 'scanning';
   if (setlistParam) {
@@ -93,22 +100,25 @@ export function SongsPage() {
   const firstScan = scanning && state.files.length === 0;
   const filtering = Boolean(deferredQuery.trim()) || onlyNew || selectedTags.length > 0;
 
+  // Rows are memoized: only the row whose playing state changed re-renders (all props are primitives / stable).
   const row = (song: Song, recording?: Recording) => {
     const version = recording && song.recording && recording.id !== song.recording.id ? recordingName(recording) : null;
-    const current = recording ? player.track?.id === recording.id : isCurrent(song);
+    const current = recording ? player.track?.id === recording.id : player.track?.songId === song.id;
     return (
       <SongRow
-        key={recording ? `${song.id}-${recording.id}` : song.id}
         song={song}
+        recording={recording ?? null}
         version={version}
-        tags={song.tagIds.map((id) => tagById.get(id)).filter((tag): tag is Tag => Boolean(tag))}
+        tagById={tagById}
         current={current}
         playing={current && (player.status === 'playing' || player.status === 'loading')}
-        onPlay={() => play(song, recording ?? song.recording)}
-        menu={<Menu label={t('menu', { title: song.title })} items={menuFor(song)} />}
+        onPlay={play}
+        menuFor={menuFor}
       />
     );
   };
+  const rowKey = (song: Song) => song.id;
+  const rowHeight = (song: Song) => (song.tagIds.length > 0 ? ROW_HEIGHT_TAGS : ROW_HEIGHT);
 
   return (
     <Page
@@ -121,7 +131,7 @@ export function SongsPage() {
             onClick={() => void store.scan()}
             disabled={scanning}
           />
-          <Button variant="primary" icon={<Plus size={18} />} onClick={() => navigate('/songs/new')}>
+          <Button variant="primary" icon={<Plus size={18} />} iconOnlyOnPhone onClick={() => navigate('/songs/new')}>
             {t('newSong')}
           </Button>
         </>
@@ -205,7 +215,8 @@ export function SongsPage() {
         )}
       </div>
 
-      {scanning && (
+      {/* Only while there is nothing to show yet; later scans just spin the refresh icon (no banner pushing the list down) */}
+      {firstScan && (
         <p className={styles.status} role="status">
           <Loader2 size={16} className={styles.spin} aria-hidden="true" />
           {t('scanning', { count: state.progress?.found ?? 0 })}
@@ -234,7 +245,7 @@ export function SongsPage() {
             ) : view === 'folders' ? (
               <SongFolders songs={active.filter((s) => s.recording)} filtering={filtering} renderEntry={(song, recording) => row(song, recording)} />
             ) : (
-              <ul className={styles.list}>{active.map((song) => row(song))}</ul>
+              <VirtualList className={styles.list} items={active} getKey={rowKey} estimateSize={rowHeight} renderItem={(song) => row(song)} />
             )}
           </div>
 
@@ -250,7 +261,7 @@ export function SongsPage() {
               {showArchive && (
                 <>
                   <h2 className={styles.sectionTitle}>{t('archive.title')}</h2>
-                  <ul className={`${styles.list} ${styles.muted}`}>{archived.map((song) => row(song))}</ul>
+                  <VirtualList className={`${styles.list} ${styles.muted}`} items={archived} getKey={rowKey} estimateSize={rowHeight} renderItem={(song) => row(song)} />
                 </>
               )}
             </div>
@@ -265,7 +276,7 @@ export function SongsPage() {
                 <>
                   <h2 className={styles.sectionTitle}>{t('hidden.title')}</h2>
                   <p className={styles.muted}>{t('hidden.hint')}</p>
-                  <ul className={`${styles.list} ${styles.muted}`}>{hidden.map((song) => row(song))}</ul>
+                  <VirtualList className={`${styles.list} ${styles.muted}`} items={hidden} getKey={rowKey} estimateSize={rowHeight} renderItem={(song) => row(song)} />
                 </>
               )}
             </div>
@@ -278,45 +289,51 @@ export function SongsPage() {
   );
 }
 
+// Fixed row heights (single-line title and details) keep the list calm and let the virtual list estimate exactly.
+const ROW_HEIGHT = 73;
+const ROW_HEIGHT_TAGS = 99;
+
 interface SongRowProps {
   song: Song;
+  /** folder view: the version this row stands for */
+  recording: Recording | null;
   /** shown in the folder view when the row is not the Band-Version */
-  version?: string | null;
-  tags: Tag[];
+  version: string | null;
+  tagById: Map<string, Tag>;
   current: boolean;
   playing: boolean;
-  onPlay: () => void;
-  menu: ReactNode;
+  onPlay: (song: Song, recording: Recording | null) => void;
+  menuFor: (song: Song) => MenuItem[];
 }
 
-function SongRow({ song, version, tags, current, playing, onPlay, menu }: SongRowProps) {
+const SongRow = memo(function SongRow({ song, recording, version, tagById, current, playing, onPlay, menuFor }: SongRowProps) {
   const { t } = useTranslation('songs');
   const duration = song.recording?.durationSec;
+  const tags = song.tagIds.map((id) => tagById.get(id)).filter((tag): tag is Tag => Boolean(tag));
   const meta = !song.recording
     ? t('noRecording')
     : song.missing
-    ? t('missingFile')
-    : [
-        duration ? formatDuration(duration) : null,
-        song.key,
-        song.recordings.length > 1 ? t('versionsCount', { count: song.recordings.length }) : null,
-        song.recording.folder || t('rootFolder'),
-      ]
-        .filter(Boolean)
-        .join(' · ');
+      ? t('missingFile')
+      : [
+          duration ? formatDuration(duration) : null,
+          song.key,
+          song.recordings.length > 1 ? t('versionsCount', { count: song.recordings.length }) : null,
+          song.recording.folder || t('rootFolder'),
+        ]
+          .filter(Boolean)
+          .join(' · ');
   return (
-    <li className={styles.row} data-current={current || undefined} data-missing={song.missing || undefined}>
+    <div className={styles.row} data-current={current || undefined} data-missing={song.missing || undefined}>
       <IconButton
         className={styles.play}
         label={playing ? t('pause', { title: song.title }) : t('play', { title: song.title })}
         icon={playing ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-        onClick={onPlay}
+        onClick={() => onPlay(song, recording ?? song.recording)}
         disabled={song.missing || !song.recording}
       />
       <Link to={`/songs/${song.id}`} className={styles.rowLink}>
         <span className={styles.rowTitle}>
-          {current && <AudioLines size={16} className={styles.nowIcon} aria-hidden="true" />}
-          {song.title}
+          <span className={styles.rowTitleText}>{song.title}</span>
           {version && <span className={styles.versionTag}>· {version}</span>}
           {song.isNew && <span className={styles.badge}>{t('newBadge')}</span>}
         </span>
@@ -332,7 +349,7 @@ function SongRow({ song, version, tags, current, playing, onPlay, menu }: SongRo
           </span>
         )}
       </Link>
-      {menu}
-    </li>
+      <Menu label={t('menu', { title: song.title })} items={() => menuFor(song)} />
+    </div>
   );
-}
+});

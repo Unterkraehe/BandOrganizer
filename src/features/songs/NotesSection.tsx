@@ -1,13 +1,13 @@
 import { Pin, Play } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { usePlayer } from '@/core/audio/PlayerProvider';
 import { useNotify } from '@/app/notify/NotifyProvider';
 import { formatAgo, formatDuration } from '@/core/i18n/format';
 import { useSession } from '@/core/session/BandSession';
 import { Avatar, Button, Menu, TextArea } from '@/ui';
 import { NOTE_MAX_LENGTH, recordingName, type Recording, type Song } from './model';
 import type { NoteEntry, NoteScope } from './repository';
-import { usePlaySong } from './usePlaySong';
 import type { useSongNotes } from './useSongNotes';
 import styles from './SongDetail.module.css';
 
@@ -56,7 +56,7 @@ function sortNotes(entries: NoteEntry[]) {
 
 function NoteForm({ song, recording, scope, onSave }: { song: Song; recording: Recording | null; scope: NoteScope; onSave: ReturnType<typeof useSongNotes>['add'] }) {
   const { t } = useTranslation('songs');
-  const { state } = usePlaySong();
+  const { state } = usePlayer();
   const [text, setText] = useState('');
   const [position, setPosition] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);

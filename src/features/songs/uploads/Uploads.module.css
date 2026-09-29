@@ -1,8 +1,9 @@
 .indicatorWrap {
   position: fixed;
   z-index: 45;
-  top: calc(env(safe-area-inset-top) + var(--space-3));
-  right: var(--space-3);
+  /* bottom of the screen: never on top of the buttons in the top bar */
+  left: calc(var(--nav-w) + var(--space-3));
+  bottom: calc(var(--dock-h) + var(--kb-inset) + var(--composer-h, 0px) + var(--space-3));
 }
 
 .indicator {
@@ -38,8 +39,8 @@
 
 .panel {
   position: absolute;
-  right: 0;
-  top: calc(100% + 6px);
+  left: 0;
+  bottom: calc(100% + 6px);
   width: min(360px, calc(100vw - 24px));
   max-height: 60vh;
   overflow: auto;

@@ -54,9 +54,9 @@ All colors are CSS custom properties with a light and a dark value. Names are se
 | Token | Use | Light | Dark |
 |---|---|---|---|
 | `--bg` | App background | `#F6F6F7` | `#0E0E10` |
-| `--surface` | Cards, lists, sheets | `#FFFFFF` | `#18181B` |
-| `--surface-2` | Raised/hover, inputs | `#EFEFF1` | `#232327` |
-| `--border` | Dividers, outlines | `#DEDEE2` | `#2E2E33` |
+| `--surface` | Cards, lists, sheets, bottom bar | `#FFFFFF` | `#202024` |
+| `--surface-2` | Raised/hover, inputs | `#EFEFF1` | `#2A2A2F` |
+| `--border` | Dividers, outlines | `#DEDEE2` | `#38383E` |
 | `--text` | Primary text | `#16161A` | `#F4F4F5` |
 | `--text-muted` | Secondary text, meta | `#5E5E66` | `#A1A1AA` |
 | `--text-faint` | Placeholders, disabled | `#8E8E96` | `#6B6B73` |

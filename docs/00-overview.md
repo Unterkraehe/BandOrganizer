@@ -1,7 +1,7 @@
 # Overload App – Project Overview
 
 > **App name:** Overload App (may change later – the name is only set in config/translations, see R-I18N-07)
-> **Status:** Implementation – v0.10.0: M0–M8 built; next M9 (v1.0)
+> **Status:** Implementation – v0.11.0: M0–M8 built + UI polish pass; next M9 (v1.0)
 > **Last updated:** 2026-09-24
 
 This file is the entry point for the whole project. Read it first, then `01-general-rules.md` and `02-design-system.md`, then the feature file you are working on. The build order is defined in `03-roadmap.md`.

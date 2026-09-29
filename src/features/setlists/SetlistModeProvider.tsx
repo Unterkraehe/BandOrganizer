@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { usePlayer } from '@/core/audio/PlayerProvider';
+import { usePlayerSelect } from '@/core/audio/PlayerProvider';
 import type { Song } from '@/features/songs/model';
 import { usePlaySong } from '@/features/songs/usePlaySong';
 import { songEntries, type Setlist, type SongEntry } from './model';
@@ -44,7 +44,7 @@ export function SetlistModeProvider({ children }: { children: ReactNode }) {
   const { setlists } = useSetlists();
   const { songById } = useSetlistInfo();
   const { play } = usePlaySong();
-  const { state: player } = usePlayer();
+  const player = usePlayerSelect((s) => ({ trackSongId: s.track?.songId, ended: s.ended }));
   const [mode, setMode] = useState(readState);
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export function SetlistModeProvider({ children }: { children: ReactNode }) {
   );
 
   // follow the player: if the playing song is in the queue, that's the current position
-  const trackSongId = player.track?.songId;
+  const trackSongId = player.trackSongId;
   useEffect(() => {
     if (!trackSongId) return;
     const i = queue.findIndex((q, idx) => q.song?.id === trackSongId && (idx >= mode.index || !queue.slice(mode.index).some((x) => x.song?.id === trackSongId)));

@@ -1,7 +1,7 @@
 {
   "name": "band-organizer",
   "private": true,
-  "version": "0.10.0",
+  "version": "0.11.0",
   "type": "module",
   "description": "Overload App – PWA for band organization on top of HiDrive",
   "engines": {
@@ -19,6 +19,7 @@
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",
     "@fontsource/oswald": "^5.3.0",
+    "@tanstack/react-virtual": "^3.14.13",
     "i18next": "^25.10.10",
     "lucide-react": "^1.48.0",
     "mammoth": "^1.13.0",

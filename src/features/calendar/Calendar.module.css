@@ -455,3 +455,22 @@
   font-weight: 600;
   font-size: var(--fs-sm);
 }
+
+.oneLine {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* tabs-like row of filter chips that never wraps onto a second line */
+.filterRow {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filterRow > * {
+  flex: none;
+}

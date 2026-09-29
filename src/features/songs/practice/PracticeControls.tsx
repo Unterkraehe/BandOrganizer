@@ -92,24 +92,29 @@ export function PracticeControls({ engine, state, compact = false }: { engine: A
           >
             {loop?.enabled ? t('practice.loopOn') : t('practice.loopOff')}
           </Button>
-          {loop && <IconButton label={t('practice.clearLoop')} icon={<X size={18} />} onClick={() => engine.setLoop(null)} />}
+          <IconButton label={t('practice.clearLoop')} icon={<X size={18} />} onClick={() => engine.setLoop(null)} disabled={!loop} />
         </div>
-        {!loop && !compact && <p className={styles.hint}>{t('practice.loopHint')}</p>}
+        {/* always takes its space: nothing below may move when a loop is set or cleared */}
+        {!compact && (
+          <p className={styles.hint} style={{ visibility: loop ? 'hidden' : 'visible' }} aria-hidden={Boolean(loop)}>
+            {t('practice.loopHint')}
+          </p>
+        )}
       </div>
 
       {state.error === 'effects' && <p className={styles.warning}>{t('practice.effectsUnavailable')}</p>}
-      {(state.tempo !== 1 || state.semitones !== 0 || loop) && (
-        <Button
-          variant="ghost"
-          icon={<RotateCcw size={18} />}
-          onClick={() => {
-            engine.setEffects({ tempo: 1, semitones: 0 });
-            engine.setLoop(null);
-          }}
-        >
-          {t('practice.reset')}
-        </Button>
-      )}
+      {/* Always present (disabled while everything is original): appearing/disappearing moved the whole view */}
+      <Button
+        variant="ghost"
+        icon={<RotateCcw size={18} />}
+        disabled={state.tempo === 1 && state.semitones === 0 && !loop}
+        onClick={() => {
+          engine.setEffects({ tempo: 1, semitones: 0 });
+          engine.setLoop(null);
+        }}
+      >
+        {t('practice.reset')}
+      </Button>
     </div>
   );
 }

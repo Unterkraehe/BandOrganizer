@@ -1,6 +1,7 @@
 import { Loader2, NotebookText, Pause, Play, RotateCcw, RotateCw, X, Minus, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { usePlayer } from '@/core/audio/PlayerProvider';
 import { useNavigate, useParams } from 'react-router-dom';
 import { formatDuration } from '@/core/i18n/format';
 import { useSession } from '@/core/session/BandSession';
@@ -34,7 +35,8 @@ export function PracticePage() {
 
 function Practice({ song, onClose, t }: { song: Song; onClose: () => void; t: ReturnType<typeof useTranslation>['t'] }) {
   const wide = useIsWide();
-  const { play, state, engine } = usePlaySong();
+  const { play, engine } = usePlaySong();
+  const { state } = usePlayer();
   const notes = useSongNotes(song);
   const { content, status } = useLyrics(song);
   const [size, setSize] = useState(() => Number(localStorage.getItem(SIZE_KEY)) || 1.2);

@@ -46,6 +46,12 @@
   --sidebar-w: 248px;
   --content-max: 720px;
 
+  /* Space taken at the bottom by the navigation (+ mini player while it is shown) and the on-screen keyboard.
+     Things that sit "at the bottom of the screen" (chat input, upload indicator) use these. */
+  --nav-w: 0px;
+  --kb-inset: 0px;
+  --dock-h: calc(var(--bottom-bar-h) + env(safe-area-inset-bottom));
+
   /* Motion */
   --dur-fast: 150ms;
   --dur: 200ms;
@@ -82,6 +88,10 @@
   --event-rehearsal: #2f5fb3;
   --event-absence: #6b6b73;
   --event-other: #7a45c2;
+  --event-gig-on: #ffffff;
+  --event-rehearsal-on: #ffffff;
+  --event-absence-on: #ffffff;
+  --event-other-on: #ffffff;
 
   --shadow-float: 0 8px 24px rgb(22 22 26 / 0.14), 0 2px 6px rgb(22 22 26 / 0.08);
 
@@ -105,9 +115,9 @@
   color-scheme: dark;
 
   --bg: #0e0e10;
-  --surface: #18181b;
-  --surface-2: #232327;
-  --border: #2e2e33;
+  --surface: #202024;
+  --surface-2: #2a2a2f;
+  --border: #38383e;
   --text: #f4f4f5;
   --text-muted: #a1a1aa;
   --text-faint: #6b6b73;
@@ -128,6 +138,10 @@
   --event-rehearsal: #7aa7ff;
   --event-absence: #a1a1aa;
   --event-other: #c49bff;
+  --event-gig-on: #16161a;
+  --event-rehearsal-on: #16161a;
+  --event-absence-on: #16161a;
+  --event-other-on: #16161a;
 
   /* In dark mode, elevation = lighter surface; shadows stay subtle */
   --shadow-float: 0 8px 24px rgb(0 0 0 / 0.5);
@@ -144,4 +158,29 @@
   --member-c10: #ff85bd; --member-c10-on: #16161a;
   --member-c11: #d4a27f; --member-c11-on: #16161a;
   --member-c12: #a9b4c2; --member-c12-on: #16161a;
+}
+
+:root[data-miniplayer] {
+  --dock-h: calc(var(--bottom-bar-h) + var(--mini-player-h) + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 768px) {
+  :root {
+    --nav-w: var(--rail-w);
+    --dock-h: env(safe-area-inset-bottom);
+  }
+  :root[data-miniplayer] {
+    --dock-h: calc(var(--mini-player-h) + env(safe-area-inset-bottom));
+  }
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --nav-w: var(--sidebar-w);
+  }
+}
+
+/* On-screen keyboard open (set by the app shell): the bottom bar makes room */
+:root[data-keyboard] {
+  --dock-h: 0px;
 }

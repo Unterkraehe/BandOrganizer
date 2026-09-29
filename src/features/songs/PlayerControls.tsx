@@ -2,6 +2,7 @@ import { Loader2, Pause, Play, RotateCcw, RotateCw, SlidersHorizontal, Star } fr
 import { useNavigate } from 'react-router-dom';
 import { practiceSummary } from './practice/summary';
 import { useTranslation } from 'react-i18next';
+import { usePlayer } from '@/core/audio/PlayerProvider';
 import { Button, IconButton, SeekBar } from '@/ui';
 import { recordingName, type Recording, type Song } from './model';
 import { usePlaySong } from './usePlaySong';
@@ -18,7 +19,8 @@ interface PlayerControlsProps {
 /** Big player for the song detail (F4 §4.2) incl. version selector (F4 §6.8). */
 export function PlayerControls({ song, recording, onRecordingChange, markers }: PlayerControlsProps) {
   const { t } = useTranslation('songs');
-  const { play, state, engine } = usePlaySong();
+  const { play, engine } = usePlaySong();
+  const { state } = usePlayer();
   const navigate = useNavigate();
   const current = state.track?.id === recording.id && state.track?.songId === song.id;
   const status = current ? state.status : 'idle';
@@ -106,21 +108,27 @@ export function PlayerControls({ song, recording, onRecordingChange, markers }: 
         </button>
         <IconButton label={t('player.forward10')} icon={<RotateCw size={24} />} onClick={() => engine.skip(10)} disabled={!current} />
       </div>
-      {current && practiceSummary(state, t) && (
-        <p className={styles.notBand} style={{ justifyContent: 'center', color: 'var(--accent)' }}>
-          <SlidersHorizontal size={16} aria-hidden="true" />
-          {practiceSummary(state, t)}
-          <Button
-            variant="ghost"
-            onClick={() => {
-              engine.setEffects({ tempo: 1, semitones: 0 });
-              engine.setLoop(null);
-            }}
-          >
-            {t('practice.reset')}
-          </Button>
-        </p>
-      )}
+      {/* Always present, hidden while everything is original: the "Übungsansicht" button below must not move (v0.11) */}
+      {(() => {
+        const summary = current ? practiceSummary(state, t) : '';
+        return (
+          <p className={styles.notBand} style={{ justifyContent: 'center', color: 'var(--accent)', minHeight: 'var(--touch)', visibility: summary ? 'visible' : 'hidden' }} aria-hidden={!summary}>
+            <SlidersHorizontal size={16} aria-hidden="true" />
+            {summary || '\u00a0'}
+            <Button
+              variant="ghost"
+              disabled={!summary}
+              tabIndex={summary ? 0 : -1}
+              onClick={() => {
+                engine.setEffects({ tempo: 1, semitones: 0 });
+                engine.setLoop(null);
+              }}
+            >
+              {t('practice.reset')}
+            </Button>
+          </p>
+        );
+      })()}
       <Button icon={<SlidersHorizontal size={18} />} onClick={() => navigate(`/songs/${song.id}/practice`)} style={{ justifySelf: 'center' }}>
         {t('practice.open')}
       </Button>

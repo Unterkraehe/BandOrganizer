@@ -11,13 +11,15 @@ export interface MenuItem {
 }
 
 /** "⋯" menu (F4 row menu, note actions). Closes on selection, outside click and Escape. */
-export function Menu({ label, items, icon }: { label: string; items: MenuItem[]; icon?: ReactNode }) {
+export function Menu({ label, items, icon }: { label: string; items: MenuItem[] | (() => MenuItem[]); icon?: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [up, setUp] = useState(false);
   const [alignLeft, setAlignLeft] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const menuId = useId();
-  const visible = items.filter((item) => !item.hidden);
+  // A function is only evaluated while the menu is open: long lists don't build hundreds of menus (performance).
+  const lazy = typeof items === 'function';
+  const visible = !lazy || open ? (typeof items === 'function' ? items() : items).filter((item) => !item.hidden) : [];
 
   useEffect(() => {
     if (!open) return;
@@ -34,7 +36,7 @@ export function Menu({ label, items, icon }: { label: string; items: MenuItem[];
     };
   }, [open]);
 
-  if (visible.length === 0) return null;
+  if (!lazy && visible.length === 0) return null;
   return (
     <div className={styles.wrap} ref={ref}>
       <button
@@ -50,7 +52,8 @@ export function Menu({ label, items, icon }: { label: string; items: MenuItem[];
             // Open upwards when the menu would end up behind the bottom bar / mini player
             const rect = ref.current.getBoundingClientRect();
             const reserved = 150;
-            setUp(window.innerHeight - rect.bottom - reserved < visible.length * 48 + 16 && rect.top > visible.length * 48 + 16);
+            const count = typeof items === 'function' ? 5 : visible.length;
+            setUp(window.innerHeight - rect.bottom - reserved < count * 48 + 16 && rect.top > count * 48 + 16);
             // a trigger on the left half opens the menu to the right, otherwise to the left (stays on screen)
             setAlignLeft(rect.left + rect.width / 2 < window.innerWidth / 2);
           }

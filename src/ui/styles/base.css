@@ -21,6 +21,9 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* No double-tap zoom / 300 ms delay; no rubber-band or pull-to-refresh moving the whole app */
+  touch-action: manipulation;
+  overscroll-behavior: none;
 }
 
 body {
@@ -93,5 +96,42 @@ textarea {
   }
   main {
     padding: 0 !important;
+  }
+}
+
+/* ---------- Touch behaviour (phones) ---------- */
+
+/* App chrome isn't text to select; long-press must not open link previews / callouts */
+button,
+nav,
+[role='tab'],
+[role='menuitem'],
+summary {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+a,
+button,
+nav {
+  -webkit-touch-callout: none;
+}
+
+/* iOS zooms into inputs with a font size below 16 px – never let it happen */
+@media (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    font-size: max(16px, 1rem) !important;
+  }
+}
+
+/* Immediate press feedback on touch screens (where there is no hover) */
+@media (hover: none) {
+  button:not(:disabled):active,
+  a[href]:active,
+  summary:active,
+  [role='menuitem']:active {
+    opacity: 0.65;
   }
 }

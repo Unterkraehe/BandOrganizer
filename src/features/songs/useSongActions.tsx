@@ -1,4 +1,5 @@
 import { Archive, ArchiveRestore, EyeOff, Eye, Layers, Pencil, Tags } from 'lucide-react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useNotify } from '@/app/notify/NotifyProvider';
@@ -15,7 +16,8 @@ export function useSongActions(openTags: (song: Song) => void) {
 
   const guard = (promise: Promise<unknown>) => promise.catch(() => notify({ message: t('failed') }));
 
-  return (song: Song, options: { withEdit?: boolean } = {}): MenuItem[] => [
+  // stable identity: memoized list rows depend on it
+  return useCallback((song: Song, options: { withEdit?: boolean } = {}): MenuItem[] => [
     { label: t('actions.edit'), icon: <Pencil size={18} />, onSelect: () => navigate(`/songs/${song.id}/edit`), hidden: !options.withEdit },
     {
       label: song.archived ? t('actions.unarchive') : t('actions.archive'),
@@ -50,5 +52,5 @@ export function useSongActions(openTags: (song: Song) => void) {
           ),
         ),
     },
-  ];
+  ], [t, navigate, notify, store, openTags]); // eslint-disable-line react-hooks/exhaustive-deps
 }

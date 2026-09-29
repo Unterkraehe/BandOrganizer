@@ -15,6 +15,8 @@ export function ChatPage() {
   const { store, state, setFast } = useChat();
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
   const [params] = useSearchParams();
+  const [composerHeight, setComposerHeight] = useState(72);
+  const sentByMe = useRef(false);
   const target = params.get('message');
   const [editing, setEditing] = useState<ChatMessage | null>(null);
   const firstUnread = useRef<string | null | undefined>(undefined);
@@ -47,8 +49,11 @@ export function ChatPage() {
       else window.scrollTo({ top: document.body.scrollHeight });
       return;
     }
-    const nearBottom = window.innerHeight + window.scrollY > document.body.scrollHeight - 300;
-    if (nearBottom || last?.createdBy === undefined) window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    // Your own message always jumps into view; incoming ones follow only if you are reading at the bottom
+    const height = document.documentElement.scrollHeight;
+    const nearBottom = window.innerHeight + window.scrollY > height - 400;
+    if (sentByMe.current || nearBottom) window.scrollTo({ top: height, behavior: sentByMe.current ? 'auto' : 'smooth' });
+    sentByMe.current = false;
   }, [state.messages.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const messages = useMemo(() => state.messages, [state.messages]);
@@ -79,14 +84,20 @@ export function ChatPage() {
             setEditing(m);
           }}
         />
+        {/* room for the input bar that is fixed to the bottom of the screen */}
+        <div style={{ height: composerHeight }} aria-hidden="true" />
         <Composer
+          pinned
+          onHeight={setComposerHeight}
           replyTo={replyTo}
           editing={editing}
           onDone={() => {
             setReplyTo(null);
             setEditing(null);
           }}
-          onSent={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+          onSent={() => {
+            sentByMe.current = true;
+          }}
         />
       </div>
     </Page>

@@ -5,6 +5,8 @@
 | **ID** | F6 |
 | **Status** | Implemented (v0.9.0) |
 
+> **v0.11.0:** the input bar is `position: fixed` above the bottom bar / mini player / keyboard and never scrolls away; the list keeps room for it (spacer). Your own message always jumps into view; incoming messages follow only when you are near the bottom.
+>
 > **Implementation notes (v0.9.0)**
 > - Polling: every 10 s while the chat page is open, 60 s elsewhere, immediately when the app returns to the foreground; only the newest two month folders are listed. Edited messages are detected by the file version in the listing.
 > - Messages are shown optimistically ("wird gesendet …") and removed again if saving fails.

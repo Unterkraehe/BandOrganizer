@@ -74,3 +74,20 @@
   color: var(--text);
   background: var(--surface-2);
 }
+
+/* Narrow phones: icon only, the label stays for screen readers */
+@media (max-width: 479px) {
+  .iconOnlyPhone {
+    min-width: var(--touch);
+    padding: 0;
+  }
+
+  .phoneHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}

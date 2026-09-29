@@ -31,3 +31,11 @@
   border-radius: 3px 3px 0 0;
   background: var(--accent);
 }
+
+.count {
+  display: inline-block;
+  min-width: 3.4ch;
+  margin-left: 0.3em;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}

@@ -90,10 +90,6 @@
   padding-left: var(--space-2);
 }
 
-.row + .row {
-  border-top: 1px solid var(--border);
-}
-
 .row[data-current] {
   background: var(--accent-soft);
 }
@@ -122,7 +118,13 @@
   gap: var(--space-2);
   font-weight: 600;
   min-width: 0;
-  overflow-wrap: anywhere;
+}
+
+.rowTitleText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nowIcon {
@@ -197,7 +199,8 @@ ul.muted {
 
 .rowTags {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow: hidden;
   gap: var(--space-1);
   margin-top: 2px;
 }

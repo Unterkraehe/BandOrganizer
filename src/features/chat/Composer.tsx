@@ -23,10 +23,14 @@ interface ComposerProps {
   editing: ChatMessage | null;
   onDone: () => void;
   onSent?: () => void;
+  /** fixed to the bottom of the screen (band chat) */
+  pinned?: boolean;
+  /** reports the bar's height (the chat leaves room for it) */
+  onHeight?: (height: number) => void;
 }
 
 /** Input bar (F6 §3.1): multi-line, share song/event/setlist, reply/edit, Enter sends on desktop. */
-export function Composer({ context, placeholder, replyTo, editing, onDone, onSent }: ComposerProps) {
+export function Composer({ context, placeholder, replyTo, editing, onDone, onSent, pinned, onHeight }: ComposerProps) {
   const { t } = useTranslation('chat');
   const { store } = useChat();
   const { members } = useSession();
@@ -36,6 +40,25 @@ export function Composer({ context, placeholder, replyTo, editing, onDone, onSen
   const [failed, setFailed] = useState(false);
   const input = useRef<HTMLTextAreaElement>(null);
   const finePointer = useMediaQuery('(pointer: fine)');
+  const root = useRef<HTMLDivElement>(null);
+
+  // pinned: report the height (spacer in the message list + upload indicator stay above the bar)
+  useEffect(() => {
+    const el = root.current;
+    if (!pinned || !el) return;
+    const report = () => {
+      const h = Math.round(el.getBoundingClientRect().height);
+      onHeight?.(h);
+      document.documentElement.style.setProperty('--composer-h', `${h}px`);
+    };
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(report);
+    observer?.observe(el);
+    report();
+    return () => {
+      observer?.disconnect();
+      document.documentElement.style.removeProperty('--composer-h');
+    };
+  }, [pinned]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (editing) {
@@ -84,7 +107,8 @@ export function Composer({ context, placeholder, replyTo, editing, onDone, onSen
   };
 
   return (
-    <div className={styles.composer}>
+    <div ref={root} className={pinned ? styles.composerPinned : styles.composer}>
+      <div className={pinned ? styles.composerInner : undefined} style={pinned ? undefined : { display: 'contents' }}>
       {(replyTo || editing) && (
         <div className={styles.pending}>
           <span>{editing ? t('message.editing') : t('message.replyingTo', { name: members.find((m) => m.id === replyTo!.createdBy)?.displayName ?? '?' })}: {(editing ?? replyTo)!.text}</span>
@@ -126,6 +150,7 @@ export function Composer({ context, placeholder, replyTo, editing, onDone, onSen
         <button type="button" className={styles.sendButton} aria-label={t('send')} disabled={!text.trim() && !share} onClick={() => void send()}>
           <Send size={20} />
         </button>
+      </div>
       </div>
       {picker && <SharePicker type={picker} onPick={(ref) => { setShare(ref); setPicker(null); }} onClose={() => setPicker(null)} />}
     </div>
