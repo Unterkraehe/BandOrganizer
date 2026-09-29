@@ -36,7 +36,15 @@ export function SetlistDetailPage() {
     if (setlistId) void store.loadPersonal(setlistId);
   }, [setlistId, store]);
 
-  if (!setlist) return <Page title={t('title')}>{state.status === 'ready' && <EmptyState icon={null} title={t('missingSong')} text="" />}</Page>;
+  if (!setlist)
+    return (
+      <Page title={t('title')}>
+        {state.status === 'loading' && <p className={styles.hint}>{t('loading')}</p>}
+        {state.status !== 'loading' && (
+          <EmptyState icon={null} title={t('notFound')} text="" action={<Button onClick={() => navigate('/setlists')}>{t('toList')}</Button>} />
+        )}
+      </Page>
+    );
   const personal = state.personal[setlist.id]?.notes ?? {};
   const d = durationOf(setlist);
   const events = eventsOf(setlist.id);

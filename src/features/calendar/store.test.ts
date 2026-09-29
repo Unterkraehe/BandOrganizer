@@ -97,3 +97,32 @@ describe('CalendarStore (F5)', () => {
     expect(ics).toContain('BEGIN:VTIMEZONE');
   });
 });
+
+describe('calendar subscription (F5 §6.5b)', () => {
+  it('shares band.ics, keeps it current, renews and ends the link', async () => {
+    const { createSubscription, endSubscription, readSubscription, writeBandIcs, bandIcs } = await import('./subscription');
+    const provider = new MemoryStorageProvider();
+    provider.seedFolder('/h');
+    const storage = new SafeStorage(provider, { appRoot: APP });
+    const store = new CalendarStore({ storage, appRoot: APP, memberId: () => 'm_lisa', cacheKey: null });
+    await store.load();
+    const labels = { title: () => 'Probe', cancelledPrefix: 'Abgesagt: ' };
+    const ics = () => bandIcs(store.getState(), labels, 'Overload');
+
+    const sub = await createSubscription(storage, APP, ics(), 'm_lisa', null);
+    expect(await readSubscription(storage, APP)).toMatchObject({ active: true, url: sub.url });
+    expect(await provider.sharedFile(sub.url!)).toContain('X-WR-CALNAME:Overload');
+
+    await store.create({ type: 'rehearsal', title: null, allDay: false, start: fromLocal('2026-10-01', '19:00'), end: fromLocal('2026-10-01', '22:00'), meetingTime: null, location: null, description: null, recurrence: null, answersEnabled: true, memberId: null });
+    expect(await writeBandIcs(storage, APP, ics(), null)).toBe(true);
+    expect(await provider.sharedFile(sub.url!)).toContain('DTSTART;TZID=Europe/Berlin:20261001T190000');
+
+    const renewed = await createSubscription(storage, APP, ics(), 'm_lisa', sub);
+    expect(await provider.sharedFile(sub.url!)).toBeNull(); // old link is dead
+    expect(await provider.sharedFile(renewed.url!)).toContain('BEGIN:VEVENT');
+
+    await endSubscription(storage, APP, renewed, 'm_lisa');
+    expect(await readSubscription(storage, APP)).toBeNull();
+    expect(await provider.sharedFile(renewed.url!)).toBeNull();
+  });
+});

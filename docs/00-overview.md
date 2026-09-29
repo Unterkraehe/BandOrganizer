@@ -1,7 +1,7 @@
 # Overload App – Project Overview
 
 > **App name:** Overload App (may change later – the name is only set in config/translations, see R-I18N-07)
-> **Status:** Implementation – v0.11.0: M0–M8 built + UI polish pass; next M9 (v1.0)
+> **Status:** Implementation – v0.12.0 release candidate: M0–M8 + polish built; M9 review done; next: band test phase → 1.0.0
 > **Last updated:** 2026-09-24
 
 This file is the entry point for the whole project. Read it first, then `01-general-rules.md` and `02-design-system.md`, then the feature file you are working on. The build order is defined in `03-roadmap.md`.
@@ -234,6 +234,8 @@ This list grows with the feature plans. Consistent wording is a rule (R-I18N-05)
 | 2026-09-24 | Files can be uploaded from the app into a configurable upload root (one folder per song), create-only (never overwrite/move/delete); typed lyrics saved as new `.txt` per edit | Add content without opening HiDrive; data safety kept |
 | 2026-09-26 | Styling with design tokens + CSS Modules instead of Tailwind | Tokens are the single source of truth; simpler to enforce R-UI-07 |
 | 2026-09-26 | Neutral default band color "Messing" until a band sets its own | No pre-branding for other bands (R-UI-10) |
+| 2026-09-29 | Pinch zoom disabled (app feel, band request); compensated by a text size setting (100/115/130 %) | Accessibility review: the only remaining automated finding is intentional |
+| 2026-09-29 | Calendar subscription via HiDrive share link on `_BandApp/calendar/export/band.ics`; share links only allowed inside `_BandApp/` (guard) | F5 §6.5b; spike S4 decides whether the fallback is needed |
 | 2026-09-29 | Search index on the main thread (MiniSearch), no Web Worker / IndexedDB in v1 | Fast enough for band-sized data; less complexity |
 | 2026-09-28 | Chat info lines via an app-wide event bus (`core/events.ts`) | Features stay independent of the chat |
 | 2026-09-28 | Calendar recurrences computed on the device (own engine, Berlin local time); answers remember the start they refer to | No extra library; "bitte prüfen" without extra writes |

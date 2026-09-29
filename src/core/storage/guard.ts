@@ -1,5 +1,5 @@
 import { dirname, isWithin, normalizePath } from './paths';
-import type { CreateOptions, FileContent, FileEntry, StorageProvider, WriteOptions } from './types';
+import type { CreateOptions, FileContent, FileEntry, ShareLink, StorageProvider, WriteOptions } from './types';
 
 /**
  * The single safety guard for all write operations (R-DATA-01 … R-DATA-04).
@@ -13,7 +13,7 @@ import type { CreateOptions, FileContent, FileEntry, StorageProvider, WriteOptio
  * Feature code only ever receives a SafeStorage, never the raw provider.
  */
 
-export type WriteOperation = 'writeText' | 'writeJson' | 'createFile' | 'createFolder' | 'move' | 'delete';
+export type WriteOperation = 'writeText' | 'writeJson' | 'createFile' | 'createFolder' | 'move' | 'delete' | 'shareLink';
 
 export class GuardViolationError extends Error {
   constructor(
@@ -120,6 +120,25 @@ export class SafeStorage {
     const t = this.require('move', to, ['app']);
     await this.ensureFolder(dirname(t));
     return this.provider.move(f, t);
+  }
+
+  get canShare(): boolean {
+    return typeof this.provider.createShareLink === 'function';
+  }
+
+  /**
+   * Public read-only link to one file. Only app-generated files inside the app data folder may be
+   * shared (the calendar subscription file) – never band files (R-SEC, F5 §6.5b).
+   */
+  async createShareLink(path: string): Promise<ShareLink> {
+    const p = this.require('shareLink', path, ['app']);
+    if (!this.provider.createShareLink) throw new Error('Sharing is not supported by this storage');
+    return this.provider.createShareLink(p);
+  }
+
+  async deleteShareLink(id: string): Promise<void> {
+    if (!this.provider.deleteShareLink) throw new Error('Sharing is not supported by this storage');
+    return this.provider.deleteShareLink(id);
   }
 
   /** Delete – only within the app data folder (and normally avoided: R-DATA-05 soft delete). */

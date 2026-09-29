@@ -1,6 +1,6 @@
 # Implementation Roadmap
 
-> **Status:** M0–M8 ✅ · UI polish pass ✅ (v0.11.0: performance, calm layout, touch behaviour, swipe tabs) · open tests: S1/S2, S5, S6, iPhone with effects + keyboard/chat · next: M9 v1.0 (calendar subscription, final review, band test phase)
+> **Status:** M0–M8 ✅ · UI polish ✅ (v0.11.0) · M9 🟡 v0.12.0 = release candidate: subscription, accessibility & performance review done – **band test phase next**, then 1.0.0 · open tests: S1/S2, S4, S5, S6, iPhone with effects + keyboard/chat
 > Order and scope of the build, from an empty repository to v1.0. Each milestone ends with a **deployed version the band can use and test**.
 
 ## 1. Principles
@@ -24,7 +24,7 @@
 | M6 ✅ | **Setlists** | Setlist editor, print, stage view, setlist mode, suggestions | Build setlists, print them, use them on stage and for practice | L |
 | M7 ✅ | **Austauschen** | Chat, item discussions, cards, info lines, unread badges | Discuss app topics in context | M |
 | M8 ✅ | **Finden** | Global search incl. lyrics lines and date search | Find anything in the app from anywhere | M |
-| M9 | **v1.0** | Calendar subscription, polish, accessibility and performance review, band test | Everything in v1, stable | M |
+| M9 🟡 | **v1.0** | Calendar subscription, polish, accessibility and performance review, band test | Everything in v1, stable | M |
 
 Sizes are relative (S/M/L), not time estimates.
 

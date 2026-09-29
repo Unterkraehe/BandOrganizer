@@ -156,3 +156,18 @@ describe('folder creation stays inside the zones', () => {
     expect(provider.has('/users/nobody')).toBe(false);
   });
 });
+
+describe('share links (calendar subscription, F5 §6.5b)', () => {
+  it('only app files can be shared – never band files', async () => {
+    const provider = new MemoryStorageProvider();
+    provider.seed('/users/band/Songs/a.mp3', 'x');
+    provider.seed('/users/band/_BandApp/calendar/export/band.ics', 'BEGIN:VCALENDAR');
+    const storage = new SafeStorage(provider, { appRoot: '/users/band/_BandApp', home: '/users/band' });
+    expect(storage.canShare).toBe(true);
+    const link = await storage.createShareLink('/users/band/_BandApp/calendar/export/band.ics');
+    await expect(provider.sharedFile(link.url)).resolves.toBe('BEGIN:VCALENDAR');
+    await expect(storage.createShareLink('/users/band/Songs/a.mp3')).rejects.toBeInstanceOf(GuardViolationError);
+    await storage.deleteShareLink(link.id);
+    await expect(provider.sharedFile(link.url)).resolves.toBeNull();
+  });
+});

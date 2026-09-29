@@ -163,5 +163,37 @@
   "widget": {
     "title": "Nächste Termine",
     "all": "Alle Termine"
+  },
+  "subscription": {
+    "title": "Kalender abonnieren",
+    "menu": "Kalender abonnieren",
+    "intro": "Mit einem Abo erscheinen alle Band-Termine automatisch im Kalender auf deinem Handy oder Computer. Neue und geänderte Termine kommen von selbst dazu – die Kalender-App aktualisiert das Abo alle paar Stunden, nicht sofort.",
+    "privacy": "Wer den Link hat, kann die Band-Termine sehen (keine Dateien, keine Zu-/Absagen). Gib ihn nur an die Band weiter. Mit „Neuen Link erstellen“ wird der alte ungültig.",
+    "create": "Abo-Link erstellen",
+    "creating": "Link wird erstellt …",
+    "created": "Abo-Link erstellt",
+    "linkLabel": "Abo-Link",
+    "copy": "Kopieren",
+    "copied": "Link kopiert",
+    "openInApp": "In Kalender-App öffnen",
+    "renew": "Neuen Link erstellen",
+    "renewTitle": "Neuen Link erstellen?",
+    "renewText": "Der bisherige Link funktioniert danach nicht mehr. Alle, die ihn abonniert haben, müssen den neuen Link neu hinzufügen.",
+    "renewed": "Neuer Link erstellt",
+    "end": "Abo beenden",
+    "endTitle": "Abo beenden?",
+    "endText": "Der Link funktioniert danach nicht mehr – die Termine verschwinden aus den abonnierten Kalendern.",
+    "ended": "Abo beendet",
+    "howTo": "So abonnierst du",
+    "iphone": "iPhone / iPad",
+    "iphoneSteps": "„In Kalender-App öffnen“ tippen und „Abonnieren“ bestätigen. Oder: Einstellungen → Kalender → Accounts → Account hinzufügen → Andere → Kalenderabo hinzufügen → Link einfügen.",
+    "android": "Android / Google Kalender",
+    "androidSteps": "Google Kalender im Browser am Computer öffnen (calendar.google.com) → links „Weitere Kalender“ → „+“ → „Per URL“ → Link einfügen. Danach erscheint das Abo auch in der Kalender-App auf dem Handy.",
+    "outlook": "Outlook",
+    "outlookSteps": "Kalender → „Kalender hinzufügen“ → „Aus dem Internet abonnieren“ → Link einfügen.",
+    "unsupported": "Mit diesem Speicher ist kein Abo möglich.",
+    "failed": "Das hat nicht geklappt. Bitte prüfe deine Verbindung.",
+    "testHint": "Test: Öffne den Link einmal im Browser. Du solltest Text sehen, der mit „BEGIN:VCALENDAR“ beginnt (oder eine Datei „band.ics“ wird geladen). Siehst du stattdessen eine HiDrive-Seite, sag Bescheid.",
+    "createdBy": "Erstellt von {{name}} am {{date}}"
   }
 }

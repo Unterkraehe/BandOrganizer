@@ -6,6 +6,7 @@ import {
   type CreateOptions,
   type FileContent,
   type FileEntry,
+  type ShareLink,
   type StorageProvider,
   type WriteOptions,
 } from '../types';
@@ -169,6 +170,17 @@ export class HiDriveProvider implements StorageProvider {
     if (!target) throw new NotFoundError(path);
     if (target.type === 'folder') await this.request('DELETE', '/dir', { path: toApiPath(path), recursive: 'true' });
     else await this.request('DELETE', '/file', { path: toApiPath(path) });
+  }
+
+  // ---------- sharing (calendar subscription, F5 §6.5b – spike S4) ----------
+
+  async createShareLink(path: string): Promise<ShareLink> {
+    const data = await this.json<{ id: string; uri: string }>('POST', '/sharelink', { path: toApiPath(path), type: 'file' });
+    return { id: data.id, url: data.uri };
+  }
+
+  async deleteShareLink(id: string): Promise<void> {
+    await this.request('DELETE', '/sharelink', { id });
   }
 
   // ---------- HTTP ----------

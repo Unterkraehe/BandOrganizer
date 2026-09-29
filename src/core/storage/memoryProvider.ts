@@ -6,6 +6,7 @@ import {
   type CreateOptions,
   type FileContent,
   type FileEntry,
+  type ShareLink,
   type StorageProvider,
   type WriteOptions,
 } from './types';
@@ -125,6 +126,28 @@ export class MemoryStorageProvider implements StorageProvider {
     if (!this.folders.has(p)) throw new NotFoundError(p);
     for (const filePath of [...this.files.keys()]) if (isWithin(filePath, p)) this.files.delete(filePath);
     for (const folder of [...this.folders]) if (isWithin(folder, p)) this.folders.delete(folder);
+  }
+
+  /** Demo/tests: share links are fake URLs; `sharedFile(url)` resolves them like a calendar app would. */
+  readonly shareLinks = new Map<string, { path: string; url: string }>();
+  private shareCounter = 0;
+
+  async createShareLink(path: string): Promise<ShareLink> {
+    const p = normalizePath(path);
+    if (!this.files.has(p)) throw new NotFoundError(p);
+    const id = `share-${++this.shareCounter}`;
+    const url = `https://share.example.invalid/${id}/${basename(p)}`;
+    this.shareLinks.set(id, { path: p, url });
+    return { id, url };
+  }
+
+  async deleteShareLink(id: string): Promise<void> {
+    this.shareLinks.delete(id);
+  }
+
+  async sharedFile(url: string): Promise<string | null> {
+    const link = [...this.shareLinks.values()].find((l) => l.url === url);
+    return link && this.files.has(link.path) ? this.readText(link.path) : null;
   }
 
   private requireParent(path: string): void {

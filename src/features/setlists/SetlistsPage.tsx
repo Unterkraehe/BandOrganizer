@@ -117,7 +117,11 @@ export function SetlistsPage() {
           {t('kind.rehearsal')}
         </Chip>
       </div>
-      {state.status !== 'loading' && setlists.length === 0 && (
+      {state.status === 'loading' && setlists.length === 0 && <p className={styles.hint}>{t('loading')}</p>}
+      {state.status === 'error' && (
+        <EmptyState icon={<ListMusic size={28} />} title={t('loadError')} text="" action={<Button onClick={() => void store.load()}>{t('retry')}</Button>} />
+      )}
+      {state.status === 'ready' && setlists.length === 0 && (
         <EmptyState
           icon={<ListMusic size={28} />}
           title={t('empty')}

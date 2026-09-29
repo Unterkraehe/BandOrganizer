@@ -6,7 +6,12 @@
     "system": "Wie System",
     "light": "Hell",
     "dark": "Dunkel",
-    "systemHint": "Folgt der Einstellung deines Geräts."
+    "systemHint": "Folgt der Einstellung deines Geräts.",
+    "textSize": "Textgröße",
+    "textSizeHint": "Größere Schrift in der ganzen App – statt Zoomen mit zwei Fingern.",
+    "textNormal": "Normal",
+    "textLarge": "Groß",
+    "textXLarge": "Sehr groß"
   },
   "about": {
     "title": "Über die App",

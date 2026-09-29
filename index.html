@@ -17,6 +17,11 @@
         try { pref = localStorage.getItem('bandapp.theme') || 'system'; } catch (e) {}
         var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        // text size setting (Einstellungen → Darstellung), applied before the first paint
+        var size = null;
+        try { size = localStorage.getItem('bandapp.textSize'); } catch (e) {}
+        if (size === 'large') document.documentElement.style.fontSize = '115%';
+        if (size === 'xlarge') document.documentElement.style.fontSize = '130%';
       })();
     </script>
   </head>

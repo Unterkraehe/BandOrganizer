@@ -1,6 +1,7 @@
-import { Cloud, LogOut, Music, Palette, RefreshCw, Tags, UserRoundPen, Users } from 'lucide-react';
+import { CalendarSync, Cloud, LogOut, Music, Palette, RefreshCw, Tags, UserRoundPen, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { readTextSize, writeTextSize, type TextSize } from '@/core/theme/textSize';
 import { useNavigate } from 'react-router-dom';
 import { formatRelativeDay, formatTime } from '@/core/i18n/format';
 import { usePwaUpdate } from '@/core/pwa/usePwa';
@@ -17,6 +18,7 @@ export function SettingsPage() {
   const { t } = useTranslation('settings');
   const navigate = useNavigate();
   const { preference, setPreference } = useTheme();
+  const [textSize, setTextSize] = useState<TextSize>(readTextSize);
   const { checkForUpdate } = usePwaUpdate();
   const { currentMember, band, mode, alias, switchProfile, disconnect } = useSession();
   const [updateState, setUpdateState] = useState<'idle' | 'checking' | 'done' | 'unavailable'>('idle');
@@ -77,6 +79,14 @@ export function SettingsPage() {
 
       <SongScanSection />
 
+      <Section title={t('calendar:title')}>
+        <SettingRow label={t('calendar:subscription.title')} hint={t('calendar:subscription.privacy')}>
+          <Button icon={<CalendarSync size={18} />} onClick={() => navigate('/calendar/subscribe')}>
+            {t('calendar:subscription.menu')}
+          </Button>
+        </SettingRow>
+      </Section>
+
       <Section title={t('hidrive.title')}>
         <SettingRow
           label={mode === 'demo' ? t('hidrive.demo') : alias ? t('hidrive.connectedAs', { alias }) : t('hidrive.connected')}
@@ -91,6 +101,21 @@ export function SettingsPage() {
       <Section title={t('appearance.title')}>
         <SettingRow label={t('appearance.theme')} hint={preference === 'system' ? t('appearance.systemHint') : undefined}>
           <SegmentedControl label={t('appearance.theme')} options={themeOptions} value={preference} onChange={setPreference} />
+        </SettingRow>
+        <SettingRow label={t('appearance.textSize')} hint={t('appearance.textSizeHint')}>
+          <SegmentedControl
+            label={t('appearance.textSize')}
+            options={[
+              { value: 'normal', label: t('appearance.textNormal') },
+              { value: 'large', label: t('appearance.textLarge') },
+              { value: 'xlarge', label: t('appearance.textXLarge') },
+            ]}
+            value={textSize}
+            onChange={(v) => {
+              setTextSize(v);
+              writeTextSize(v);
+            }}
+          />
         </SettingRow>
       </Section>
 

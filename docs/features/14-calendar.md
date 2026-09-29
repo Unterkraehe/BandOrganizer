@@ -3,7 +3,15 @@
 | | |
 |---|---|
 | **ID** | F5 |
-| **Status** | Implemented (v0.7.0) except the subscription (§6.5b, M9). Spike S5 (.ics on iPhone/Android) pending |
+| **Status** | Implemented incl. subscription (v0.12.0). Spikes S4 (share link works as subscription) and S5 (.ics on iPhone/Android) pending |
+
+> **Subscription – implementation notes (v0.12.0)**
+> - Kalender → ⋯ → "Kalender abonnieren" (also in Einstellungen and via search). "Abo-Link erstellen" writes `_BandApp/calendar/export/band.ics` and creates a HiDrive share link (`POST /sharelink?path=…&type=file`) for exactly this file; the link is stored in `calendar/export/subscription.json` so every member sees it.
+> - While a subscription exists, every app rewrites `band.ics` a few seconds after calendar changes – only when the content actually changed (compared per device).
+> - "Neuen Link erstellen" deletes the old share link first (old subscriptions stop working); "Abo beenden" deletes the link and marks the subscription inactive. `band.ics` stays (app file).
+> - The safety guard only allows share links for files inside `_BandApp/` – band files can never be shared by the app.
+> - Buttons: "Kopieren" and "In Kalender-App öffnen" (`webcal://` – iPhone/Outlook subscribe directly). Short instructions for iPhone, Google (via calendar.google.com → Per URL) and Outlook.
+> - **Spike S4 still open:** whether HiDrive's share URL delivers the raw file (calendar apps need `BEGIN:VCALENDAR…`) or a download page. The page shows a test hint. If it's a download page → implement the documented fallback (token-helper endpoint, R-CODE-10 amendment).
 
 > **Implementation notes (v0.7.0)**
 > - Recurrence engine in `src/features/calendar/recurrence.ts`: weekly (every n weeks, several weekdays), monthly (nth weekday or day of month), until/count; computed in Berlin local time (DST-safe), plus RRULE for export.

@@ -48,6 +48,17 @@ export interface StorageProvider {
   createFolder(path: string): Promise<FileEntry>;
   move(from: string, to: string): Promise<FileEntry>;
   delete(path: string): Promise<void>;
+
+  // --- sharing (optional capability, only called by the guard) ---
+  /** Public, read-only link to ONE file – used for the calendar subscription (F5 §6.5b). */
+  createShareLink?(path: string): Promise<ShareLink>;
+  /** Invalidates a link created with createShareLink. */
+  deleteShareLink?(id: string): Promise<void>;
+}
+
+export interface ShareLink {
+  id: string;
+  url: string;
 }
 
 export class NotFoundError extends Error {

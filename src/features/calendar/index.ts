@@ -4,6 +4,7 @@ import type { FeatureRegistration } from '@/core/features/registry';
 import { CalendarPage } from './CalendarPage';
 import { EventDetailPage } from './EventDetailPage';
 import { EventFormPage } from './EventFormPage';
+import { SubscriptionPage } from './SubscriptionPage';
 
 export const calendarFeature: FeatureRegistration = {
   id: 'calendar',
@@ -15,6 +16,7 @@ export const calendarFeature: FeatureRegistration = {
   element: createElement(CalendarPage),
   routes: [
     { path: '/calendar/new', element: createElement(EventFormPage) },
+    { path: '/calendar/subscribe', element: createElement(SubscriptionPage) },
     { path: '/calendar/:eventId', element: createElement(EventDetailPage) },
     { path: '/calendar/:eventId/edit', element: createElement(EventFormPage) },
     { path: '/calendar/:eventId/:occurrence', element: createElement(EventDetailPage) },

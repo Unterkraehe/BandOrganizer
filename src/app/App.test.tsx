@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { THEME_STORAGE_KEY } from '@/core/theme/theme';
@@ -539,5 +539,24 @@ describe('Touch behaviour (phone)', () => {
     swipe(screen.getByRole('main'), 300, 100);
     await new Promise((r) => setTimeout(r, 100));
     expect(screen.getByRole('heading', { level: 1, name: 'Setlists' })).toBeInTheDocument();
+  });
+});
+
+describe('Calendar subscription (M9 in demo mode)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('creates, renews and ends the subscription link', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/calendar/subscribe');
+    await user.click(await screen.findByRole('button', { name: 'Abo-Link erstellen' }));
+    const link = (await screen.findByRole('textbox', { name: 'Abo-Link' })) as HTMLInputElement;
+    const first = link.value;
+    expect(first).toMatch(/^https:\/\/share\.example\.invalid\/.*band\.ics$/);
+    await user.click(screen.getByRole('button', { name: 'Neuen Link erstellen' }));
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Neuen Link erstellen' }));
+    await waitFor(() => expect((screen.getByRole('textbox', { name: 'Abo-Link' }) as HTMLInputElement).value).not.toBe(first));
+    await user.click(screen.getByRole('button', { name: 'Abo beenden' }));
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Abo beenden' }));
+    expect(await screen.findByRole('button', { name: 'Abo-Link erstellen' })).toBeInTheDocument();
   });
 });

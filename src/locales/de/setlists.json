@@ -136,5 +136,10 @@
     "nextSong": "Nächster: {{title}}",
     "segueNext": "direkt weiter"
   },
-  "inSetlists": "In Setlists"
+  "inSetlists": "In Setlists",
+  "loading": "Setlists werden geladen …",
+  "loadError": "Die Setlists konnten nicht geladen werden.",
+  "retry": "Erneut versuchen",
+  "notFound": "Diese Setlist gibt es nicht (mehr).",
+  "toList": "Zu den Setlists"
 }

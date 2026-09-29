@@ -124,3 +124,17 @@ describe('updating existing files', () => {
     expect(put.url.searchParams.has('path')).toBe(false);
   });
 });
+
+describe('share links', () => {
+  it('creates and deletes a file share link (POST/DELETE /sharelink)', async () => {
+    const { provider, calls } = setup((method) => (method === 'POST' ? json({ id: 'abc', uri: 'https://my.hidrive.com/lnk/abc' }) : json({})));
+    await expect(provider.createShareLink('/users/band/_BandApp/calendar/export/band.ics')).resolves.toEqual({ id: 'abc', url: 'https://my.hidrive.com/lnk/abc' });
+    const post = calls.find((c) => c.method === 'POST')!;
+    expect(post.url.pathname).toBe('/2.1/sharelink');
+    expect(post.url.searchParams.get('path')).toBe('root/users/band/_BandApp/calendar/export/band.ics');
+    expect(post.url.searchParams.get('type')).toBe('file');
+    await provider.deleteShareLink('abc');
+    const del = calls.find((c) => c.method === 'DELETE')!;
+    expect(del.url.searchParams.get('id')).toBe('abc');
+  });
+});

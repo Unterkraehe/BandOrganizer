@@ -58,7 +58,7 @@ export function CalendarPage() {
       title={t('title')}
       actions={
         <>
-          <Menu label={t('menu')} items={[{ label: t('exportAll'), onSelect: exportAll }]} />
+          <Menu label={t('menu')} items={[{ label: t('subscription.menu'), onSelect: () => navigate('/calendar/subscribe') }, { label: t('exportAll'), onSelect: exportAll }]} />
           <Button variant="primary" icon={<Plus size={18} />} iconOnlyOnPhone onClick={() => navigate('/calendar/new')}>
             {t('new')}
           </Button>
@@ -191,9 +191,9 @@ function MonthView({ types, today }: { types: Set<EventType>; today: string }) {
           <IconButton label={t('nextMonth')} icon={<ChevronRight size={20} />} onClick={() => go({ month: addMonths(first, 1).slice(0, 7) })} />
         </div>
       </div>
-      <div className={styles.grid} role="grid" aria-label={monthLabel(month)}>
+      <div className={styles.grid} role="group" aria-label={monthLabel(month)}>
         {(['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const).map((d) => (
-          <div key={d} className={styles.dow} role="columnheader">
+          <div key={d} className={styles.dow} aria-hidden="true">
             {t(`weekdaysShort.${d}`)}
           </div>
         ))}
@@ -203,7 +203,6 @@ function MonthView({ types, today }: { types: Set<EventType>; today: string }) {
             <button
               key={d}
               type="button"
-              role="gridcell"
               className={styles.day}
               data-other={d.slice(0, 7) !== month || undefined}
               data-today={d === today || undefined}
@@ -215,7 +214,7 @@ function MonthView({ types, today }: { types: Set<EventType>; today: string }) {
               {list.slice(0, 3).map((o) => (
                 <span key={occurrenceId(o)} aria-hidden="true">
                   <span className={styles.dot} style={{ background: TYPE_ICON_COLOR[o.type], opacity: o.cancelled ? 0.4 : 1 }} />
-                  <span className={styles.chip} style={{ background: TYPE_ICON_COLOR[o.type], textDecoration: o.cancelled ? 'line-through' : undefined }}>
+                  <span className={styles.chip} style={{ background: TYPE_ICON_COLOR[o.type], color: `var(--event-${o.type}-on)`, textDecoration: o.cancelled ? 'line-through' : undefined }}>
                     {occurrenceTitle(o, t, members)}
                   </span>
                 </span>

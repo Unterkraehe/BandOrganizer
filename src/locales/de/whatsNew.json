@@ -1,4 +1,10 @@
 {
+  "0.12.0": [
+    "Kalender abonnieren: alle Band-Termine automatisch im Kalender auf Handy oder Computer (Kalender → ⋯ → Kalender abonnieren).",
+    "Textgröße einstellbar (Einstellungen → Darstellung) – für alle, die größere Schrift brauchen.",
+    "Bessere Lesbarkeit: kräftigere Kontraste bei kleinen Texten und im Kalender.",
+    "Klarere Meldungen, wenn Setlists nicht geladen werden können."
+  ],
   "0.11.0": [
     "Schneller: die Songliste öffnet auch mit 300 Songs sofort und ruckelt nicht mehr, während Musik läuft.",
     "Ruhigeres Layout: Buttons und Elemente springen nicht mehr, wenn du tippst oder Daten nachladen.",
