@@ -15,6 +15,7 @@ import {
   updateMember,
   type MemberInput,
 } from '@/features/members/repository';
+import { emitSystemEvent } from '@/core/events';
 import { createDemoProvider, DEMO_HOME } from './demo';
 
 /**
@@ -296,6 +297,9 @@ export function SessionProvider({ children, autoStart = true }: { children: Reac
     updateBandSettings: async (changes) => {
       const { storage: s, appRoot, band: b } = requireReady();
       setBand(await updateBand(s, appRoot, b, currentMemberId ?? 'setup', changes));
+      if (changes.branding && changes.branding.color !== b.value.branding.color) {
+        emitSystemEvent({ key: 'band.branding', params: { actor: currentMemberId ?? '' } });
+      }
     },
 
     uploadLogo: async (variant, file) => {
@@ -303,6 +307,7 @@ export function SessionProvider({ children, autoStart = true }: { children: Reac
       const path = await storeLogo(s, appRoot, variant, file);
       const key = variant === 'dark' ? 'logoDark' : 'logoLight';
       setBand(await updateBand(s, appRoot, b, currentMemberId ?? 'setup', { branding: { ...b.value.branding, [key]: path } }));
+      emitSystemEvent({ key: 'band.branding', params: { actor: currentMemberId ?? '' } });
     },
 
     removeLogo: async (variant) => {

@@ -8,6 +8,7 @@ import { useSession } from '@/core/session/BandSession';
 import { occurrencePath, occurrenceTitle, occurrenceWhen } from '@/features/calendar/format';
 import { occurrenceId } from '@/features/calendar/model';
 import { Button, Dialog, EmptyState, Page, TextField } from '@/ui';
+import { Discussion } from '@/features/chat/Discussion';
 import { LinkEventDialog } from './LinkEventDialog';
 import { NOTE_MAX, songEntries } from './model';
 import { SetlistSheet } from './SetlistSheet';
@@ -109,6 +110,7 @@ export function SetlistDetailPage() {
         }}
       />
       <p className={styles.hint}>{t('myNoteHint')}</p>
+      <Discussion context={{ type: 'setlist', id: setlist.id }} />
 
       {linking && <LinkEventDialog setlistId={setlist.id} onClose={() => setLinking(false)} />}
       <Dialog open={editing !== null} title={t('myNote')} closeLabel={t('common:actions.close')} onClose={() => setEditing(null)}>

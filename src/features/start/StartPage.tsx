@@ -5,6 +5,7 @@ import { formatLongDate, localHour } from '@/core/i18n/format';
 import { useInstallHint } from '@/core/pwa/usePwa';
 import { useSession } from '@/core/session/BandSession';
 import { EventsWidget } from '@/features/calendar/EventsWidget';
+import { ChatWidget } from '@/features/chat/ChatWidget';
 import { BandMark, Button, IconButton, Page } from '@/ui';
 import styles from './StartPage.module.css';
 
@@ -39,6 +40,7 @@ export function StartPage() {
       <WhatsNew />
       <InstallHint />
 
+      <ChatWidget />
       <EventsWidget />
     </Page>
   );

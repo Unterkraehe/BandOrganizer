@@ -20,6 +20,7 @@ import { useSongNotes } from './useSongNotes';
 import { VersionsSection } from './VersionsSection';
 import { SetlistModeBar } from '@/features/setlists/SetlistModeBar';
 import { InSetlists } from '@/features/setlists/InSetlists';
+import { Discussion } from '@/features/chat/Discussion';
 import styles from './SongDetail.module.css';
 
 type Tab = 'lyrics' | 'public' | 'private';
@@ -177,6 +178,7 @@ export function SongDetailPage() {
           <NotesSection scope={tab} song={song} recording={recording} notes={notes} onJump={jump} />
         )}
         <InSetlists songId={song.id} mergedIds={song.mergedSongIds} />
+        <Discussion context={{ type: 'song', id: song.id }} />
         <VersionsSection song={song} onSelect={(r) => setChosenId(r.id)} onAdd={() => setAddRecording({})} />
       </div>
       {tagOpen && <TagDialog song={song} onClose={() => setTagOpen(false)} />}

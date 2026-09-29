@@ -17,6 +17,8 @@ export interface FeatureRegistration {
   /** Phone: bottom bar or "Mehr" */
   placement: 'bottomBar' | 'more';
   element: ReactNode;
+  /** Hook returning a count for a badge in the navigation (e.g. unread chat messages) */
+  useBadge?: () => number;
   /** Additional routes of this feature (details, sub-screens) */
   routes?: { path: string; element: ReactNode }[];
 }

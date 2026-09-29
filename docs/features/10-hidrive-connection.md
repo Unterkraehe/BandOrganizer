@@ -66,6 +66,7 @@ HiDrive app type **"server"** + **token helper** on Cloudflare Workers.
 | App data folder | fixed: `<home>/_BandApp` (every device must find it without extra input) |
 | Conflict check | `version = "<mtime>:<chash>"` compared before writing (no `If-Match`, see CORS test) |
 | Uploads | `POST /file?dir=&name=` without `on_exist` → HiDrive refuses existing names (create-only) |
+| Updates | `PUT /file?dir=&name=` (overwrite). A `path` parameter is rejected with 400 – fixed in v0.9.1; before that, every change to an existing app file failed on real HiDrive |
 
 **Demo mode:** "Demo ausprobieren" on the welcome screen runs the whole app against an in-memory storage with a few sample files. Nothing is saved; useful for trying the app without an account and for UI tests.
 

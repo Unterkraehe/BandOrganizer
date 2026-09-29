@@ -110,3 +110,17 @@ describe('URL-encoded names from HiDrive', () => {
     ]);
   });
 });
+
+describe('updating existing files', () => {
+  it('overwrites with PUT /file addressed by dir + name (regression v0.9.0)', async () => {
+    const { provider, calls } = setup((_method, url) =>
+      url.pathname.endsWith('/meta') ? json({ type: 'file', mtime: 1, chash: 'a' }) : json({}),
+    );
+    await provider.writeText('/users/band/_BandApp/setlists/s_1/setlist.json', '{}', { expectedVersion: '1:a' });
+    const put = calls.find((c) => c.method === 'PUT')!;
+    expect(put.url.pathname).toBe('/2.1/file');
+    expect(put.url.searchParams.get('dir')).toBe('root/users/band/_BandApp/setlists/s_1');
+    expect(put.url.searchParams.get('name')).toBe('setlist.json');
+    expect(put.url.searchParams.has('path')).toBe(false);
+  });
+});

@@ -40,6 +40,7 @@ export function AppShell({ features, bottomSlot, children }: AppShellProps) {
               <NavLink to={feature.path} end={feature.path === '/'} className={styles.link}>
                 <feature.icon className={styles.icon} size={24} strokeWidth={2} aria-hidden="true" />
                 <span className={styles.label}>{t(feature.labelKey)}</span>
+                {feature.useBadge && <NavBadge use={feature.useBadge} />}
               </NavLink>
             </li>
           ))}
@@ -66,5 +67,15 @@ export function AppShell({ features, bottomSlot, children }: AppShellProps) {
       </main>
       <div className={styles.bottomSlot} data-no-print>{bottomSlot}</div>
     </div>
+  );
+}
+
+function NavBadge({ use }: { use: () => number }) {
+  const count = use();
+  if (!count) return null;
+  return (
+    <span className={styles.badge} aria-label={String(count)}>
+      {count > 99 ? '99+' : count}
+    </span>
   );
 }

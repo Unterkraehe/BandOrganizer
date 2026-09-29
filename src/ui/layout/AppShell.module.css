@@ -260,3 +260,26 @@
     left: var(--sidebar-w);
   }
 }
+
+.badge {
+  position: absolute;
+  top: 6px;
+  left: calc(50% + 6px);
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+@media (min-width: 1200px) {
+  .badge {
+    position: static;
+    margin-left: auto;
+  }
+}

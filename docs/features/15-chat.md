@@ -3,7 +3,15 @@
 | | |
 |---|---|
 | **ID** | F6 |
-| **Status** | Planned – ready for implementation |
+| **Status** | Implemented (v0.9.0) |
+
+> **Implementation notes (v0.9.0)**
+> - Polling: every 10 s while the chat page is open, 60 s elsewhere, immediately when the app returns to the foreground; only the newest two month folders are listed. Edited messages are detected by the file version in the listing.
+> - Messages are shown optimistically ("wird gesendet …") and removed again if saving fails.
+> - Read status is written at most every 2 s; the "Neue Nachrichten" divider position is taken before anything is marked as read.
+> - Info lines come from a small app-wide event bus (`src/core/events.ts`): calendar (changed date/time/location, cancelled, re-scheduled), Band-Version changes and band design changes. Absences and answers never create lines.
+> - Reactions: one file per member and message (`reactions/<messageId>/<memberId>.json`, `emoji: null` = removed).
+> - Item discussions ("Diskussion") on song, event and setlist detail; they appear in the band chat with a context chip.
 | **Depends on** | F1, F2, F3 |
 | **Used by** | F3 Dashboard, F4/F5/F7 (item discussions, info lines), F8 Search |
 

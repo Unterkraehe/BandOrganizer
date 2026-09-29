@@ -1,0 +1,75 @@
+{
+  "title": "Band-Chat",
+  "newMessages": "Neue Nachrichten",
+  "inputPlaceholder": "Nachricht an die Band …",
+  "send": "Senden",
+  "share": {
+    "menu": "Anhängen",
+    "song": "Song teilen",
+    "event": "Termin teilen",
+    "setlist": "Setlist teilen",
+    "remove": "Anhang entfernen",
+    "pickSong": "Song teilen",
+    "pickEvent": "Termin teilen",
+    "pickSetlist": "Setlist teilen"
+  },
+  "message": {
+    "edited": "bearbeitet",
+    "deleted": "Nachricht gelöscht",
+    "sending": "wird gesendet …",
+    "failed": "Nicht gesendet – erneut versuchen",
+    "menu": "Aktionen für diese Nachricht",
+    "reply": "Antworten",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "react": "Reagieren mit {{emoji}}",
+    "toItem": "Zum Element",
+    "replyingTo": "Antwort an {{name}}",
+    "cancelReply": "Antwort abbrechen",
+    "editing": "Nachricht bearbeiten",
+    "cancelEdit": "Bearbeiten abbrechen",
+    "former": "(ehemalig)"
+  },
+  "today": "Heute",
+  "yesterday": "Gestern",
+  "older": "Ältere Nachrichten laden",
+  "noOlder": "Das ist der Anfang des Chats.",
+  "empty": "Noch keine Nachrichten. Schreib die erste – z. B. zum nächsten Auftritt.",
+  "loadError": "Der Chat konnte nicht geladen werden.",
+  "card": {
+    "open": "Öffnen",
+    "play": "Abspielen",
+    "practice": "Setlist üben",
+    "gone": "Nicht mehr vorhanden"
+  },
+  "context": {
+    "event": "Termin",
+    "song": "Song",
+    "setlist": "Setlist"
+  },
+  "discussion": {
+    "title": "Diskussion ({{count}})",
+    "titleEmpty": "Diskussion",
+    "empty": "Noch keine Nachrichten dazu.",
+    "placeholder": "Nachricht dazu …",
+    "show": "Diskussion anzeigen",
+    "hide": "Diskussion ausblenden"
+  },
+  "system": {
+    "event.cancelled": "{{name}} hat {{event}} am {{date}} abgesagt",
+    "event.uncancelled": "{{name}} hat {{event}} am {{date}} wieder angesetzt",
+    "event.changed": "{{name}} hat {{event}} am {{date}} geändert",
+    "song.bandVersion": "{{name}} hat die Band-Version von „{{song}}“ auf „{{version}}“ geändert",
+    "band.branding": "{{name}} hat das Band-Design geändert"
+  },
+  "widget": {
+    "title": "Neue Nachrichten ({{count}})",
+    "none": "Keine neuen Nachrichten",
+    "toChat": "Zum Chat",
+    "more_one": "+ {{count}} weitere",
+    "more_other": "+ {{count}} weitere"
+  },
+  "failed": "Das hat nicht geklappt. Bitte prüfe deine Verbindung.",
+  "unread_one": "{{count}} ungelesene Nachricht",
+  "unread_other": "{{count}} ungelesene Nachrichten"
+}

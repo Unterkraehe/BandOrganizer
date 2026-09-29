@@ -1,4 +1,5 @@
 import type { Versioned } from '@/core/band/band';
+import { emitSystemEvent } from '@/core/events';
 import { newId } from '@/core/data/ids';
 import { nowIso, softDelete, touchRecord } from '@/core/data/record';
 import type { SafeStorage } from '@/core/storage';
@@ -182,8 +183,21 @@ export class CalendarStore {
     this.set({ exceptions: { ...this.state.exceptions, [eventId]: [...list, saved] } });
   }
 
+  /** Info line in the chat for changed/cancelled events (F5 §6.7, F6 §4.2). */
+  private announce(key: 'event.changed' | 'event.cancelled' | 'event.uncancelled', occ: Occurrence) {
+    if (occ.type === 'absence') return; // absences: no chat lines (decided)
+    emitSystemEvent({
+      key,
+      params: { actor: this.options.memberId(), type: occ.type, title: occ.title ?? '', date: occ.allDay ? occ.startDate : occ.start, allDay: occ.allDay ? '1' : '0' },
+      context: { type: 'event', id: occ.event.id, occurrence: occ.key },
+    });
+  }
+
   /** Edit with scope for series (F5 §4.3): this / following / all. */
   async update(occ: Occurrence, input: EventInput, scope: EditScope) {
+    const changedWhenWhere =
+      input.start !== occ.start || input.end !== occ.end || (input.location?.name ?? '') !== (occ.location?.name ?? '');
+    if (changedWhenWhere) this.announce('event.changed', occ);
     const event = occ.event;
     const memberId = this.options.memberId();
     if (!event.recurrence || scope === 'all') {
@@ -228,6 +242,7 @@ export class CalendarStore {
 
   /** "Absagen": stays visible, struck through (F5 §6.3). */
   async cancel(occ: Occurrence, scope: EditScope, cancelled = true) {
+    this.announce(cancelled ? 'event.cancelled' : 'event.uncancelled', occ);
     const event = occ.event;
     const memberId = this.options.memberId();
     if (!event.recurrence || scope === 'all') {

@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { THEME_STORAGE_KEY } from '@/core/theme/theme';
+import { isHiDriveConfigured } from '@/config';
 import { App } from './App';
 
 type User = ReturnType<typeof userEvent.setup>;
@@ -24,8 +25,10 @@ describe('App (M1 flow in demo mode)', () => {
   it('shows the welcome screen when not connected', () => {
     render(<App initialPath="/" autoStart={false} />);
     expect(screen.getByRole('heading', { level: 1, name: 'Overload App' })).toBeInTheDocument();
-    // HiDrive login is disabled until the client ID is configured
-    expect(screen.getByRole('button', { name: 'Mit HiDrive verbinden' }));
+    // HiDrive login is only enabled once the client ID is configured (src/config.ts)
+    const connect = screen.getByRole('button', { name: 'Mit HiDrive verbinden' });
+    if (isHiDriveConfigured()) expect(connect).toBeEnabled();
+    else expect(connect).toBeDisabled();
   });
 
   it('sets up a band, creates the first profile and greets the member', async () => {
@@ -383,5 +386,49 @@ describe('Setlists (M6 in demo mode)', () => {
     expect(await screen.findByText('Setlist: Stadtfest')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Open Road/ }));
     expect(await screen.findByRole('region', { name: 'Läuft gerade' })).toHaveTextContent('1 / 2');
+  });
+});
+
+describe('Chat (M7 in demo mode)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('sends, reacts, discusses an event and shows unread messages to other members', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/chat');
+    const input = await screen.findByRole('textbox', { name: 'Nachricht an die Band …' });
+    await user.type(input, 'Wer bringt die PA mit?');
+    await user.click(screen.getByRole('button', { name: 'Senden' }));
+    expect(await screen.findByText('Wer bringt die PA mit?')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Aktionen für diese Nachricht' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Reagieren mit 👍' }));
+    expect(await screen.findByRole('button', { name: '👍 1' })).toBeInTheDocument();
+
+    // event with discussion + cancel → info line
+    await user.click(screen.getByRole('link', { name: 'Kalender' }));
+    await user.click((await screen.findAllByRole('button', { name: 'Termin anlegen' }))[0]!);
+    await user.click(screen.getByRole('button', { name: 'Auftritt' }));
+    await user.type(screen.getByLabelText('Titel'), 'Stadtfest');
+    await user.click(screen.getByRole('button', { name: 'Speichern' }));
+    await user.click(await screen.findByRole('button', { name: 'Diskussion' }));
+    await user.type(screen.getByRole('textbox', { name: 'Nachricht dazu …' }), 'Soundcheck um 17 Uhr?');
+    await user.click(screen.getAllByRole('button', { name: 'Senden' }).at(-1)!);
+    expect(await screen.findByText('Soundcheck um 17 Uhr?')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Absagen' }));
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Absagen' }));
+
+    await user.click(screen.getByRole('link', { name: 'Chat' }));
+    expect(await screen.findByText(/Lisa hat Stadtfest am .* abgesagt/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Stadtfest/).length).toBeGreaterThan(1); // context chip
+
+    // another member sees the messages as unread
+    await user.click(within(screen.getByRole('navigation', { name: 'Hauptmenü' })).getByRole('link', { name: 'Einstellungen' }));
+    await user.click(await screen.findByRole('button', { name: 'Profil wechseln' }));
+    await user.click(await screen.findByRole('button', { name: 'Ich bin neu' }));
+    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Tom');
+    await user.click(screen.getByRole('button', { name: "Los geht's" }));
+    // the app returns to the chat: Tom sees the "Neue Nachrichten" divider, and reading marks them read
+    expect(await screen.findByText('Neue Nachrichten')).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: 'Start' }));
+    expect(await screen.findByText('Keine neuen Nachrichten')).toBeInTheDocument();
   });
 });

@@ -122,7 +122,8 @@ export class HiDriveProvider implements StorageProvider {
     const body = new Blob([content], { type: 'application/octet-stream' });
     // Parent folders are created by SafeStorage, only inside the allowed zones.
     if (existing) {
-      await this.request('PUT', '/file', { path: toApiPath(path) }, body);
+      // PUT /file overwrites and – like POST – addresses the file by dir + name (a "path" parameter is rejected with 400)
+      await this.request('PUT', '/file', { dir: toApiPath(dirname(path)), name: basename(path) }, body);
     } else {
       await this.request('POST', '/file', { dir: toApiPath(dirname(path)), name: basename(path) }, body);
     }

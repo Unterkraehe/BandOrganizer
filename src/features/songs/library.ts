@@ -1,5 +1,6 @@
 import type { Versioned } from '@/core/band/band';
 import { newId } from '@/core/data/ids';
+import { emitSystemEvent } from '@/core/events';
 import { scanFiles, type ScannedFile, type ScanReport } from '@/core/files/scan';
 import { ConflictError, type FileEntry, type SafeStorage } from '@/core/storage';
 import { buildSongs, recordingIdFor, type Song, type SongMeta, type Tag } from './model';
@@ -236,6 +237,15 @@ export class LibraryStore {
 
   setBandVersion(songId: string, recordingId: string) {
     const setBy = this.options.memberId();
+    const song = this.song(songId);
+    const rec = song?.recordings.find((r) => r.id === recordingId);
+    if (song && rec) {
+      emitSystemEvent({
+        key: 'song.bandVersion',
+        params: { actor: setBy, song: song.title, version: rec.label ?? rec.fileName },
+        context: { type: 'song', id: songId },
+      });
+    }
     return this.update(songId, (meta) => ({
       ...this.withRecording(meta, songId, recordingId),
       bandVersion: { recordingId, setBy, setAt: new Date().toISOString() },

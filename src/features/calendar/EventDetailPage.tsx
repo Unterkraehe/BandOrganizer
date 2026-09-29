@@ -14,6 +14,7 @@ import { ScopeDialog } from './ScopeDialog';
 import type { EditScope } from './store';
 import { toLocal } from './time';
 import { EventSetlist } from '@/features/setlists/EventSetlist';
+import { Discussion } from '@/features/chat/Discussion';
 import { useOccurrenceData } from './useOccurrenceData';
 import styles from './Calendar.module.css';
 
@@ -171,6 +172,7 @@ export function EventDetailPage() {
       )}
 
       {!isAbsence && <EventSetlist occ={occ} title={title} />}
+      {!isAbsence && <Discussion context={{ type: 'event', id: occ.event.id, occurrence: occ.key }} />}
 
       <div className={styles.actions}>
         {mayEdit && (

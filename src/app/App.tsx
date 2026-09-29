@@ -4,6 +4,7 @@ import { SessionProvider, useSession } from '@/core/session/BandSession';
 import { ThemeProvider } from '@/core/theme/ThemeProvider';
 import { features as registeredFeatures } from '@/features';
 import { CalendarProvider } from '@/features/calendar/CalendarProvider';
+import { ChatProvider } from '@/features/chat/ChatProvider';
 import { SetlistModeProvider } from '@/features/setlists/SetlistModeProvider';
 import { SetlistProvider } from '@/features/setlists/SetlistProvider';
 import { LibraryProvider } from '@/features/songs/LibraryProvider';
@@ -60,7 +61,9 @@ function Gate({ initialPath }: { initialPath?: string }) {
             <CalendarProvider>
               <SetlistProvider>
                 <SetlistModeProvider>
-                  <AppRouter initialPath={initialPath} />
+                  <ChatProvider>
+                    <AppRouter initialPath={initialPath} />
+                  </ChatProvider>
                 </SetlistModeProvider>
               </SetlistProvider>
             </CalendarProvider>
