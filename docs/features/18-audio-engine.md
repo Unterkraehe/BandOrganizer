@@ -3,7 +3,15 @@
 | | |
 |---|---|
 | **ID** | F9 |
-| **Status** | v0 implemented (v0.3.0): playback, seek, ±10 s, Media Session. Pitch/tempo/loop in M4. Spike S3 running |
+| **Status** | Implemented (v0.6.0): playback, tempo, pitch, A–B loop, practice settings. iPhone retest with active effects pending |
+
+> **Implementation notes (v0.6.0)**
+> - Two modes, switched seamlessly at the current position: **element** (`<audio>` + blob URL, default) and **effects** (Web Audio + Signalsmith Stretch), the latter only while tempo ≠ 100 % or pitch ≠ 0.
+> - The A–B loop also works in element mode (position watch), so a loop alone doesn't need Web Audio.
+> - Signalsmith Stretch 1.3.2 (MIT) is **vendored** as a static file (`public/vendor/signalsmith-stretch/`) and loaded with a dynamic import: the library builds its AudioWorklet from its own source text, which bundling/minifying breaks.
+> - Devices with ≤ 4 CPU cores use the `cheaper` preset.
+> - The AudioContext is created/resumed inside the user's tap (iOS).
+> - Tested in desktop Chromium: tempo 80 % + −2 semitones plays correctly. iPhone test with effects (incl. lock screen) still open.
 
 > **v0 decisions (M2):** playback uses a plain `<audio>` element with a typed blob URL (best background behaviour on iOS). A silent sound is played inside the first tap (`unlock()`) because iOS only allows playback started by a gesture and the download is asynchronous. Last 3 songs stay cached as blob URLs. Web Audio + signalsmith-stretch will only be switched on while tempo/pitch/loop are active (M4, §7 fallback plan).
 | **Type** | Core module (`src/core/audio/`), no own menu entry |
@@ -94,7 +102,8 @@ interface AudioEngine {
 
 ## 7. Risks & Spikes
 
-1. **iOS background playback:** Web Audio in an installed PWA may pause when the screen locks or the app goes to the background. Must be tested on a real iPhone early. Fallback idea: use plain `<audio>` (blob URL) when tempo = 100 % and pitch = 0, switch to Web Audio only when effects are active.
+1. ✅ *Tested 2026-09-28 on iPhone (v0.5): playback with `<audio>` + blob URL works, incl. lock screen / background.* Still to test in M4: the same with Web Audio while tempo/pitch are active.
+   **iOS background playback:** Web Audio in an installed PWA may pause when the screen locks or the app goes to the background. Must be tested on a real iPhone early. Fallback idea: use plain `<audio>` (blob URL) when tempo = 100 % and pitch = 0, switch to Web Audio only when effects are active.
 2. **CPU on older phones:** the pitch/time algorithm runs in real time; check with `presetCheaper` if needed.
 3. **Large files** (WAV/FLAC): download time and memory; maybe warn or limit.
 

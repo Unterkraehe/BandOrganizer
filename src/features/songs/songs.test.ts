@@ -31,7 +31,7 @@ describe('songs model (F4)', () => {
       HOME,
       now,
     );
-    expect(sortSongs(songs, 'az').map((s) => [s.title, s.recording.folder, s.isNew])).toEqual([
+    expect(sortSongs(songs, 'az').map((s) => [s.title, s.recording!.folder, s.isNew])).toEqual([
       ['alpha', '', false],
       ['Zebra', 'Songs', true],
     ]);
@@ -51,7 +51,7 @@ describe('songs model (F4)', () => {
     expect(songs).toHaveLength(1);
     expect(songs[0]!.title).toBe('Slow Burn');
     expect(songs[0]!.recordings.map((r) => r.fileName)).toEqual(['Slow Burn.mp3', 'Slow Burn (Live).mp3']);
-    expect(songs[0]!.recording.fileName).toBe('Slow Burn (Live).mp3');
+    expect(songs[0]!.recording!.fileName).toBe('Slow Burn (Live).mp3');
   });
 
   it('re-matches a moved file by name and size (spike S2 fallback)', () => {
@@ -63,7 +63,7 @@ describe('songs model (F4)', () => {
     const songs = buildSongs([moved], metas, HOME);
     expect(songs).toHaveLength(1);
     expect(songs[0]).toMatchObject({ id: oldId, title: 'Mein Song', missing: false });
-    expect(songs[0]!.recording.path).toBe(moved.path);
+    expect(songs[0]!.recording!.path).toBe(moved.path);
   });
 
   it('suggests similar titles as versions', () => {
@@ -122,10 +122,10 @@ describe('LibraryStore actions', () => {
     const demoRec = merged.recordings.find((r) => r.originSongId === demo.id)!;
     await store.setBandVersion(main.id, demoRec.id);
     await store.setRecordingLabel(main.id, demoRec.id, 'Demo');
-    expect(byTitle('Open Road').recording).toMatchObject({ id: demoRec.id, label: 'Demo' });
+    expect(byTitle('Open Road').recording!).toMatchObject({ id: demoRec.id, label: 'Demo' });
     await store.split(main.id, demoRec.id);
     expect(store.getState().songs).toHaveLength(2);
-    expect(byTitle('Open Road').recording.originSongId).toBe(main.id);
+    expect(byTitle('Open Road').recording!.originSongId).toBe(main.id);
   });
 
   it('archives, hides, tags and stores durations', async () => {
@@ -138,8 +138,8 @@ describe('LibraryStore actions', () => {
     await expect(store.createTag(' ballade ')).rejects.toThrow();
     await store.deleteTag(tag.id);
     expect(store.getState().tags).toHaveLength(0);
-    await store.recordDuration(song.id, song.recording.id, 241.4);
-    expect(byTitle('Open Road').recording.durationSec).toBe(241);
+    await store.recordDuration(song.id, song.recording!.id, 241.4);
+    expect(byTitle('Open Road').recording!.durationSec).toBe(241);
     await store.setHidden(byTitle('Open Road (Demo)').id, true);
     expect(byTitle('Open Road (Demo)').hidden).toBe(true);
   });

@@ -30,6 +30,8 @@ export interface SongMeta extends RecordBase {
   bpm: number | null;
   tuning: string | null;
   lyrics: { fileId?: string; path: string } | null;
+  /** earlier lyrics links, newest first (F10 §5.7 "Frühere Fassungen") */
+  lyricsHistory?: { path: string; savedAt: string; savedBy: string }[];
   hidden: boolean;
   archived: boolean;
   archivedAt: string | null;
@@ -74,11 +76,18 @@ export interface Recording {
   addedAt?: string;
 }
 
+export interface SongLyrics {
+  path: string;
+  fileName: string;
+  ext: string;
+  missing: boolean;
+}
+
 export interface Song {
   id: string;
   title: string;
-  /** Band-Version (F4 §6.8) */
-  recording: Recording;
+  /** Band-Version (F4 §6.8); null for songs created in the app without a recording yet (F10 §5.2) */
+  recording: Recording | null;
   recordings: Recording[];
   key: string | null;
   bpm: number | null;
@@ -96,6 +105,9 @@ export interface Song {
   bandVersionSetBy: string | null;
   bandVersionSetAt: string | null;
   mergedSongIds: string[];
+  lyrics: SongLyrics | null;
+  lyricsHistory: { path: string; savedAt: string; savedBy: string }[];
+  source: 'scan' | 'app';
 }
 
 export const NEW_DAYS = 14;
@@ -155,7 +167,13 @@ interface FileRef {
  * Robust against partial writes: a file whose origin song is merged into another song
  * always shows up as a version of that song, even if the target's meta lacks it.
  */
-export function buildSongs(files: ScannedFile[], metas: Record<string, SongMeta>, home: string, now = Date.now()): Song[] {
+export function buildSongs(
+  files: ScannedFile[],
+  metas: Record<string, SongMeta>,
+  home: string,
+  now = Date.now(),
+  documents?: ScannedFile[],
+): Song[] {
   // 1. Every file with its deterministic ids
   const refs: FileRef[] = files.map((file) => ({ file, recordingId: recordingIdFor(file), originSongId: songIdFor(file) }));
   const byRecordingId = new Map(refs.map((ref) => [ref.recordingId, ref]));
@@ -186,6 +204,17 @@ export function buildSongs(files: ScannedFile[], metas: Record<string, SongMeta>
     }
   }
 
+  // 2b. Files listed in a song's meta belong to that song (e.g. uploads into app-created songs, F10)
+  const claimedBy = new Map<string, string>();
+  for (const [songId, meta] of Object.entries(metas)) {
+    if (meta.mergedInto) continue;
+    for (const rec of meta.recordings) if (!claimedBy.has(rec.id)) claimedBy.set(rec.id, songId);
+  }
+  for (const ref of byRecordingId.values()) {
+    const claimer = claimedBy.get(ref.recordingId);
+    if (claimer && claimer !== ref.originSongId && !metas[ref.originSongId]) ref.originSongId = claimer;
+  }
+
   // 3. Owner song of every file (follow mergedInto)
   const ownerOf = (songId: string) => {
     let id = songId;
@@ -204,8 +233,9 @@ export function buildSongs(files: ScannedFile[], metas: Record<string, SongMeta>
   }
   // songs that only exist as metadata (all files gone) – shown as missing if they aren't merged away
   for (const [songId, meta] of Object.entries(metas)) {
-    if (!meta.mergedInto && !groups.has(songId) && meta.recordings.length > 0) groups.set(songId, []);
+    if (!meta.mergedInto && !groups.has(songId) && (meta.recordings.length > 0 || meta.source === 'app')) groups.set(songId, []);
   }
+  const docPaths = documents ? new Set(documents.map((d) => d.path)) : null;
 
   const songs: Song[] = [];
   for (const [songId, group] of groups) {
@@ -258,17 +288,18 @@ export function buildSongs(files: ScannedFile[], metas: Record<string, SongMeta>
       if (b.originSongId === songId && a.originSongId !== songId) return 1;
       return (a.addedAt ?? '').localeCompare(b.addedAt ?? '');
     });
-    if (recordings.length === 0) continue;
+    if (recordings.length === 0 && meta?.source !== 'app') continue;
 
     const present = recordings.filter((r) => !r.missing);
-    const origin = recordings.find((r) => r.originSongId === songId) ?? recordings[0]!;
+    const origin = recordings.find((r) => r.originSongId === songId) ?? recordings[0] ?? null;
     const bandId = meta?.bandVersion?.recordingId;
     const bandRecording =
-      recordings.find((r) => r.id === bandId && !r.missing) ?? (origin.missing ? present[0] : origin) ?? origin;
+      recordings.find((r) => r.id === bandId && !r.missing) ?? (origin && !origin.missing ? origin : present[0]) ?? origin;
 
-    const addedAt = recordings.map((r) => r.addedAt ?? '').sort()[0] || undefined;
+    const addedAt = recordings.map((r) => r.addedAt ?? '').sort()[0] || meta?.createdAt || undefined;
     const added = addedAt ? Date.parse(addedAt) : NaN;
-    const title = meta?.displayTitle?.trim() || cleanTitle(origin.fileName);
+    const title = meta?.displayTitle?.trim() || (origin ? cleanTitle(origin.fileName) : '?');
+    const lyricsName = meta?.lyrics ? basename(meta.lyrics.path) : '';
 
     songs.push({
       id: songId,
@@ -284,11 +315,21 @@ export function buildSongs(files: ScannedFile[], metas: Record<string, SongMeta>
       searchText: [title, ...recordings.map((r) => `${r.fileName} ${r.label ?? ''} ${r.folder}`)].join(' '),
       addedAt,
       isNew: Number.isFinite(added) && now - added < NEW_DAYS * 86_400_000,
-      missing: present.length === 0,
+      missing: recordings.length > 0 && present.length === 0,
       hasMeta: Boolean(meta),
       bandVersionSetBy: meta?.bandVersion?.setBy ?? null,
       bandVersionSetAt: meta?.bandVersion?.setAt ?? null,
       mergedSongIds: meta?.mergedSongIds ?? [],
+      lyrics: meta?.lyrics
+        ? {
+            path: meta.lyrics.path,
+            fileName: lyricsName,
+            ext: extensionOf(lyricsName),
+            missing: docPaths ? !docPaths.has(meta.lyrics.path) : false,
+          }
+        : null,
+      lyricsHistory: meta?.lyricsHistory ?? [],
+      source: meta?.source ?? 'scan',
     });
   }
   return songs;
@@ -309,7 +350,14 @@ export function sortSongs(songs: Song[], sort: SongSort): Song[] {
 export function versionSuggestions(song: Song, all: Song[]): Song[] {
   const base = baseTitle(song.title);
   if (!base) return [];
-  return all.filter((other) => other.id !== song.id && !other.hidden && baseTitle(other.title) === base);
+  return all.filter((other) => other.id !== song.id && !other.hidden && other.recording && baseTitle(other.title) === base);
+}
+
+/** Unlinked lyrics documents whose name matches the song title (F4 §6.3 – suggestion only). */
+export function lyricsSuggestions(song: Song, documents: ScannedFile[], linkedPaths: Set<string>): ScannedFile[] {
+  const base = baseTitle(song.title);
+  if (!base) return [];
+  return documents.filter((doc) => !linkedPaths.has(doc.path) && baseTitle(cleanTitle(doc.name).replace(/\s*-\s*(songtext|text|lyrics)\b.*$/i, '')) === base);
 }
 
 export const KEYS = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'];

@@ -1,0 +1,77 @@
+import { ListMusic, Repeat } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSetlistMode } from '@/features/setlists/SetlistModeProvider';
+import { useSetlists } from '@/features/setlists/SetlistProvider';
+import { Button } from '@/ui';
+import { formatTime } from '@/core/i18n/format';
+import { useSession } from '@/core/session/BandSession';
+import { AnswerButtons } from './AnswerButtons';
+import { occurrencePath, occurrenceTitle, occurrenceWhen, TYPE_ICON_COLOR, TYPE_ICONS } from './format';
+import { occurrenceId, type Occurrence } from './model';
+import type { useOccurrenceData } from './useOccurrenceData';
+import styles from './Calendar.module.css';
+
+/** Event card for lists and the start screen (F5 §4.1, F3 §4.1). */
+export function EventCard({ occ, data }: { occ: Occurrence; data: ReturnType<ReturnType<typeof useOccurrenceData>> }) {
+  const { t } = useTranslation('calendar');
+  const { members } = useSession();
+  const navigate = useNavigate();
+  const mode = useSetlistMode();
+  const { setlists } = useSetlists();
+  const setlist = occ.setlistId ? setlists.find((s) => s.id === occ.setlistId) : undefined;
+  const Icon = TYPE_ICONS[occ.type];
+  const { summary, mine, review, conflicts, absentMe } = data;
+  const answering = occ.event.answersEnabled && occ.type !== 'absence' && !occ.cancelled;
+  return (
+    <li className={styles.card} data-cancelled={occ.cancelled || undefined} data-type={occ.type} id={occurrenceId(occ)}>
+      <Link to={occurrencePath(occ)} className={styles.cardLink}>
+        <span className={styles.typeIcon} style={{ color: TYPE_ICON_COLOR[occ.type] }} aria-hidden="true">
+          <Icon size={20} />
+        </span>
+        <span className={styles.cardText}>
+          <span className={styles.cardTitle}>
+            {occurrenceTitle(occ, t, members)}
+            {occ.event.recurrence && <Repeat size={14} aria-label={t('recurring')} className={styles.muted} />}
+            {occ.cancelled && <span className={styles.cancelBadge}>{occ.key === 'single' ? t('cancelledEvent') : t('cancelled')}</span>}
+          </span>
+          <span className={styles.cardMeta}>
+            {occurrenceWhen(occ, t)}
+            {occ.meetingTime && ` · ${t('meeting', { time: formatTime(occ.meetingTime) })}`}
+          </span>
+          {occ.location && <span className={styles.cardMeta}>{occ.location.name}</span>}
+          {conflicts.length > 0 && (
+            <span className={styles.conflict}>
+              {conflicts.map((c) => t('conflict', { name: members.find((m) => m.id === c.event.memberId)?.displayName ?? '?' })).join(' · ')}
+            </span>
+          )}
+          {answering && (
+            <span className={styles.cardMeta}>
+              {t('answer.summary', { yes: summary.yes.length, maybe: summary.maybe.length, no: summary.no.length, open: summary.open.length })}
+              {!mine && !absentMe && <strong className={styles.missing}> · {t('answer.missing')}</strong>}
+              {mine?.status === 'maybe' && <span className={styles.missing}> · {t('answer.unsure')}</span>}
+              {review && <strong className={styles.missing}> · {t('answer.review')}</strong>}
+            </span>
+          )}
+        </span>
+      </Link>
+      {(answering || (setlist && !occ.cancelled)) && (
+        <div className={styles.cardAnswers} style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', alignItems: 'center' }}>
+          {answering && <AnswerButtons occ={occ} current={mine?.status} comment={mine?.comment} compact />}
+          {setlist && !occ.cancelled && (
+            <Button
+              variant="primary"
+              icon={<ListMusic size={16} />}
+              onClick={() => {
+                mode.start(setlist.id);
+                navigate(`/songs?setlist=${setlist.id}`);
+              }}
+            >
+              {t('setlists:actions.practice')}
+            </Button>
+          )}
+        </div>
+      )}
+    </li>
+  );
+}

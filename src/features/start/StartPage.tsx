@@ -1,10 +1,11 @@
-import { Download, Sparkles, X } from 'lucide-react';
+import { Download, X } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatLongDate, localHour } from '@/core/i18n/format';
 import { useInstallHint } from '@/core/pwa/usePwa';
 import { useSession } from '@/core/session/BandSession';
-import { BandMark, Button, EmptyState, IconButton, Page } from '@/ui';
+import { EventsWidget } from '@/features/calendar/EventsWidget';
+import { BandMark, Button, IconButton, Page } from '@/ui';
 import styles from './StartPage.module.css';
 
 const WHATS_NEW_KEY = 'bandapp.whatsNewSeen';
@@ -38,7 +39,7 @@ export function StartPage() {
       <WhatsNew />
       <InstallHint />
 
-      <EmptyState icon={<Sparkles size={28} />} title={t('empty.title')} text={t('empty.text')} />
+      <EventsWidget />
     </Page>
   );
 }

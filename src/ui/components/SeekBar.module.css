@@ -77,3 +77,17 @@
   background: var(--warning);
   pointer-events: none;
 }
+
+.loop {
+  position: absolute;
+  top: 6px;
+  height: 16px;
+  border: 2px solid var(--text-faint);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.loop[data-enabled] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}

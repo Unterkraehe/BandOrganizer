@@ -24,7 +24,8 @@ describe('App (M1 flow in demo mode)', () => {
   it('shows the welcome screen when not connected', () => {
     render(<App initialPath="/" autoStart={false} />);
     expect(screen.getByRole('heading', { level: 1, name: 'Overload App' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Mit HiDrive verbinden' }));
+    // HiDrive login is disabled until the client ID is configured
+    expect(screen.getByRole('button', { name: 'Mit HiDrive verbinden' })).toBeDisabled();
   });
 
   it('sets up a band, creates the first profile and greets the member', async () => {
@@ -102,6 +103,11 @@ describe('Songs (M2 in demo mode)', () => {
     await user.click(screen.getByRole('button', { name: 'Rust and Thunder abspielen' }));
     expect(await screen.findByRole('region', { name: 'Läuft gerade' })).toHaveTextContent('Rust and Thunder');
     expect(screen.getByRole('button', { name: 'Rust and Thunder pausieren' })).toBeInTheDocument();
+
+    // tapping the mini player opens the playing song (regression v0.5.0)
+    await user.click(within(screen.getByRole('region', { name: 'Läuft gerade' })).getByRole('link'));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Rust and Thunder' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Läuft gerade' })).not.toBeInTheDocument();
   });
 
   it('filters new songs and opens the detail page', async () => {
@@ -143,6 +149,7 @@ describe('Song library (M3a in demo mode)', () => {
     const user = userEvent.setup();
     await openSong(user, /^Open Road/);
     await user.click(await screen.findByRole('button', { name: 'Abspielen' }));
+    await user.click(screen.getByRole('tab', { name: /Notizen für alle/ }));
     await user.type(screen.getByRole('textbox', { name: 'Notiz für die Band …' }), 'Bridge ab jetzt 2×');
     await user.click(screen.getByRole('checkbox', { name: /Position übernehmen/ }));
     await user.click(screen.getByRole('button', { name: 'Notiz speichern' }));
@@ -189,7 +196,7 @@ describe('Song library (M3a in demo mode)', () => {
     await openSong(user, /^Midnight Engine(?! \()/);
     await user.click(await screen.findByRole('button', { name: 'Als Version hinzufügen' }));
     expect(await screen.findByText(/ist jetzt eine Version/)).toBeInTheDocument();
-    const versions = screen.getByRole('heading', { name: 'Versionen' }).parentElement!;
+    const versions = screen.getByRole('heading', { name: 'Versionen' }).closest('section')!;
     const live = within(versions).getByRole('button', { name: /Midnight Engine \(Live\)/ }).closest('li')!;
     await user.click(within(live).getByRole('button', { name: 'Aktionen für diese Version' }));
     await user.click(screen.getByRole('menuitem', { name: 'Als Band-Version festlegen' }));
@@ -198,5 +205,183 @@ describe('Song library (M3a in demo mode)', () => {
     await user.click(screen.getByRole('link', { name: 'Songs' }));
     expect(await screen.findByText('5 Songs')).toBeInTheDocument();
     expect(screen.getByText(/2 Versionen/)).toBeInTheDocument();
+  });
+});
+
+describe('Lyrics, uploads and folder view (M3b in demo mode)', () => {
+  beforeEach(() => localStorage.clear());
+
+  const wav = (name: string) => new File([new Uint8Array([...'RIFF'].map((c) => c.charCodeAt(0)).concat([0, 0, 0, 0], [...'WAVE'].map((c) => c.charCodeAt(0))))], name, { type: 'audio/wav' });
+
+  it('links a suggested lyrics file and shows the text', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/songs');
+    await screen.findByText('6 Songs');
+    await user.click(screen.getByRole('link', { name: /^Midnight Engine(?! \()/ }));
+    expect(await screen.findByText(/Songtext gefunden/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Verknüpfen' }));
+    expect(await screen.findByText(/Scheinwerfer im Regen/)).toBeInTheDocument();
+  });
+
+  it('types lyrics and saves them as a new file in the chosen folder', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/songs');
+    await screen.findByText('6 Songs');
+    await user.click(screen.getByRole('link', { name: /^Rust and Thunder/ }));
+    await user.click(await screen.findByRole('button', { name: 'Songtext eintippen' }));
+    await user.type(await screen.findByRole('textbox', { name: 'Songtext' }), 'Rost und Donner');
+    expect(screen.getByText('Band-App Uploads')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Speichern' }));
+    expect(await screen.findByText('Rost und Donner')).toBeInTheDocument();
+    expect(screen.getByText('Rust and Thunder - Text.txt')).toBeInTheDocument();
+  });
+
+  it('creates a new song with an uploaded recording', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/songs');
+    await screen.findByText('6 Songs');
+    await user.click(screen.getByRole('button', { name: 'Neuer Song' }));
+    const input = document.querySelector<HTMLInputElement>('input[type="file"]')!;
+    await user.upload(input, wav('07_Neuer_Hit.wav'));
+    expect(await screen.findByDisplayValue('Neuer Hit')).toBeInTheDocument();
+    expect(screen.getByText('Band-App Uploads')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Song anlegen' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Neuer Hit' })).toBeInTheDocument();
+    expect(await screen.findByText(/Band-App Uploads/)).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: 'Songs' }));
+    expect(await screen.findByText('7 Songs')).toBeInTheDocument();
+  });
+
+  it('shows the folder view with compact paths and steps into folders', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/songs');
+    await screen.findByText('6 Songs');
+    await user.click(screen.getByRole('radio', { name: 'Ordner' }));
+    const folder = await screen.findByRole('button', { name: /Live \/ 2025 Stadtfest/ });
+    await user.click(folder);
+    expect(await screen.findByRole('link', { name: /Midnight Engine \(Live\)/ })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Alle Ordner' }));
+    expect(await screen.findByRole('button', { name: /Proben \/ 2026-09-17/ })).toBeInTheDocument();
+  });
+});
+
+describe('Practice view (M4 in demo mode)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('opens the practice view with lyrics, notes and tempo/pitch/loop controls', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/songs');
+    await screen.findByText('6 Songs');
+    await user.click(screen.getByRole('link', { name: /^Midnight Engine(?! \()/ }));
+    await user.click(await screen.findByRole('button', { name: 'Verknüpfen' }));
+    await user.click(screen.getByRole('button', { name: 'Abspielen' }));
+    await user.click(screen.getAllByRole('button', { name: 'Übungsansicht' })[0]!);
+    const view = await screen.findByRole('dialog', { name: /Üben: Midnight Engine/ });
+    expect(await within(view).findByText(/Scheinwerfer im Regen/)).toBeInTheDocument();
+    await user.click(within(view).getByRole('button', { name: 'Langsamer' }));
+    expect(within(view).getAllByText('95 %').length).toBeGreaterThan(0);
+    await user.click(within(view).getByRole('button', { name: 'Tiefer' }));
+    expect(within(view).getByText('−1 Halbton')).toBeInTheDocument();
+    // A–B needs a known duration (jsdom plays nothing) – covered by the engine tests
+    expect(within(view).getByRole('button', { name: 'A setzen' })).toBeInTheDocument();
+    await user.click(within(view).getByRole('button', { name: 'Zurücksetzen' }));
+    expect(within(view).queryByText('95 %')).not.toBeInTheDocument();
+    await user.click(within(view).getByRole('button', { name: 'Übungsansicht schließen' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Midnight Engine' })).toBeInTheDocument();
+  });
+});
+
+describe('Calendar (M5 in demo mode)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('creates a weekly rehearsal, answers and cancels one date', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/calendar');
+    await user.click((await screen.findAllByRole('button', { name: 'Termin anlegen' }))[0]!);
+    await user.click(screen.getByRole('button', { name: 'Probe' }));
+    await user.clear(screen.getByLabelText('Ort'));
+    await user.type(screen.getByLabelText('Ort'), 'Proberaum');
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Wiederholung' }), 'weekly');
+    await user.click(screen.getByRole('button', { name: 'Speichern' }));
+
+    // detail of the first date
+    expect(await screen.findByText(/Jede Woche am/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Ich bin dabei' }));
+    expect(await screen.findByText('Zugesagt (1)')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Absagen' }));
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Nur diesen Termin' }));
+    expect(await screen.findByText('Fällt aus')).toBeInTheDocument();
+
+    // start screen shows the next dates
+    await user.click(screen.getByRole('link', { name: 'Start' }));
+    expect(await screen.findByRole('heading', { name: 'Nächste Termine' })).toBeInTheDocument();
+    expect(screen.getAllByText(/Proberaum/).length).toBeGreaterThan(1);
+  });
+
+  it('shows an absence as conflict on a gig', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/calendar/new?type=absence&date=2027-03-10');
+    await user.click(await screen.findByRole('button', { name: 'Speichern' }));
+    await screen.findByText(/Lisa abwesend/);
+    await user.click(screen.getByRole('link', { name: 'Kalender' }));
+    await user.click((await screen.findAllByRole('button', { name: 'Termin anlegen' }))[0]!);
+    await user.click(screen.getByRole('button', { name: 'Auftritt' }));
+    await user.type(screen.getByLabelText('Titel'), 'Stadtfest');
+    const date = screen.getByLabelText('Datum');
+    await user.clear(date);
+    await user.type(date, '2027-03-10');
+    await user.click(screen.getByRole('button', { name: 'Speichern' }));
+    expect(await screen.findByText('Lisa ist abwesend')).toBeInTheDocument();
+    expect(screen.getByText(/Treffpunkt 18:00/)).toBeInTheDocument();
+  });
+});
+
+describe('Setlists (M6 in demo mode)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('builds a setlist, saves it, practices it and shows stage + print views', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/setlists');
+    await user.click((await screen.findAllByRole('button', { name: 'Neue Setlist' }))[0]!);
+    const dialog = screen.getByRole('dialog');
+    const name = within(dialog).getByRole('textbox', { name: 'Name' });
+    await user.clear(name);
+    await user.type(name, 'Stadtfest');
+    await user.click(within(dialog).getByRole('button', { name: 'Neue Setlist' }));
+
+    // editor: add two songs via the picker (phone layout in tests)
+    await user.click(await screen.findByRole('button', { name: 'Songs hinzufügen' }));
+    const picker = screen.getByRole('dialog', { name: 'Songs hinzufügen' });
+    await user.click(within(picker).getByRole('checkbox', { name: 'Open Road auswählen' }));
+    await user.click(within(picker).getByRole('checkbox', { name: 'Rust and Thunder auswählen' }));
+    await user.click(within(picker).getByRole('button', { name: 'Hinzufügen (2)' }));
+    await user.click(within(picker).getByRole('button', { name: 'Schließen' }));
+    expect(screen.getByText(/1\. Open Road/)).toBeInTheDocument();
+
+    // direct transition from song 1 to song 2
+    await user.click(screen.getAllByRole('button', { name: 'Aktionen' })[0]!);
+    await user.click(screen.getByRole('menuitem', { name: 'Direkt weiter' }));
+    await user.click(screen.getByRole('button', { name: 'Zwischenpunkt' }));
+    await user.type(screen.getByRole('textbox', { name: 'Zwischenpunkt' }), 'Ansage: Merch');
+    await user.click(screen.getByRole('button', { name: 'Speichern' }));
+    expect(await screen.findByText('Setlist gespeichert')).toBeInTheDocument();
+
+    // detail
+    await user.click(within(screen.getByRole('navigation', { name: 'Hauptmenü' })).getByRole('link', { name: 'Setlists' }));
+    await user.click(await screen.findByRole('link', { name: /Stadtfest/ }));
+    expect(await screen.findByLabelText('Direkt weiter')).toBeInTheDocument();
+    expect(screen.getByText('Ansage: Merch')).toBeInTheDocument();
+
+    // stage view
+    await user.click(screen.getByRole('button', { name: 'Bühnenansicht' }));
+    expect(await screen.findByRole('dialog', { name: 'Stadtfest' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Bühnenansicht schließen' }));
+
+    // setlist mode in Songs
+    await user.click(await screen.findByRole('button', { name: 'Setlist üben' }));
+    expect(await screen.findByText('Setlist: Stadtfest')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Open Road/ }));
+    expect(await screen.findByRole('region', { name: 'Läuft gerade' })).toHaveTextContent('1 / 2');
   });
 });

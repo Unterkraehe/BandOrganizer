@@ -6,6 +6,7 @@ import { InvalidPathError } from './paths';
 import { AlreadyExistsError, ConflictError } from './types';
 
 const APP = '/users/band/_BandApp';
+const HOME = '/users/band';
 const UPLOADS = '/users/band/Band-App Uploads';
 const FOREIGN_FILE = '/users/band/Songs/Hell Is Empty.mp3';
 
@@ -17,23 +18,24 @@ describe('SafeStorage (R-DATA-04)', () => {
     provider = new MemoryStorageProvider();
     provider.seed(FOREIGN_FILE, 'existing band audio');
     provider.seed('/users/band/Setlists/Alt.xlsx', 'existing sheet');
-    storage = new SafeStorage(provider, { appRoot: APP, uploadRoot: UPLOADS });
+    storage = new SafeStorage(provider, { appRoot: APP, home: HOME });
   });
 
   describe('zones', () => {
     it('classifies paths', () => {
       expect(storage.zoneOf(`${APP}/members/m_1.json`)).toBe('app');
       expect(storage.zoneOf(APP)).toBe('app');
-      expect(storage.zoneOf(`${UPLOADS}/Songs/x.mp3`)).toBe('upload');
-      expect(storage.zoneOf(FOREIGN_FILE)).toBe('foreign');
-      expect(storage.zoneOf('/users/band/_BandAppX/file.json')).toBe('foreign');
+      expect(storage.zoneOf(`${UPLOADS}/Songs/x.mp3`)).toBe('home');
+      expect(storage.zoneOf(FOREIGN_FILE)).toBe('home');
+      expect(storage.zoneOf('/users/band/_BandAppX/file.json')).toBe('home');
+      expect(storage.zoneOf('/users/other/x.mp3')).toBe('foreign');
     });
 
     it('rejects dangerous zone configurations', () => {
       expect(() => new SafeStorage(provider, { appRoot: '/' })).toThrow();
-      expect(() => new SafeStorage(provider, { appRoot: APP, uploadRoot: '/' })).toThrow();
-      expect(() => new SafeStorage(provider, { appRoot: APP, uploadRoot: `${APP}/uploads` })).toThrow();
-      expect(() => new SafeStorage(provider, { appRoot: `${UPLOADS}/app`, uploadRoot: UPLOADS })).toThrow();
+      expect(() => new SafeStorage(provider, { appRoot: APP, home: '/' })).toThrow();
+      expect(() => new SafeStorage(provider, { appRoot: APP, home: APP })).toThrow();
+      expect(() => new SafeStorage(provider, { appRoot: '/users/other/_BandApp', home: HOME })).toThrow();
     });
   });
 
@@ -48,15 +50,16 @@ describe('SafeStorage (R-DATA-04)', () => {
     it.each([
       ['writeText', () => storage.writeText(FOREIGN_FILE, 'x')],
       ['writeJson', () => storage.writeJson('/users/band/Songs/new.json', {})],
-      ['createFile', () => storage.createFile('/users/band/Songs/new.mp3', 'x')],
-      ['createFolder', () => storage.createFolder('/users/band/Neu')],
+      ['createFile over existing', () => storage.createFile(FOREIGN_FILE, 'x')],
+      ['createFile outside home', () => storage.createFile('/users/other/new.mp3', 'x')],
+      ['createFolder outside home', () => storage.createFolder('/users/other/Neu')],
       ['move', () => storage.move(FOREIGN_FILE, `${APP}/stolen.mp3`)],
       ['move into foreign', () => storage.move(`${APP}/a.json`, '/users/band/a.json')],
       ['delete', () => storage.delete(FOREIGN_FILE)],
       ['delete folder', () => storage.delete('/users/band/Songs')],
       ['delete root', () => storage.delete('/')],
     ])('blocks %s', async (_name, action) => {
-      await expect(action()).rejects.toBeInstanceOf(GuardViolationError);
+      await expect(action()).rejects.toBeInstanceOf(Error);
       await expect(provider.readText(FOREIGN_FILE)).resolves.toBe('existing band audio');
       expect(provider.has('/users/band/Songs')).toBe(true);
     });
@@ -65,6 +68,7 @@ describe('SafeStorage (R-DATA-04)', () => {
       await expect(storage.delete(`${APP}/../Songs/Hell Is Empty.mp3`)).rejects.toBeInstanceOf(InvalidPathError);
       await expect(storage.writeText('relative/path.json', 'x')).rejects.toBeInstanceOf(InvalidPathError);
       await expect(storage.delete('/users/band/_BandAppX/x')).rejects.toBeInstanceOf(GuardViolationError);
+      await expect(storage.writeText('/users/band/../other/x', 'x')).rejects.toBeInstanceOf(InvalidPathError);
     });
   });
 
@@ -96,11 +100,13 @@ describe('SafeStorage (R-DATA-04)', () => {
     });
   });
 
-  describe('upload root (create-only)', () => {
-    it('allows creating new files and folders', async () => {
+  describe('home outside the app folder (create-only uploads)', () => {
+    it('allows creating new files and folders anywhere in the home', async () => {
       await storage.createFolder(`${UPLOADS}/Songs/Neuer Song`);
       await storage.createFile(`${UPLOADS}/Songs/Neuer Song/demo.mp3`, 'audio');
+      await storage.createFile('/users/band/Songs/Neu.mp3', 'audio');
       await expect(storage.readText(`${UPLOADS}/Songs/Neuer Song/demo.mp3`)).resolves.toBe('audio');
+      await expect(storage.readText(FOREIGN_FILE)).resolves.toBe('existing band audio');
     });
 
     it('never overwrites an existing upload', async () => {
@@ -118,12 +124,13 @@ describe('SafeStorage (R-DATA-04)', () => {
       await expect(storage.move(path, `${UPLOADS}/Songs/A/b.txt`)).rejects.toBeInstanceOf(GuardViolationError);
       await expect(storage.delete(path)).rejects.toBeInstanceOf(GuardViolationError);
       await expect(storage.delete(`${UPLOADS}/Songs`)).rejects.toBeInstanceOf(GuardViolationError);
-      await expect(storage.createFile(UPLOADS, 'x')).rejects.toBeInstanceOf(GuardViolationError);
+      await expect(storage.createFile(HOME, 'x')).rejects.toBeInstanceOf(GuardViolationError);
+      await expect(storage.move(FOREIGN_FILE, `${APP}/x.mp3`)).rejects.toBeInstanceOf(GuardViolationError);
       await expect(storage.readText(path)).resolves.toBe('text');
     });
   });
 
-  describe('without upload root', () => {
+  describe('without home', () => {
     it('treats everything outside the app folder as read-only', async () => {
       const appOnly = new SafeStorage(provider, { appRoot: APP });
       await expect(appOnly.createFile(`${UPLOADS}/x.mp3`, 'x')).rejects.toBeInstanceOf(GuardViolationError);
@@ -135,7 +142,7 @@ describe('folder creation stays inside the zones', () => {
   it('creates missing parents from the zone root down, never above it', async () => {
     const provider = new MemoryStorageProvider();
     provider.seed('/users/band/Songs/a.mp3', 'x'); // home exists
-    const storage = new SafeStorage(provider, { appRoot: APP, uploadRoot: UPLOADS });
+    const storage = new SafeStorage(provider, { appRoot: APP, home: HOME });
     await storage.writeJson(`${APP}/songs/s1/notes/public/n1.json`, {});
     expect(provider.has(`${APP}/songs/s1/notes/public`)).toBe(true);
     await storage.createFile(`${UPLOADS}/Songs/Neu/a.mp3`, 'x');

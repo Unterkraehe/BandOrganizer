@@ -1,6 +1,6 @@
 # Implementation Roadmap
 
-> **Status:** M0 ✅ · M1 🟡 (real login pending client ID) · M2 🟡 (S3 iPhone test pending) · M3a ✅ v0.4.0 (demo) · next: M3b lyrics + uploads
+> **Status:** M0–M6 ✅ (v0.8.0) · open tests: S1/S2, S5, S6, iPhone with effects · next: M7 Austauschen (chat)
 > Order and scope of the build, from an empty repository to v1.0. Each milestone ends with a **deployed version the band can use and test**.
 
 ## 1. Principles
@@ -17,11 +17,11 @@
 |---|---|---|---|---|
 | M0 ✅ | **Fundament** | Project setup, deployment, design system, i18n, storage abstraction + safety guard | Open the (empty) app, install it, switch themes | M |
 | M1 🟡 | **Verbinden** | Token helper, HiDrive login, band setup, member profiles, settings | Connect every device, create profiles, set band color/logo | M |
-| M2 🟡 | **Hören** | File scan, song list, basic player, mini player, song detail | Browse and play all songs on any device | M |
-| M3 🟡 | **Songbibliothek** (3a ✅, 3b open) | Lyrics, notes, metadata, versions/Band-Version, archive, tags, **new songs & uploads** | Read lyrics, write notes, organize the repertoire, add new songs and recordings from the app | L |
-| M4 | **Üben** | Pitch/tempo engine, A–B loop, practice view | Practice with tempo, pitch and loops | M |
-| M5 | **Planen** | Calendar, recurring events, answers, absences, .ics export, dashboard events | Plan rehearsals and gigs, answer, export dates | L |
-| M6 | **Setlists** | Setlist editor, print, stage view, setlist mode, suggestions | Build setlists, print them, use them on stage and for practice | L |
+| M2 ✅ | **Hören** | File scan, song list, basic player, mini player, song detail | Browse and play all songs on any device | M |
+| M3 ✅ | **Songbibliothek** | Lyrics, notes, metadata, versions/Band-Version, archive, tags, **new songs & uploads**, **folder view** | Read lyrics, write notes, organize the repertoire, add new songs and recordings from the app | L |
+| M4 ✅ | **Üben** | Pitch/tempo engine, A–B loop, practice view | Practice with tempo, pitch and loops | M |
+| M5 ✅ | **Planen** | Calendar, recurring events, answers, absences, .ics export, dashboard events | Plan rehearsals and gigs, answer, export dates | L |
+| M6 ✅ | **Setlists** | Setlist editor, print, stage view, setlist mode, suggestions | Build setlists, print them, use them on stage and for practice | L |
 | M7 | **Austauschen** | Chat, item discussions, cards, info lines, unread badges | Discuss app topics in context | M |
 | M8 | **Finden** | Global search incl. lyrics lines and date search | Find anything in the app from anywhere | M |
 | M9 | **v1.0** | Calendar subscription, polish, accessibility and performance review, band test | Everything in v1, stable | M |
@@ -105,6 +105,8 @@ Scope:
 - Metadata editing: title, key, BPM (with tap tempo), tuning (F4 §4.4).
 - Versions & Band-Version: grouping, suggestions, split, version selector (F4 §6.8).
 - Archive, tags (incl. tag management), "Ist kein Song – ausblenden" (F4 §6.5, §6.10, §6.11).
+- **Folder view** for the song list (F4 §4.1a): toggle Liste/Ordner, compact paths, tree on tablet/desktop, step-into navigation on phones.
+- **Folder picker for uploads** (F10 §4.2) + guard change: whole home = create-only zone (R-DATA-03/04), with tests.
 - **Adding content (F10):** "Neuer Song" (with or without recording), "Aufnahme hinzufügen", "Songtext hochladen", **"Songtext eintippen" / edit `.txt` lyrics with history**, drag & drop on desktop, duplicate detection, upload indicator.
 - "In Setlists" section prepared (filled in M6).
 - System events for info lines (e.g. Band-Version changed) are **recorded** already; they appear in the chat once M7 exists.

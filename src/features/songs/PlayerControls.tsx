@@ -1,4 +1,6 @@
-import { Loader2, Pause, Play, RotateCcw, RotateCw, Star } from 'lucide-react';
+import { Loader2, Pause, Play, RotateCcw, RotateCw, SlidersHorizontal, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { practiceSummary } from './practice/summary';
 import { useTranslation } from 'react-i18next';
 import { Button, IconButton, SeekBar } from '@/ui';
 import { recordingName, type Recording, type Song } from './model';
@@ -17,6 +19,7 @@ interface PlayerControlsProps {
 export function PlayerControls({ song, recording, onRecordingChange, markers }: PlayerControlsProps) {
   const { t } = useTranslation('songs');
   const { play, state, engine } = usePlaySong();
+  const navigate = useNavigate();
   const current = state.track?.id === recording.id && state.track?.songId === song.id;
   const status = current ? state.status : 'idle';
   const playing = status === 'playing';
@@ -53,19 +56,20 @@ export function PlayerControls({ song, recording, onRecordingChange, markers }: 
             {available.map((r) => (
               <option key={r.id} value={r.id}>
                 {recordingName(r)}
-                {r.id === song.recording.id ? ` ★ ${t('versions.band')}` : ''}
+                {r.id === song.recording?.id ? ` ★ ${t('versions.band')}` : ''}
               </option>
             ))}
           </select>
         </label>
       )}
-      {recording.id !== song.recording.id && (
+      {song.recording && recording.id !== song.recording.id && (
         <p className={styles.notBand}>
           <Star size={16} aria-hidden="true" />
           {t('versions.notBand')}
           <Button
             variant="ghost"
             onClick={() => {
+              if (!song.recording) return;
               onRecordingChange(song.recording);
               play(song, song.recording);
             }}
@@ -81,6 +85,7 @@ export function PlayerControls({ song, recording, onRecordingChange, markers }: 
         disabled={!current}
         onSeek={(seconds) => engine.seek(seconds)}
         markers={markers}
+        loop={current ? state.loop : null}
       />
       <div className={styles.transport}>
         <IconButton label={t('player.back10')} icon={<RotateCcw size={24} />} onClick={() => engine.skip(-10)} disabled={!current} />
@@ -101,6 +106,24 @@ export function PlayerControls({ song, recording, onRecordingChange, markers }: 
         </button>
         <IconButton label={t('player.forward10')} icon={<RotateCw size={24} />} onClick={() => engine.skip(10)} disabled={!current} />
       </div>
+      {current && practiceSummary(state, t) && (
+        <p className={styles.notBand} style={{ justifyContent: 'center', color: 'var(--accent)' }}>
+          <SlidersHorizontal size={16} aria-hidden="true" />
+          {practiceSummary(state, t)}
+          <Button
+            variant="ghost"
+            onClick={() => {
+              engine.setEffects({ tempo: 1, semitones: 0 });
+              engine.setLoop(null);
+            }}
+          >
+            {t('practice.reset')}
+          </Button>
+        </p>
+      )}
+      <Button icon={<SlidersHorizontal size={18} />} onClick={() => navigate(`/songs/${song.id}/practice`)} style={{ justifySelf: 'center' }}>
+        {t('practice.open')}
+      </Button>
       {message && (
         <p className={styles.message} role="alert">
           {message}

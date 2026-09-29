@@ -1,14 +1,17 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import auth from '@/locales/de/auth.json';
+import calendar from '@/locales/de/calendar.json';
 import band from '@/locales/de/band.json';
 import common from '@/locales/de/common.json';
 import members from '@/locales/de/members.json';
 import profile from '@/locales/de/profile.json';
 import pwa from '@/locales/de/pwa.json';
 import settings from '@/locales/de/settings.json';
+import setlists from '@/locales/de/setlists.json';
 import songs from '@/locales/de/songs.json';
 import start from '@/locales/de/start.json';
+import uploads from '@/locales/de/uploads.json';
 import whatsNew from '@/locales/de/whatsNew.json';
 
 /**
@@ -16,7 +19,7 @@ import whatsNew from '@/locales/de/whatsNew.json';
  * src/locales/<lang>/ with the same namespaces, registered here.
  */
 export const resources = {
-  de: { auth, band, common, members, profile, pwa, settings, songs, start, whatsNew },
+  de: { auth, band, calendar, common, members, profile, pwa, settings, setlists, songs, start, uploads, whatsNew },
 } as const;
 
 export const defaultNS = 'common';

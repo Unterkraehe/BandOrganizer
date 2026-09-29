@@ -236,3 +236,96 @@ ul.muted {
   height: 20px;
   accent-color: var(--accent);
 }
+
+.folderRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--touch-lg);
+  padding: 0 var(--space-3);
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.folderRow:hover {
+  background: var(--surface-2);
+}
+
+.folderName {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.folderCount {
+  font-size: var(--fs-sm);
+  font-weight: 400;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.folderChildren {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li + li,
+.folderChildren > li {
+  border-top: 1px solid var(--border);
+}
+
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--fs-sm);
+}
+
+.crumbs span {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.crumbs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 0 var(--space-1);
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.crumbs button[aria-current] {
+  color: var(--text);
+}
+
+.versionTag {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.sections[data-dragging] {
+  outline: 2px dashed var(--accent);
+  outline-offset: 6px;
+  border-radius: var(--radius-lg);
+}
+
+.dropHint {
+  justify-self: center;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}

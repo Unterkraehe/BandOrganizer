@@ -1,7 +1,9 @@
 import type { Versioned } from '@/core/band/band';
-import { scanAudioFiles, type ScannedFile, type ScanReport } from '@/core/files/scan';
-import { ConflictError, type SafeStorage } from '@/core/storage';
-import { buildSongs, type Song, type SongMeta, type Tag } from './model';
+import { newId } from '@/core/data/ids';
+import { scanFiles, type ScannedFile, type ScanReport } from '@/core/files/scan';
+import { ConflictError, type FileEntry, type SafeStorage } from '@/core/storage';
+import { buildSongs, recordingIdFor, type Song, type SongMeta, type Tag } from './model';
+import { PracticeStore } from './practice';
 import { createTag, listSongMetas, listTags, saveTag, seedMeta, updateSongMeta } from './repository';
 
 /**
@@ -12,6 +14,8 @@ import { createTag, listSongMetas, listTags, saveTag, seedMeta, updateSongMeta }
 export interface LibraryState {
   status: 'idle' | 'scanning' | 'ready' | 'error';
   files: ScannedFile[];
+  /** lyrics documents found by the scan (F4 §6.3) */
+  documents: ScannedFile[];
   scannedAt: string | null;
   progress: { folders: number; found: number } | null;
   /** Result of the last scan in this session (not cached) */
@@ -43,20 +47,25 @@ export class LibraryStore {
   private state: LibraryState;
   private listeners = new Set<() => void>();
   private abort: AbortController | null = null;
+  /** Tempo / pitch / loop per member, song and version (F4 §7.4) */
+  readonly practice: PracticeStore;
 
   constructor(private options: LibraryOptions) {
-    const cached = this.read<{ files: ScannedFile[]; scannedAt: string }>('scan');
+    this.practice = new PracticeStore(options.storage, options.appRoot, options.memberId);
+    const cached = this.read<{ files: ScannedFile[]; documents?: ScannedFile[]; scannedAt: string }>('scan');
     const metas = this.read<Record<string, Versioned<SongMeta>>>('metas') ?? {};
     const files = cached?.files ?? [];
+    const documents = cached?.documents ?? [];
     this.state = {
       status: cached ? 'ready' : 'idle',
       files,
+      documents,
       scannedAt: cached?.scannedAt ?? null,
       progress: null,
       report: null,
       metas,
       tags: this.read<Versioned<Tag>[]>('tags') ?? [],
-      songs: this.build(files, metas),
+      songs: this.build(files, metas, documents),
     };
   }
 
@@ -79,13 +88,23 @@ export class LibraryStore {
     return this.state.songs.find((s) => s.id === songId);
   }
 
-  private build(files: ScannedFile[], metas: Record<string, Versioned<SongMeta>>) {
-    return buildSongs(files, Object.fromEntries(Object.entries(metas).map(([id, m]) => [id, m.value])), this.options.home);
+  get home() {
+    return this.options.home;
+  }
+
+  private build(files: ScannedFile[], metas: Record<string, Versioned<SongMeta>>, documents: ScannedFile[]) {
+    return buildSongs(
+      files,
+      Object.fromEntries(Object.entries(metas).map(([id, m]) => [id, m.value])),
+      this.options.home,
+      Date.now(),
+      this.state?.status === 'idle' ? undefined : documents,
+    );
   }
 
   private set(patch: Partial<LibraryState>) {
     const next = { ...this.state, ...patch };
-    if (patch.files || patch.metas) next.songs = this.build(next.files, next.metas);
+    if (patch.files || patch.metas || patch.documents) next.songs = this.build(next.files, next.metas, next.documents);
     this.state = next;
     this.listeners.forEach((listener) => listener());
   }
@@ -115,7 +134,7 @@ export class LibraryStore {
     this.set({ status: 'scanning', progress: { folders: 0, found: 0 } });
     const report: ScanReport = { folders: 0, failedFolders: [] };
     try {
-      const files = await scanAudioFiles(this.options.storage, {
+      const { audio: files, documents } = await scanFiles(this.options.storage, {
         root: this.options.home,
         skip: this.options.skip,
         signal: this.abort.signal,
@@ -123,8 +142,8 @@ export class LibraryStore {
         report,
       });
       const scannedAt = new Date().toISOString();
-      this.write('scan', { files, scannedAt });
-      this.set({ status: 'ready', files, scannedAt, progress: null, report });
+      this.write('scan', { files, documents, scannedAt });
+      this.set({ status: 'ready', files, documents, scannedAt, progress: null, report });
     } catch (error) {
       if ((error as Error).name === 'AbortError') return;
       console.error('Scan failed', error);
@@ -134,13 +153,18 @@ export class LibraryStore {
 
   /* ---------------- song changes ---------------- */
 
-  private async update(songId: string, mutate: (meta: SongMeta) => SongMeta, guard?: (latest: SongMeta) => void) {
+  private async update(
+    songId: string,
+    mutate: (meta: SongMeta) => SongMeta,
+    guard?: (latest: SongMeta) => void,
+    seed?: () => SongMeta,
+  ) {
     const memberId = this.options.memberId();
     const saved = await updateSongMeta(
       this.options.storage,
       this.options.appRoot,
       songId,
-      () => seedMeta(songId, this.song(songId), memberId),
+      seed ?? (() => seedMeta(songId, this.song(songId), memberId)),
       mutate,
       memberId,
       guard,
@@ -257,6 +281,76 @@ export class LibraryStore {
       recordings: meta.recordings.filter((r) => !moving.includes(r.id)),
       bandVersion: meta.bandVersion && moving.includes(meta.bandVersion.recordingId) ? null : meta.bandVersion,
     }));
+  }
+
+  /* ---------------- adding content (F10) ---------------- */
+
+  /** A song created in the app, possibly without a recording yet (F10 §5.2). */
+  async createAppSong(details: { title: string; key: string | null; bpm: number | null; tuning: string | null; tagIds: string[] }): Promise<string> {
+    const songId = newId('song');
+    const memberId = this.options.memberId();
+    await this.update(songId, (meta) => meta, undefined, () => ({
+      ...seedMeta(songId, undefined, memberId),
+      source: 'app',
+      displayTitle: details.title.trim(),
+      key: details.key,
+      bpm: details.bpm,
+      tuning: details.tuning,
+      tagIds: details.tagIds,
+    }));
+    return songId;
+  }
+
+  /** Adds an uploaded audio file as a version; the first one becomes the Band-Version (F10 §5.2–5.3). */
+  async attachRecording(songId: string, entry: FileEntry, options: { label?: string | null; makeBand?: boolean } = {}) {
+    const file: ScannedFile = { path: entry.path, name: entry.name, id: entry.id, size: entry.size, modifiedAt: entry.modifiedAt ?? new Date().toISOString() };
+    const recordingId = recordingIdFor(file);
+    const memberId = this.options.memberId();
+    const files = [...this.state.files.filter((f) => f.path !== file.path), file];
+    this.write('scan', { files, documents: this.state.documents, scannedAt: this.state.scannedAt });
+    this.set({ files });
+    await this.update(songId, (meta) => {
+      const first = meta.recordings.length === 0 && !this.song(songId)?.recording;
+      meta.recordings.push({ id: recordingId, fileId: entry.id, path: entry.path, size: entry.size, label: options.label?.trim() || null, firstSeenAt: new Date().toISOString() });
+      if (first || options.makeBand) meta.bandVersion = { recordingId, setBy: memberId, setAt: new Date().toISOString() };
+      return meta;
+    });
+    return recordingId;
+  }
+
+  /** Links a lyrics document; the previous link goes into the history (F10 §5.7). */
+  async linkLyrics(songId: string, path: string, fileId?: string) {
+    const memberId = this.options.memberId();
+    if (!this.state.documents.some((d) => d.path === path)) {
+      const name = path.slice(path.lastIndexOf('/') + 1);
+      const documents = [...this.state.documents, { path, name, id: fileId }];
+      this.write('scan', { files: this.state.files, documents, scannedAt: this.state.scannedAt });
+      this.set({ documents });
+    }
+    await this.update(songId, (meta) => {
+      const history = meta.lyricsHistory ?? [];
+      if (meta.lyrics && meta.lyrics.path !== path) {
+        history.unshift({ path: meta.lyrics.path, savedAt: new Date().toISOString(), savedBy: memberId });
+      }
+      return { ...meta, lyrics: { path, fileId }, lyricsHistory: history.filter((h) => h.path !== path).slice(0, 20) };
+    });
+  }
+
+  /** Only removes the link – the file stays (F4 §4.4). */
+  unlinkLyrics(songId: string) {
+    const memberId = this.options.memberId();
+    return this.update(songId, (meta) => ({
+      ...meta,
+      lyrics: null,
+      lyricsHistory: meta.lyrics
+        ? [{ path: meta.lyrics.path, savedAt: new Date().toISOString(), savedBy: memberId }, ...(meta.lyricsHistory ?? [])].slice(0, 20)
+        : (meta.lyricsHistory ?? []),
+    }));
+  }
+
+  /** All lyrics paths currently linked to any song (for suggestions). */
+  linkedLyricsPaths(): Set<string> {
+    return new Set(this.state.songs.flatMap((s) => (s.lyrics ? [s.lyrics.path] : [])));
   }
 
   /* ---------------- tags ---------------- */

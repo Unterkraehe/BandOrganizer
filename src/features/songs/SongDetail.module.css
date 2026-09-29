@@ -390,3 +390,30 @@ span.versionMain {
 .bpmRow > div {
   flex: 0 1 200px;
 }
+
+.dropArea {
+  position: relative;
+  display: grid;
+  gap: var(--space-8);
+}
+
+.dropArea[data-dragging]::after {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--space-2));
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-lg);
+  pointer-events: none;
+}
+
+.dropHint {
+  position: sticky;
+  top: 80px;
+  z-index: 5;
+  justify-self: center;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}

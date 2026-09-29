@@ -1,0 +1,259 @@
+.controls {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.compact {
+  gap: var(--space-3);
+}
+
+.control {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.controlHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.controlLabel {
+  font-weight: 600;
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.slider {
+  flex: 1;
+  min-width: 120px;
+  accent-color: var(--accent);
+  height: 32px;
+}
+
+.pitchValue {
+  min-width: 3ch;
+  text-align: center;
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.hint {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.warning {
+  font-size: var(--fs-sm);
+  color: var(--warning);
+  font-weight: 600;
+}
+
+/* ---------- practice page ---------- */
+
+.page {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  /* without an explicit column the grid grows to the header's content width (overflow on phones) */
+  grid-template-columns: minmax(0, 1fr);
+  background: var(--bg);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: calc(env(safe-area-inset-top) + var(--space-2)) var(--space-3) var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-xl);
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary {
+  font-size: var(--fs-sm);
+  color: var(--accent);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Phones: the controls below already show the values – give the title the room */
+@media (max-width: 479px) {
+  .summary {
+    display: none;
+  }
+}
+
+.body {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.lyricsPane {
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-4);
+}
+
+.notesPane {
+  display: none;
+}
+
+.dock {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) calc(env(safe-area-inset-bottom) + var(--space-3));
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  max-height: 55vh;
+  overflow: auto;
+}
+
+.transport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+}
+
+.bigPlay {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  cursor: pointer;
+}
+
+.dockTabs {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+.sheet {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 35;
+  max-height: 70vh;
+  overflow: auto;
+  padding: var(--space-4) var(--space-4) calc(env(safe-area-inset-bottom) + var(--space-4));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-float);
+}
+
+.sheetHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notesList {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.note {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.note[data-pinned] {
+  border-color: var(--accent);
+}
+
+.note[data-active] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.noteText {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.noteMeta {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.timeChip {
+  justify-self: start;
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.sectionLabel {
+  font-family: var(--font-display);
+  font-weight: 500;
+  color: var(--text-muted);
+  margin: var(--space-2) 0;
+}
+
+@media (min-width: 768px) {
+  .body {
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  }
+
+  .notesPane {
+    display: block;
+    min-height: 0;
+    overflow: auto;
+    padding: var(--space-4);
+    border-left: 1px solid var(--border);
+  }
+
+  .notesButton {
+    display: none;
+  }
+
+  .dock {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    align-items: start;
+    max-height: none;
+  }
+}

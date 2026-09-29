@@ -3,7 +3,11 @@ import { createBrowserRouter, createMemoryRouter, RouterProvider } from 'react-r
 import { SessionProvider, useSession } from '@/core/session/BandSession';
 import { ThemeProvider } from '@/core/theme/ThemeProvider';
 import { features as registeredFeatures } from '@/features';
+import { CalendarProvider } from '@/features/calendar/CalendarProvider';
+import { SetlistModeProvider } from '@/features/setlists/SetlistModeProvider';
+import { SetlistProvider } from '@/features/setlists/SetlistProvider';
 import { LibraryProvider } from '@/features/songs/LibraryProvider';
+import { UploadsProvider } from '@/features/songs/uploads/UploadsProvider';
 import { ErrorBoundary } from './ErrorBoundary';
 import { NotifyProvider } from './notify/NotifyProvider';
 import { BandSetupScreen } from './gate/BandSetupScreen';
@@ -52,7 +56,15 @@ function Gate({ initialPath }: { initialPath?: string }) {
     case 'ready':
       return (
         <LibraryProvider>
-          <AppRouter initialPath={initialPath} />
+          <UploadsProvider>
+            <CalendarProvider>
+              <SetlistProvider>
+                <SetlistModeProvider>
+                  <AppRouter initialPath={initialPath} />
+                </SetlistModeProvider>
+              </SetlistProvider>
+            </CalendarProvider>
+          </UploadsProvider>
         </LibraryProvider>
       );
   }

@@ -3,7 +3,17 @@
 | | |
 |---|---|
 | **ID** | F7 |
-| **Status** | Planned – ready for implementation |
+| **Status** | Implemented (v0.8.0) |
+
+> **Implementation notes (v0.8.0)**
+> - Editor keeps a local draft with undo/redo (100 steps) and saves explicitly; leaving with unsaved changes asks first (router blocker).
+> - Drag & drop via pointer events on the grip handle (mouse and touch), plus menu actions (up/down, move to block) for keyboard use.
+> - Arrows (`segueToNext`) are normalised on save: only between two songs of the same block.
+> - Conflict on save → "Deren Version laden" or "Meine als Kopie speichern".
+> - Setlist mode: device-local (`bandapp.setlistMode`), queue = playable song entries; auto-advance (default on) and arrows use the engine's new `ended` counter.
+> - Print uses the browser's print dialog; app chrome is hidden with `data-no-print`; blocks use `break-inside: avoid`.
+> - The red arrow is a bold "↓" character, so it also shows in black-and-white prints.
+> - Rehearsal suggestions look back 3 years of past, not cancelled events with a setlist.
 | **Depends on** | F2 (members), F4 (songs, archive, tags), F5 (events), F9 (duration, setlist mode) |
 | **Used by** | F3 (setlist mode, dashboard), F5 (event ↔ setlist), F8 (search) |
 

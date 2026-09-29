@@ -1,11 +1,19 @@
 import { createContext, useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useSession } from '@/core/session/BandSession';
-import { AudioEngine, type PlayerState, type Track } from './engine';
+import { AudioEngine, type PlayerState, type PracticeSettings, type Track } from './engine';
 
 const PlayerContext = createContext<AudioEngine | null>(null);
 
 /** One audio engine for the whole app session (R-UX-08). Disposed on profile switch/disconnect. */
-export function PlayerProvider({ children, onDuration }: { children: ReactNode; onDuration?: (track: Track, seconds: number) => void }) {
+export function PlayerProvider({
+  children,
+  onDuration,
+  onSettingsChange,
+}: {
+  children: ReactNode;
+  onDuration?: (track: Track, seconds: number) => void;
+  onSettingsChange?: (track: Track, settings: PracticeSettings) => void;
+}) {
   const { storage, band } = useSession();
   const [engine] = useState(
     () =>
@@ -15,6 +23,7 @@ export function PlayerProvider({ children, onDuration }: { children: ReactNode; 
           return storage.readBlob(path);
         },
         onDuration: (track, seconds) => onDuration?.(track, seconds),
+        onSettingsChange: (track, settings) => onSettingsChange?.(track, settings),
         artist: band?.bandName,
       }),
   );

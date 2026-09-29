@@ -3,7 +3,15 @@
 | | |
 |---|---|
 | **ID** | F4 |
-| **Status** | M2 + M3a implemented (v0.4.0). M3b open: lyrics (§6.3) and uploads (F10). Spike: HiDrive file ID stability (§6.1) |
+| **Status** | Implemented (v0.6.0) incl. lyrics, folder view and practice view (§4.3). Open: desktop master–detail, "Mit Notizen" filter (M8). Spike: HiDrive file ID stability (§6.1) |
+
+> **M3b implementation notes (v0.5.0)**
+> - Detail tabs: **Songtext · Notizen für alle · Meine Notizen** (last tab remembered per device).
+> - Lyrics renderers in `src/core/lyrics/renderers.ts`: TXT (UTF-8, fallback Windows-1252), DOCX (mammoth, HTML sanitised to simple formatting), PDF (pdf.js **v4 legacy build**, works on older iOS Safari; v5+ needs very new JS features). Other formats: "Datei öffnen".
+> - The scan also collects lyrics documents (pdf, docx, txt, doc, odt, rtf, pages); unlinked documents whose name matches the song title are suggested ("Songtext gefunden – Verknüpfen").
+> - Songs created in the app get a random `song_…` id; files listed in a song's `meta.json` belong to that song, even though their deterministic id differs.
+> - Folder view: phone = step into folders (`?folder=` in the URL), tablet/desktop = tree (expanded folders remembered). Songs in folders not reachable by the scan are not shown.
+> - Tag chips on the list link to the filtered list (`/songs?tag=`).
 
 > **M2 implementation notes (v0.3.0)**
 > - "Zuletzt hinzugefügt"/"Neu" use the file's modification time until `firstSeenAt` in `meta.json` exists (M3).
@@ -76,6 +84,26 @@ A clear, fast list of all band songs, built automatically from the audio files o
 - **States:** first scan running → progress "Songs werden gesucht … 42 gefunden"; no audio files → "Keine Songs gefunden" + hint to settings; search without results → "Kein Song gefunden für ‚xyz'".
 - **Setlist mode:** see F3 §5 (banner, order, position numbers).
 - Desktop: list takes the left column, selected song detail opens on the right (master–detail). Phone/tablet: detail is its own screen.
+
+### 4.1a Ordner-Ansicht (planned for M3b)
+
+> The same navigation is reused as the folder picker for uploads (F10 §4.2) – there without compact paths, so every folder can be chosen.
+
+Optional view of the song list that mirrors the HiDrive folder structure.
+
+- **Toggle** above the list: "Liste" | "Ordner". Remembered per device (`bandapp.songs.view`).
+- **Only folders with audio** (directly or deeper) are shown; folders without music never appear. Folders excluded from the scan (F1) don't exist here either.
+- **Compact paths:** a chain of folders that each contain nothing but exactly one subfolder (no audio files of their own) is merged into one node, e.g. `Band / Aufnahmen / 2025 / Stadtfest` instead of four levels. A folder becomes its own node again as soon as it contains audio files itself or splits into several subfolders.
+- **Navigation per screen size:**
+  - Phone (< 768 px): **step into folders** like a file browser. A breadcrumb path at the top ("Alle Ordner › Band / Aufnahmen › 2025") leads back; the browser/Android back button goes up one level.
+  - Tablet and desktop (≥ 768 px): **expandable tree**, folders open in place; the expanded state is remembered per device.
+  - The current folder (phone) or expanded folders (tree) are part of the URL (`/songs?view=folders&folder=…`), so reloads and deep links keep the place.
+- **Folder rows:** folder icon, compact name, number of songs inside (including subfolders).
+- **Song rows:** the same rows as in the list (▶, title, meta, tags, "⋯" menu, mini player works as usual).
+- **Versions:** a song appears in **every folder that contains one of its files**, marked with the version if it isn't the Band-Version ("Midnight Engine · Live"). Tapping always opens the same song; ▶ plays the version in that folder.
+- **Search & filters** (search, "Neu", tags): folders without matches are hidden, folders with matches open automatically (tree) or show match counts (phone).
+- **Archive & hidden:** same rules as the list – hidden files never appear, archived songs only with "Archivierte Songs anzeigen".
+- **Sorting:** folders A–Z first, then songs according to the chosen sort.
 
 ### 4.2 Song-Detail (`/songs/:songId`)
 

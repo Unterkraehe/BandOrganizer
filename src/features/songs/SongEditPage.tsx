@@ -71,7 +71,7 @@ function SongEditForm({ song }: { song: Song }) {
     if (!title.trim() || bpmInvalid) return;
     setBusy(true);
     setError(null);
-    const originFile = song.recordings.find((r) => r.originSongId === song.id)?.fileName ?? song.recording.fileName;
+    const originFile = song.recordings.find((r) => r.originSongId === song.id)?.fileName ?? song.recording?.fileName ?? song.title;
     // Same as the automatic title from the file name → store nothing (follows the file)
     const displayTitle = title.trim() === cleanTitle(originFile) ? null : title.trim();
     try {

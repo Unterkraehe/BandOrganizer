@@ -3,7 +3,15 @@
 | | |
 |---|---|
 | **ID** | F10 |
-| **Status** | Planned – spike S6 pending |
+| **Status** | Implemented (v0.5.0) – spike S6 (large files on real HiDrive) pending |
+
+> **Implementation notes (v0.5.0)**
+> - Upload queue (`src/core/uploads/queue.ts`): 2 parallel, 3 retries with back-off, indicator at the top right with per-file progress and "Erneut versuchen".
+> - Checks (`validate.ts`): extension + signature (ID3/MPEG, RIFF/WAVE, fLaC, OggS, ftyp, %PDF, ZIP, OLE, RTF, no NUL bytes in TXT); 200 MB audio / 20 MB lyrics.
+> - Unique names by listing the target folder first, plus retry with the next suffix on `AlreadyExists`.
+> - The guard's home zone is create-only; new folders from the picker are created by `SafeStorage` only when the file is written.
+> - Duplicate detection by name + size against the scan; "Vorhandene verwenden" opens the existing song (new song) or groups it as a version (add recording) / links it (lyrics).
+> - Desktop drag & drop: audio onto the song list → "Neuer Song"; onto a song → new version; PDF/Word/TXT onto a song → lyrics upload.
 | **Type** | Core module (`src/core/uploads/`) + UI entry points in F4 |
 | **Depends on** | F1 (storage, guard), F2 (members) |
 | **Used by** | F4 Songs (new song, new version, lyrics), design system (band logo) |
@@ -43,7 +51,8 @@ Content that lives only in the app (events, setlists, notes, chat) was already c
 
 1. **Titel*** (required)
 2. **Aufnahme** (optional): "Datei auswählen" → audio file; title is pre-filled from the file name if still empty
-3. **Songtext** (optional): "Datei auswählen" → PDF/DOCX/TXT, **or** "Eintippen" → text field
+   - **"Speichern in"**: target folder, pre-selected (§4.1), tap → folder picker (§4.2)
+3. **Songtext** (optional): "Datei auswählen" → PDF/DOCX/TXT, **or** "Eintippen" → text field; both with their own **"Speichern in"** (§4.1)
 4. Optional: Tonart, BPM, Stimmung, Tags (collapsed "Weitere Angaben")
 5. **"Song anlegen"** → song appears immediately in the list with an upload progress indicator; uploads continue in the background.
 
@@ -55,32 +64,72 @@ Content that lives only in the app (events, setlists, notes, chat) was already c
 
 ## 4. Storage Location on HiDrive
 
-Uploaded files are **real band files**, so they go into a normal, human-readable folder – not into the technical `_BandApp/` folder.
+Uploaded files are **real band files**, so they go into normal, human-readable folders – never into the technical `_BandApp/` folder.
 
-**Decided: one folder per song** under a configurable upload root:
+**Decided (2026-09-28): the member chooses the folder for every audio file, lyrics file and typed lyrics individually – anywhere in the band's HiDrive.** Uploads are create-only everywhere (§5.1).
 
-```
-<upload root>/                       ← configurable, default: "Band-App Uploads"
-├─ Songs/
-│  └─ <Song title>/
-│     ├─ <original file name>.mp3     ← recordings
-│     ├─ Probe 2026-10-15.m4a
-│     ├─ <Song title> - Text.pdf      ← uploaded lyrics
-│     └─ <Song title> - Text.txt      ← lyrics typed in the app
-└─ Band/
-   └─ logo-dark.svg …                 ← branding (alternatively in _BandApp/branding/)
-```
+### 4.1 Pre-selected folder ("Speichern in")
 
-- One folder per song, named after the song title **at creation time**. Renaming the song later does **not** rename or move the folder (R-DATA-02 spirit: no moving of files; the app keeps the path in `meta.json`).
+A sensible folder is always pre-selected, so a quick upload stays one tap:
+
+| Upload | Pre-selected folder |
+|---|---|
+| Neuer Song – Aufnahme | Folder of this device's **last audio upload**; the very first time the **standard upload folder** (settings, default `Band-App Uploads`) |
+| "+ Aufnahme hinzufügen" (existing song) | Folder of the song's **Band-Version** |
+| Songtext-Datei hochladen (new or existing song) | Folder of this device's **last lyrics upload/save** (lyrics often live in their own folder, e.g. "Texte"); first time: standard upload folder |
+| Songtext eintippen – first version | Same as lyrics files: last lyrics folder, first time the standard upload folder |
+| Songtext bearbeiten – new version | Folder of the **previous version** of this text (changeable) |
+
+Audio and lyrics remember their last folder separately (`bandapp.uploads.lastAudioFolder`, `bandapp.uploads.lastLyricsFolder`).
+
+The field shows the compact path ("Band / Proben / 2026") and "Ändern".
+
+### 4.2 Folder picker
+
+Opened from "Speichern in". Same navigation style as the song folder view (F4 §4.1a), but made for choosing *any* folder:
+
+**Content**
+- Shows **all** folders of the HiDrive home (with or without audio), except `_BandApp/` and hidden folders.
+- **No compact paths:** every folder is its own level and can be selected – also folders that only contain a single subfolder (unlike the folder view of the song list).
+- Files are not shown, only a small count per folder ("12 Dateien") as orientation.
+- The pre-selected folder is opened (phone) / expanded and highlighted (tree) when the picker opens.
+
+**Choosing**
+- Phone: the folder you are in is the one that gets chosen – **"Hier speichern"** at the bottom, the current path above it ("Speichern in: Band / Proben / 2026").
+- Tablet/desktop: click a folder to select it (highlighted), **"Hier speichern"** confirms.
+
+**"Neuer Ordner"**
+- Button in the current / selected folder → name field → the new folder appears in the list and is selected immediately.
+- It is **only created on HiDrive when the upload is actually saved** – cancelling leaves no empty folders behind.
+- If a folder with that name already exists there, no new folder is made: the picker simply opens the existing one ("Den Ordner gibt es schon – geöffnet").
+- Several levels at once are possible (new folder inside a new folder).
+- Create-only as always (§5.1): creating a folder never changes existing ones.
+
+**Devices**
+- Phone (< 768 px): full-screen sheet, step into folders, breadcrumb back, back button goes up one level (closes the picker at the top level).
+- Tablet/desktop (≥ 768 px): dialog with an expandable tree.
+- Touch targets ≥ 44 px (R-UI-04); keyboard: arrow keys move and open/close folders, Enter selects, Esc closes (R-UI-05).
+
+**Other**
+- Warning if the chosen folder is excluded from the song search (F1): "Dieser Ordner wird bei der Songsuche übersprungen – der Song taucht nicht in der Liste auf." with "Trotzdem hier speichern".
+- Folder listings are loaded on demand (one level at a time) and cached for the session.
+
+### 4.3 Typed lyrics
+
+Typed lyrics (§5.7) get the same **"Speichern in"** field and picker as lyrics files (§4.1): the editor shows it below the text, pre-selected as in the table above.
+- File name: `<Song title> - Text.txt`; every edit is saved as a new file (`<Song title> - Text (2).txt`), by default in the folder of the previous version.
+
+### 4.4 Standard upload folder
+
+- Still set during band setup and in Einstellungen → Band, now labelled **"Standard-Ordner für Uploads"**. It is only the first suggestion (§4.1), not a restriction.
 - Original file names are kept (cleaned of characters HiDrive doesn't allow).
-- The upload root is chosen during band setup (F1) and can be changed in the settings; changing it only affects future uploads.
 - The F1 scan finds uploaded files like any other audio file; they're already linked, so no duplicates appear.
 
 ## 5. Behaviour & Rules
 
 ### 5.1 Data safety (extends R-DATA)
-- **Create-only:** uploads always create **new** files. If a file with that name exists, a suffix is added (`Song (2).mp3`). The app never overwrites, replaces or deletes an existing file – also not files it uploaded itself (v1).
-- The safety guard (R-DATA-04) gets a second allowed zone: **create-only writes inside the upload root**. Updates, moves and deletes there stay forbidden.
+- **Create-only:** uploads always create **new** files (and, if wanted, new folders). If a name exists, a suffix is added (`Song (2).mp3`). The app never overwrites, replaces, moves or deletes an existing file or folder – also not files it uploaded itself (v1).
+- The safety guard (R-DATA-04) treats **the whole HiDrive home (except `_BandApp/`) as a create-only zone**. Updates, moves and deletes there stay forbidden.
 - Every uploaded file is recorded (who, when, which song) in the song's `meta.json` (`recordings[].uploadedBy/uploadedAt`, `lyrics.uploadedBy/uploadedAt`).
 - "Removing" an uploaded recording from a song = unlinking / hiding (F4 §6.5), never deleting the file.
 
@@ -111,11 +160,11 @@ Uploaded files are **real band files**, so they go into a normal, human-readable
 - Upload via HiDrive API (`POST /file` into the target folder, create-only) with progress events; CORS allows it (F1 tests).
 - Large files: chunked/resumable upload if the HiDrive API supports it (**spike S6**); otherwise single request with retry.
 - Upload queue in memory: max. 2 parallel uploads, automatic retry (3×, back-off), then "Erneut versuchen".
-- Folder creation (`Songs/<Titel>/`) is also create-only; an existing folder with the same name is reused only if it was created by the app (recorded in `app.json` → `uploads.createdFolders`), otherwise a suffixed folder is created.
+- Folders are only created on explicit "Neuer Ordner" in the picker, and only when the upload is saved (§4.2). Uploading into an existing folder never changes that folder.
 
 ### 5.7 Typing lyrics in the app
 - **"Songtext eintippen"** opens a simple full-screen text editor (plain text, line breaks kept, large font; paste from anywhere). Tips shown once: "Leerzeile = neuer Absatz; Stimmen z. B. mit [Lisa] markieren".
-- **Saving creates a new `.txt` file** (UTF-8) in the song's folder: `<Song title> - Text.txt` and links it as the song's lyrics.
+- **Saving creates a new `.txt` file** (UTF-8) in the chosen folder (§4.3): `<Song title> - Text.txt` and links it as the song's lyrics.
 - **Editing** ("Bearbeiten", available for any linked `.txt`, typed or found by the scan): the edited text is saved as a **new file** (`<Song title> - Text (2).txt`) and the link switches to it. The previous file is never changed (create-only, R-DATA-03).
   - Side effect: a natural history. The Songtext tab offers "Frühere Fassungen (2)" to view – and if needed re-link – older versions.
   - Conflict check: if someone else saved a newer version while I was editing, I'm asked "Lisa hat den Text gerade geändert – ihre Fassung ansehen / meine trotzdem speichern" (both stay as files).
@@ -124,7 +173,8 @@ Uploaded files are **real band files**, so they go into a normal, human-readable
 
 ## 6. Data Model
 
-- `_BandApp/app.json` → `uploads: { root: "/users/…/Band-App Uploads", createdFolders: [ … ] }`
+- `_BandApp/app.json` → `uploads: { root: "/users/…/Band-App Uploads" }` (standard upload folder = first suggestion)
+- Device-local: `bandapp.uploads.lastAudioFolder`, `bandapp.uploads.lastLyricsFolder` (§4.1)
 - `meta.json` (F4 §7.1) additions:
 
 ```json
@@ -181,6 +231,7 @@ None of its own; new songs/lyrics are indexed by F4/F8 as usual.
 
 | # | Topic | Decision |
 |---|---|---|
-| 1 | Upload location | One folder per song under a configurable upload root (default "Band-App Uploads") |
+| 1 | Upload location | ~~One folder per song under the upload root~~ → **Member chooses the folder per upload, anywhere in the HiDrive home (create-only)**, with a pre-selected folder (§4) – changed 2026-09-28 |
+| 1a | Picker for | **All** uploads: audio files, lyrics files and typed lyrics (§4.3) – changed 2026-09-28 |
 | 2 | Lyrics | Upload **and** type in the app (saved as `.txt`); edits create new files, old versions stay as history |
 | 3 | Other attachments | Only audio + lyrics in v1 |

@@ -5,6 +5,9 @@ import { MergePage } from './MergePage';
 import { SongDetailPage } from './SongDetailPage';
 import { SongEditPage } from './SongEditPage';
 import { TagsSettingsPage } from './TagsSettingsPage';
+import { LyricsEditorPage } from './lyrics/LyricsEditorPage';
+import { NewSongPage } from './uploads/NewSongPage';
+import { PracticePage } from './practice/PracticePage';
 import { SongsPage } from './SongsPage';
 
 export const songsFeature: FeatureRegistration = {
@@ -16,7 +19,10 @@ export const songsFeature: FeatureRegistration = {
   placement: 'bottomBar',
   element: createElement(SongsPage),
   routes: [
+    { path: '/songs/new', element: createElement(NewSongPage) },
     { path: '/songs/:songId', element: createElement(SongDetailPage) },
+    { path: '/songs/:songId/lyrics', element: createElement(LyricsEditorPage) },
+    { path: '/songs/:songId/practice', element: createElement(PracticePage) },
     { path: '/songs/:songId/edit', element: createElement(SongEditPage) },
     { path: '/songs/:songId/merge', element: createElement(MergePage) },
     { path: '/settings/tags', element: createElement(TagsSettingsPage) },

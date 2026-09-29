@@ -1,0 +1,205 @@
+.picker {
+  display: grid;
+  gap: var(--space-3);
+  min-width: min(520px, 100%);
+}
+
+.tree {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.treeRoot {
+  max-height: 50vh;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-1);
+}
+
+.treeRow {
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+}
+
+.treeRow[data-selected] {
+  background: var(--accent-soft);
+}
+
+.toggle {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 40px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.treeName {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.treeName span:first-of-type {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.count {
+  margin-left: auto;
+  padding-right: var(--space-2);
+  font-size: var(--fs-xs);
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.newBadge {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--fs-sm);
+}
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.crumb button {
+  min-height: 32px;
+  padding: 0 var(--space-1);
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.crumb button[aria-current] {
+  color: var(--text);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 45vh;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.list > li + li {
+  border-top: 1px solid var(--border);
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--touch-lg);
+  padding: 0 var(--space-3);
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.listName {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.hint {
+  padding: var(--space-3);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.warning {
+  font-size: var(--fs-sm);
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.newForm {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.newForm > div {
+  flex: 1;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+
+.target {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.target strong {
+  color: var(--text);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.fieldLabel {
+  font-weight: 600;
+}
+
+.fieldRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch);
+  padding-left: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+
+.fieldValue {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

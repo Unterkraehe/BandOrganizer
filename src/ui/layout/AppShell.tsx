@@ -30,7 +30,7 @@ export function AppShell({ features, bottomSlot, children }: AppShellProps) {
 
   return (
     <div className={styles.shell}>
-      <nav className={styles.nav} aria-label={t('nav.main')}>
+      <nav className={styles.nav} aria-label={t('nav.main')} data-no-print>
         <div className={styles.brand}>
           {band ? <BandMark /> : <span className={styles.brandName}>{t('app.name')}</span>}
         </div>
@@ -55,7 +55,7 @@ export function AppShell({ features, bottomSlot, children }: AppShellProps) {
       </nav>
       <main className={styles.main}>
         {mode === 'demo' && (
-          <div className={styles.demoBanner} role="note">
+          <div className={styles.demoBanner} role="note" data-no-print>
             <span>{t('auth:demoBanner')}</span>
             <button type="button" className={styles.demoEnd} onClick={disconnect}>
               {t('auth:demoEnd')}
@@ -64,7 +64,7 @@ export function AppShell({ features, bottomSlot, children }: AppShellProps) {
         )}
         {children}
       </main>
-      <div className={styles.bottomSlot}>{bottomSlot}</div>
+      <div className={styles.bottomSlot} data-no-print>{bottomSlot}</div>
     </div>
   );
 }

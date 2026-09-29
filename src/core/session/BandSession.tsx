@@ -46,6 +46,7 @@ interface SessionContextValue {
   alias: string | null;
   storage: SafeStorage | null;
   appRoot: string | null;
+  home: string | null;
   band: BandConfig | null;
   members: Member[];
   currentMember: Member | null;
@@ -111,8 +112,8 @@ export function SessionProvider({ children, autoStart = true }: { children: Reac
 
   const storage = useMemo(() => {
     if (!connection) return null;
-    return new SafeStorage(connection.provider, { appRoot: connection.appRoot, uploadRoot: band?.value.uploads.root });
-  }, [connection, band?.value.uploads.root]);
+    return new SafeStorage(connection.provider, { appRoot: connection.appRoot, home: connection.home });
+  }, [connection]);
 
   /** Loads band + members for a connection and decides the next screen. */
   const enter = useCallback(async (conn: Connection) => {
@@ -211,6 +212,7 @@ export function SessionProvider({ children, autoStart = true }: { children: Reac
     alias: connection?.alias ?? null,
     storage,
     appRoot: connection?.appRoot ?? null,
+    home: connection?.home ?? null,
     band: band?.value ?? null,
     members: members.map((m) => m.value),
     currentMember: members.find((m) => m.value.id === currentMemberId)?.value ?? null,

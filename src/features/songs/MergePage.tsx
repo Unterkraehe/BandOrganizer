@@ -47,7 +47,7 @@ export function MergePage() {
           <li key={song.id} className={styles.row}>
             <button type="button" className={styles.rowLink} style={{ border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }} onClick={() => setTarget(song)}>
               <span className={styles.rowTitle}>{song.title}</span>
-              <span className={styles.rowMeta}>{song.recording.folder || t('rootFolder')}</span>
+              <span className={styles.rowMeta}>{song.recording?.folder || t('rootFolder')}</span>
             </button>
           </li>
         ))}

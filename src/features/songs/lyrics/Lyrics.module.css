@@ -1,0 +1,149 @@
+.lyrics {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+
+.fileName {
+  flex: 1;
+  min-width: 120px;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.text {
+  white-space: pre-wrap;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.html {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.html p {
+  margin: 0 0 0.6em;
+}
+
+.pdf {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: center;
+  overflow-x: auto;
+}
+
+.pdf canvas {
+  max-width: none;
+  border-radius: var(--radius-sm);
+  background: #fff;
+  box-shadow: var(--shadow-float);
+}
+
+.hint {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.empty {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+}
+
+.emptyActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.suggestions {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  width: 100%;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.suggestions li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  height: var(--touch);
+  border: none;
+  background: transparent;
+  font-size: var(--fs-md);
+  color: var(--text);
+  outline: none;
+}
+
+.docList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 50vh;
+  overflow: auto;
+}
+
+.docList button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--touch-lg);
+  padding: var(--space-2);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.docList span {
+  display: grid;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.docList small {
+  color: var(--text-muted);
+}
+
+.editor {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.editorArea {
+  min-height: 50vh;
+  font-size: var(--fs-lg);
+  line-height: 1.6;
+}

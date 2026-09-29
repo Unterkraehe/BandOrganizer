@@ -67,3 +67,9 @@
     max-width: calc(var(--content-max) + 2 * var(--space-8));
   }
 }
+
+@media (min-width: 1024px) {
+  .content.wide {
+    max-width: calc(1200px + 2 * var(--space-8));
+  }
+}

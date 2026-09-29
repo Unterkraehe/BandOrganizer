@@ -1,4 +1,28 @@
 {
+  "0.8.0": [
+    "Setlists: Blöcke, Zwischenpunkte, rote Pfeile für „direkt weiter“, Notizen für alle und nur für dich.",
+    "Songs per Ziehen sortieren, rückgängig machen, aus einer alten Setlist starten.",
+    "Bühnenansicht und Drucken (ohne Seitenumbruch mitten im Block).",
+    "„Setlist üben“: die Setlist als Playlist – auch direkt vom Termin aus."
+  ],
+  "0.7.0": [
+    "Kalender: Auftritte, Proben, Abwesenheiten und Sonstiges – als Liste oder Monat.",
+    "Wiederholende Termine, einzelne Termine absagen oder verschieben.",
+    "Zusagen mit „Ich bin dabei“, „Vielleicht“ oder „Ich kann nicht“ – auch direkt auf der Startseite.",
+    "Termine in den eigenen Handy-Kalender übernehmen."
+  ],
+  "0.6.0": [
+    "Übungsansicht: Songtext, Notizen und Steuerung auf einem Bildschirm – der Bildschirm bleibt an.",
+    "Tempo (50–150 %) und Tonhöhe (±12 Halbtöne) unabhängig voneinander einstellen.",
+    "A–B-Schleife für schwierige Stellen.",
+    "Deine Einstellungen werden pro Song und Version gemerkt."
+  ],
+  "0.5.0": [
+    "Songtexte: PDF, Word und TXT direkt in der App – passende Dateien werden vorgeschlagen.",
+    "Songtexte eintippen und bearbeiten; frühere Fassungen bleiben erhalten.",
+    "Neue Songs und Aufnahmen hochladen – du wählst jedes Mal den Ordner.",
+    "Ordner-Ansicht in der Songliste."
+  ],
   "0.4.0": [
     "Songs bearbeiten: Titel, Tonart, BPM (auch per Tippen) und Stimmung.",
     "Notizen für alle und nur für dich – anheften und an eine Stelle im Song knüpfen („▶ 1:32“ springt dorthin).",

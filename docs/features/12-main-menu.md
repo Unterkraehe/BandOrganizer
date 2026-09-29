@@ -112,6 +112,8 @@ Opening a setlist "in Songs" turns the song list into a practice/rehearsal queue
 
 ## 6. Behaviour & Rules
 
+> **Setlist mode implemented (v0.8.0)** – see F7 implementation notes.
+
 ### 6.1 Feature registry
 Each feature registers (R-CODE-02):
 

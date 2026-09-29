@@ -25,12 +25,18 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     void store.load();
-    return () => store.dispose();
+    return () => {
+      void store.practice.flush();
+      store.dispose();
+    };
   }, [store]);
 
   return (
     <LibraryContext.Provider value={store}>
-      <PlayerProvider onDuration={(track, seconds) => track.songId && void store.recordDuration(track.songId, track.id, seconds)}>
+      <PlayerProvider
+        onDuration={(track, seconds) => track.songId && void store.recordDuration(track.songId, track.id, seconds)}
+        onSettingsChange={(track, settings) => track.songId && store.practice.save(track.songId, track.id, settings)}
+      >
         {children}
       </PlayerProvider>
     </LibraryContext.Provider>

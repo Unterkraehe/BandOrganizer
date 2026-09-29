@@ -80,3 +80,18 @@ textarea {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Printing (setlist print, F7 §4.5): only the content, black on white */
+@media print {
+  [data-no-print] {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+}

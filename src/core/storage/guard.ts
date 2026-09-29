@@ -5,9 +5,10 @@ import type { CreateOptions, FileContent, FileEntry, StorageProvider, WriteOptio
  * The single safety guard for all write operations (R-DATA-01 … R-DATA-04).
  *
  * Zones:
- * - app data folder (`appRoot`, e.g. "/…/_BandApp"): the app may create, update, move and delete.
- * - upload root (`uploadRoot`, optional): create-only – new files and folders, nothing else.
- * - everything else: read-only.
+ * - app data folder (`appRoot`, e.g. "/users/band/_BandApp"): the app may create, update, move and delete.
+ * - the rest of the HiDrive home (`home`, optional): create-only – new files and folders (uploads, F10),
+ *   never changing, moving or deleting anything that exists.
+ * - everything else (outside the home): read-only.
  *
  * Feature code only ever receives a SafeStorage, never the raw provider.
  */
@@ -27,25 +28,26 @@ export class GuardViolationError extends Error {
 
 export interface GuardZones {
   appRoot: string;
-  uploadRoot?: string;
+  /** HiDrive home; enables create-only uploads anywhere inside it (R-DATA-03) */
+  home?: string;
 }
 
-type Zone = 'app' | 'upload' | 'foreign';
+type Zone = 'app' | 'home' | 'foreign';
 
 export class SafeStorage {
   private readonly appRoot: string;
-  private readonly uploadRoot: string | undefined;
+  private readonly home: string | undefined;
 
   constructor(
     private readonly provider: StorageProvider,
     zones: GuardZones,
   ) {
     this.appRoot = normalizePath(zones.appRoot);
-    this.uploadRoot = zones.uploadRoot ? normalizePath(zones.uploadRoot) : undefined;
+    this.home = zones.home ? normalizePath(zones.home) : undefined;
     if (this.appRoot === '/') throw new Error('The app data folder must not be the storage root.');
-    if (this.uploadRoot === '/') throw new Error('The upload root must not be the storage root.');
-    if (this.uploadRoot && (isWithin(this.uploadRoot, this.appRoot) || isWithin(this.appRoot, this.uploadRoot))) {
-      throw new Error('App data folder and upload root must not contain each other.');
+    if (this.home === '/') throw new Error('The home must not be the storage root.');
+    if (this.home && (this.home === this.appRoot || !isWithin(this.appRoot, this.home))) {
+      throw new Error('The app data folder must lie inside the home.');
     }
   }
 
@@ -57,7 +59,7 @@ export class SafeStorage {
   zoneOf(path: string): Zone {
     const p = normalizePath(path);
     if (isWithin(p, this.appRoot)) return 'app';
-    if (this.uploadRoot && isWithin(p, this.uploadRoot)) return 'upload';
+    if (this.home && isWithin(p, this.home)) return 'home';
     return 'foreign';
   }
 
@@ -99,16 +101,16 @@ export class SafeStorage {
     return this.provider.writeText(p, JSON.stringify(data, null, 2) + '\n', options);
   }
 
-  /** Create a NEW file in the app data folder or the upload root. Never overwrites. */
+  /** Create a NEW file in the app data folder or anywhere in the home (uploads). Never overwrites. */
   async createFile(path: string, content: FileContent, options?: CreateOptions): Promise<FileEntry> {
-    const p = this.require('createFile', path, ['app', 'upload']);
+    const p = this.require('createFile', path, ['app', 'home']);
     await this.ensureFolder(dirname(p));
     return this.provider.createFile(p, content, options);
   }
 
-  /** Create a folder (and missing parents) in the app data folder or the upload root. */
+  /** Create a folder (and missing parents) in the app data folder or anywhere in the home. */
   async createFolder(path: string): Promise<FileEntry> {
-    const p = this.require('createFolder', path, ['app', 'upload']);
+    const p = this.require('createFolder', path, ['app', 'home']);
     return this.ensureFolder(p);
   }
 
@@ -134,8 +136,9 @@ export class SafeStorage {
   private async ensureFolder(folder: string): Promise<FileEntry> {
     const p = normalizePath(folder);
     const zone = this.zoneOf(p);
-    const root = zone === 'app' ? this.appRoot : zone === 'upload' ? this.uploadRoot : undefined;
-    if (!root) throw new GuardViolationError('createFolder', p, 'folders can only be created inside the app data folder or the upload root');
+    const root = zone === 'app' ? this.appRoot : zone === 'home' ? this.home : undefined;
+    if (!root) throw new GuardViolationError('createFolder', p, 'folders can only be created inside the app data folder or the home');
+    if (zone === 'home' && p === root) return (await this.provider.stat(root)) ?? Promise.reject(new GuardViolationError('createFolder', p, 'the home must exist'));
     const chain: string[] = [];
     for (let current = p; ; current = dirname(current)) {
       chain.unshift(current);
@@ -154,15 +157,17 @@ export class SafeStorage {
     if (p === this.appRoot && (operation === 'delete' || operation === 'move')) {
       throw new GuardViolationError(operation, p, 'the app data folder itself must not be moved or deleted');
     }
-    if (this.uploadRoot && p === this.uploadRoot && operation !== 'createFolder') {
-      throw new GuardViolationError(operation, p, 'the upload root itself is not a file');
+    if (this.home && p === this.home && operation !== 'createFolder') {
+      throw new GuardViolationError(operation, p, 'the home itself cannot be changed');
     }
     const zone = this.zoneOf(p);
     if (!allowed.includes(zone)) {
       const reason =
         zone === 'foreign'
-          ? 'path is outside the app data folder and the upload root (foreign data is read-only)'
-          : `operation is not allowed in the ${zone} zone`;
+          ? 'path is outside the writable zones (read-only)'
+          : zone === 'home'
+            ? 'existing files outside the app data folder are never changed, moved or deleted (create-only)'
+            : `operation is not allowed in the ${zone} zone`;
       throw new GuardViolationError(operation, p, reason);
     }
     return p;

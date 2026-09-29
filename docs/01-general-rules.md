@@ -16,11 +16,11 @@ All files that existed on HiDrive before the app, or were put there by humans, a
 
 **R-DATA-03 — Where the app may write.**
 - App data (JSON records) lives only in the app data folder (`_BandApp/`, overview §8).
-- **Uploaded files** (songs, lyrics, logo – F10) go into the configured **upload root**, **create-only**: always new files, never overwriting, moving or deleting anything there, not even the app's own uploads (v1). On name clash a suffix is added (`Song (2).mp3`).
+- **Uploaded files** (songs, lyrics – F10) go into the folder the member chooses, anywhere in the HiDrive home except `_BandApp/`, **create-only**: always new files (and new folders on explicit request), never overwriting, moving or deleting anything, not even the app's own uploads (v1). On name clash a suffix is added (`Song (2).mp3`). The band logo is stored in `_BandApp/branding/`.
 - Explicit exports follow the same create-only rule.
 
 **R-DATA-04 — One safety guard, no bypass.**
-Every write, move, rename and delete operation goes through a single guard in `core/storage/`. The guard knows two zones: the app data folder (all app operations allowed) and the upload root (**create-only**). Everything else is read-only. No feature code may call the storage API directly for write operations. The guard must have unit tests.
+Every write, move, rename and delete operation goes through a single guard in `core/storage/`. The guard knows two zones: the app data folder (all app operations allowed) and the rest of the HiDrive home (**create-only**: new files and folders only). Nothing outside the home is ever written; existing files and folders are never changed, moved or deleted. No feature code may call the storage API directly for write operations. The guard must have unit tests.
 
 **R-DATA-05 — Soft delete for app data.**
 When a user "deletes" something in the app (a note, message, event, setlist), it is marked as deleted (`deletedAt`, `deletedBy`) instead of removing the file. Hard deletes of app data only happen through an explicit maintenance function, if ever.

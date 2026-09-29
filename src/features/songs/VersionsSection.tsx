@@ -1,4 +1,4 @@
-import { Layers, Star } from 'lucide-react';
+import { Layers, Plus, Star } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNotify } from '@/app/notify/NotifyProvider';
@@ -11,7 +11,7 @@ import { usePlaySong } from './usePlaySong';
 import styles from './SongDetail.module.css';
 
 /** Versions & Band-Version (F4 §4.4, §6.8) plus suggestions for similar songs. */
-export function VersionsSection({ song, onSelect }: { song: Song; onSelect: (recording: Recording) => void }) {
+export function VersionsSection({ song, onSelect, onAdd }: { song: Song; onSelect: (recording: Recording) => void; onAdd: () => void }) {
   const { t } = useTranslation('songs');
   const notify = useNotify();
   const { store, songs } = useLibrary();
@@ -26,10 +26,16 @@ export function VersionsSection({ song, onSelect }: { song: Song; onSelect: (rec
 
   return (
     <section className={styles.versions}>
-      <h2 className={styles.sectionTitle}>{t('versions.title')}</h2>
-      <ul className={styles.versionList}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)' }}>
+        <h2 className={styles.sectionTitle}>{t('versions.title')}</h2>
+        <Button variant="ghost" icon={<Plus size={18} />} onClick={onAdd}>
+          {t('uploads:addRecording')}
+        </Button>
+      </div>
+      {song.recordings.length === 0 && <p className={styles.hint}>{t('noRecording')}</p>}
+      <ul className={styles.versionList} hidden={song.recordings.length === 0}>
         {song.recordings.map((rec) => {
-          const isBand = rec.id === song.recording.id;
+          const isBand = rec.id === song.recording?.id;
           const meta = [rec.missing ? t('missingFile') : null, rec.durationSec ? formatDuration(rec.durationSec) : null, rec.folder || t('rootFolder'), rec.label ? rec.fileName : null]
             .filter(Boolean)
             .join(' · ');
@@ -95,7 +101,7 @@ export function VersionsSection({ song, onSelect }: { song: Song; onSelect: (rec
               <li key={other.id} className={styles.version}>
                 <span className={styles.versionMain}>
                   <span className={styles.versionName}>{other.title}</span>
-                  <span className={styles.versionMeta}>{other.recording.folder || t('rootFolder')}</span>
+                  <span className={styles.versionMeta}>{other.recording?.folder || t('rootFolder')}</span>
                 </span>
                 <Button
                   icon={<Layers size={18} />}

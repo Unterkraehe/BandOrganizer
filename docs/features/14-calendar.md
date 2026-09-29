@@ -3,7 +3,17 @@
 | | |
 |---|---|
 | **ID** | F5 |
-| **Status** | Planned – spikes pending (§12) |
+| **Status** | Implemented (v0.7.0) except the subscription (§6.5b, M9). Spike S5 (.ics on iPhone/Android) pending |
+
+> **Implementation notes (v0.7.0)**
+> - Recurrence engine in `src/features/calendar/recurrence.ts`: weekly (every n weeks, several weekdays), monthly (nth weekday or day of month), until/count; computed in Berlin local time (DST-safe), plus RRULE for export.
+> - Recurrences are stored structured (`freq`, `interval`, `byDay`, `monthly`, `until`, `count`) **and** as `rrule` string.
+> - Answers store `answeredFor` (the occurrence start when answering); if the start changed, "bitte prüfen" is shown – no extra writes needed.
+> - "Diesen und alle folgenden" ends the old series (`until` = day before) and creates a new one; a `COUNT` limit is dropped in that case, and answers of the following dates are **not** carried over to the new series (v1 simplification).
+> - Absence "cancel for all following" ends the series.
+> - Answers are loaded for the past 7 and next 180 days.
+> - `.ics` export: VTIMEZONE Europe/Berlin, RRULE, cancelled dates as `STATUS:CANCELLED` overrides; on phones via the share sheet, otherwise download.
+> - Not yet: chat info lines (M7), "Setlist üben"/setlist link (M6), subscription (M9).
 | **Depends on** | F1, F2, F3 |
 | **Used by** | F3 Dashboard, F7 Setlists, F8 Search, F6 Chat (info lines) |
 
