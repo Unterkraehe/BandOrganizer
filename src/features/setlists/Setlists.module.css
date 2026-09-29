@@ -55,6 +55,10 @@
   align-items: center;
 }
 
+.tools > button {
+  flex: none;
+}
+
 .search {
   display: flex;
   align-items: center;
@@ -65,7 +69,8 @@
   border-radius: var(--radius-md);
   background: var(--surface-2);
   color: var(--text-muted);
-  flex: 1 1 220px;
+  flex: 1 1 140px;
+  min-width: 0;
 }
 
 .search input {

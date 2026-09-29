@@ -1,4 +1,4 @@
-import { ListMusic, Unlink } from 'lucide-react';
+import { ListMusic, Plus, Unlink } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
@@ -63,7 +63,7 @@ export function EventSetlist({ occ, title }: { occ: Occurrence; title: string })
       ) : (
         <div className={styles.actions}>
           {occ.setlistId && <p className={styles.hint}>{t('missingSong')}</p>}
-          <Button icon={<ListMusic size={18} />} onClick={() => setChoosing(true)} disabled={setlists.length === 0}>
+          <Button icon={<ListMusic size={18} />} onClick={() => setChoosing(true)}>
             {t('link.choose')}
           </Button>
           <Button variant="ghost" onClick={() => setCreating(true)}>
@@ -72,7 +72,18 @@ export function EventSetlist({ occ, title }: { occ: Occurrence; title: string })
         </div>
       )}
       <Dialog open={choosing} title={t('link.choose')} closeLabel={t('common:actions.close')} onClose={() => setChoosing(false)}>
-        <ul className={styles.pickList}>
+        <Button
+          variant="primary"
+          icon={<Plus size={18} />}
+          onClick={() => {
+            setChoosing(false);
+            setCreating(true);
+          }}
+        >
+          {t('link.newForEvent')}
+        </Button>
+        {setlists.length === 0 && <p className={styles.hint}>{t('empty')}</p>}
+        <ul className={styles.pickList} hidden={setlists.length === 0}>
           {[...setlists]
             .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
             .map((s) => (

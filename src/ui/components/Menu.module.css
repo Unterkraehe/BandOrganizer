@@ -62,3 +62,8 @@
   top: auto;
   bottom: calc(100% + 4px);
 }
+
+.left {
+  right: auto;
+  left: 0;
+}

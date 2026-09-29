@@ -14,6 +14,7 @@ export interface MenuItem {
 export function Menu({ label, items, icon }: { label: string; items: MenuItem[]; icon?: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [up, setUp] = useState(false);
+  const [alignLeft, setAlignLeft] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const menuId = useId();
   const visible = items.filter((item) => !item.hidden);
@@ -50,6 +51,8 @@ export function Menu({ label, items, icon }: { label: string; items: MenuItem[];
             const rect = ref.current.getBoundingClientRect();
             const reserved = 150;
             setUp(window.innerHeight - rect.bottom - reserved < visible.length * 48 + 16 && rect.top > visible.length * 48 + 16);
+            // a trigger on the left half opens the menu to the right, otherwise to the left (stays on screen)
+            setAlignLeft(rect.left + rect.width / 2 < window.innerWidth / 2);
           }
           setOpen((v) => !v);
         }}
@@ -57,7 +60,7 @@ export function Menu({ label, items, icon }: { label: string; items: MenuItem[];
         {icon ?? <MoreVertical size={20} />}
       </button>
       {open && (
-        <div className={up ? `${styles.menu} ${styles.up}` : styles.menu} role="menu" id={menuId}>
+        <div className={[styles.menu, up && styles.up, alignLeft && styles.left].filter(Boolean).join(' ')} role="menu" id={menuId}>
           {visible.map((item) => (
             <button
               key={item.label}
