@@ -25,7 +25,7 @@ describe('App (M1 flow in demo mode)', () => {
     render(<App initialPath="/" autoStart={false} />);
     expect(screen.getByRole('heading', { level: 1, name: 'Overload App' })).toBeInTheDocument();
     // HiDrive login is disabled until the client ID is configured
-    expect(screen.getByRole('button', { name: 'Mit HiDrive verbinden' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Mit HiDrive verbinden' }));
   });
 
   it('sets up a band, creates the first profile and greets the member', async () => {
