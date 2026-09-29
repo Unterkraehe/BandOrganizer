@@ -1,0 +1,66 @@
+{
+  "placeholder": "Suchen …",
+  "open": "Suche öffnen",
+  "close": "Suche schließen",
+  "shortcut": "Strg + K",
+  "recent": "Letzte Suchen",
+  "clearRecent": "Verlauf löschen",
+  "quick": "Schnellzugriff",
+  "nextEvent": "Nächster Termin",
+  "currentSetlist": "Aktuelle Setlist",
+  "recentSongs": "Zuletzt geöffnet",
+  "filter": {
+    "all": "Alle",
+    "songs": "Songs",
+    "lyrics": "Songtexte",
+    "events": "Termine",
+    "setlists": "Setlists",
+    "notes": "Notizen",
+    "chat": "Chat",
+    "members": "Mitglieder"
+  },
+  "groups": {
+    "songs": "Songs",
+    "lyrics": "Songtexte",
+    "events": "Termine",
+    "setlists": "Setlists",
+    "notes": "Notizen",
+    "chat": "Chat",
+    "members": "Mitglieder",
+    "settings": "Einstellungen"
+  },
+  "types": {
+    "song": "Song",
+    "tag": "Tag",
+    "member": "Mitglied",
+    "info": "Info"
+  },
+  "showAll": "Alle {{count}} anzeigen",
+  "archivedHits_one": "{{count}} Treffer im Archiv anzeigen",
+  "archivedHits_other": "{{count}} Treffer im Archiv anzeigen",
+  "empty": "Nichts gefunden für „{{q}}“",
+  "emptyHint": "Tippfehler? Versuch es mit einem kürzeren Begriff.",
+  "searchArchive": "Im Archiv suchen",
+  "indexing": "Songtexte werden noch indexiert … ({{count}})",
+  "minChars": "Mindestens 2 Zeichen eingeben.",
+  "context": {
+    "private": "Nur für dich",
+    "noteBy": "Notiz von {{name}}",
+    "past": "vergangen",
+    "former": "ehemalig"
+  },
+  "settings": {
+    "settings": "Einstellungen",
+    "profile": "Mein Profil",
+    "band": "Band-Einstellungen",
+    "appearance": "Darstellung (Hell / Dunkel)",
+    "hidrive": "HiDrive-Verbindung",
+    "tags": "Tags verwalten",
+    "members": "Mitglieder",
+    "songs": "Songs",
+    "calendar": "Kalender",
+    "setlists": "Setlists",
+    "chat": "Band-Chat",
+    "about": "Über die App"
+  }
+}

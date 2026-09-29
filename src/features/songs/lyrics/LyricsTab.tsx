@@ -14,12 +14,13 @@ import { LyricsChooser } from './LyricsChooser';
 import { LyricsUploadDialog } from './LyricsUploadDialog';
 import { LyricsContentView } from './LyricsContentView';
 import { useLyrics } from './useLyrics';
+import { useHighlightText } from '@/features/search/useHighlightTarget';
 import styles from './Lyrics.module.css';
 
 const SIZE_KEY = 'bandapp.lyrics.size';
 
 /** Songtext tab (F4 §4.2, §6.3; F10 §5.7). */
-export function LyricsTab({ song }: { song: Song }) {
+export function LyricsTab({ song, find }: { song: Song; find?: string | null }) {
   const { t } = useTranslation('songs');
   const navigate = useNavigate();
   const notify = useNotify();
@@ -31,6 +32,8 @@ export function LyricsTab({ song }: { song: Song }) {
   const [uploading, setUploading] = useState(false);
   const [history, setHistory] = useState(false);
   const lyrics = song.lyrics;
+  const [contentRoot, setContentRoot] = useState<HTMLElement | null>(null);
+  useHighlightText(contentRoot, find ?? null, Boolean(content));
 
   const changeSize = (delta: number) => {
     const next = Math.min(2, Math.max(0.8, Math.round((size + delta) * 10) / 10));
@@ -105,7 +108,11 @@ export function LyricsTab({ song }: { song: Song }) {
           {lyrics.missing && <p className={styles.hint}>{t('lyrics.missing')}</p>}
           {status === 'loading' && <p className={styles.hint}>{t('lyrics.loading')}</p>}
           {status === 'error' && <p className={styles.hint}>{t('lyrics.loadError')}</p>}
-          {content && content.kind !== 'unsupported' && <LyricsContentView content={content} size={size} />}
+          {content && content.kind !== 'unsupported' && (
+            <div ref={setContentRoot}>
+              <LyricsContentView content={content} size={size} />
+            </div>
+          )}
           {content?.kind === 'unsupported' && (
             <div className={styles.empty}>
               <p>{t('lyrics.unsupported')}</p>

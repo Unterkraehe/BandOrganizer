@@ -1,7 +1,9 @@
 import { ArchiveRestore, Maximize2, Music, Pencil, Plus } from 'lucide-react';
-import { useMemo, useState, type DragEvent } from 'react';
+import { useEffect, useMemo, useState, type DragEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { rememberSong } from '@/features/search/recent';
+import { useHighlightElement } from '@/features/search/useHighlightTarget';
 import { useNotify } from '@/app/notify/NotifyProvider';
 import { kindOf } from '@/core/uploads/validate';
 import { Button, EmptyState, IconButton, Menu, Page, Tabs } from '@/ui';
@@ -38,7 +40,12 @@ export function SongDetailPage() {
   const [addRecording, setAddRecording] = useState<{ file?: File } | null>(null);
   const [lyricsDrop, setLyricsDrop] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [tab, setTabState] = useState<Tab>(() => (localStorage.getItem(TAB_KEY) as Tab | null) ?? 'lyrics');
+  const [params] = useSearchParams();
+  const urlTab = params.get('tab') as Tab | null;
+  const [tab, setTabState] = useState<Tab>(() => urlTab ?? (localStorage.getItem(TAB_KEY) as Tab | null) ?? 'lyrics');
+  useEffect(() => {
+    if (urlTab) setTabState(urlTab);
+  }, [urlTab, params]);
   const menuFor = useSongActions(() => setTagOpen(true));
 
   // A merged song id redirects to its target (F4 §7.3)
@@ -47,6 +54,10 @@ export function SongDetailPage() {
   const [chosenId, setChosenId] = useState<string | null>(null);
   const recording: Recording | null = song?.recordings.find((r) => r.id === chosenId) ?? playingHere ?? song?.recording ?? null;
   const notes = useSongNotes(song);
+  useHighlightElement(params.get('note') ? `note-${params.get('note')}` : null, notes.status === 'ready');
+  useEffect(() => {
+    if (song) rememberSong(song.id);
+  }, [song?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const markers = useMemo(
     () =>
@@ -173,7 +184,7 @@ export function SongDetailPage() {
           ]}
         />
         {tab === 'lyrics' ? (
-          <LyricsTab song={song} />
+          <LyricsTab song={song} find={params.get('find')} />
         ) : (
           <NotesSection scope={tab} song={song} recording={recording} notes={notes} onJump={jump} />
         )}

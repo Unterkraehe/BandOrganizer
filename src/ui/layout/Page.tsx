@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { useContext, type ReactNode } from 'react';
+import { TopBarExtraContext } from './TopBarExtra';
 import styles from './Page.module.css';
 
 interface PageProps {
@@ -13,12 +14,18 @@ interface PageProps {
 
 /** Standard screen frame: sticky top bar with the screen title (F3 §4.4) + content column. */
 export function Page({ title, hideTitle, actions, wide, children }: PageProps) {
+  const extra = useContext(TopBarExtraContext);
   return (
     <div className={styles.page}>
       <header className={styles.topBar} data-hidden-title={hideTitle || undefined} data-no-print>
         <div className={styles.topBarInner}>
           <h1 className={hideTitle ? 'visually-hidden' : styles.title}>{title}</h1>
-          {actions && <div className={styles.actions}>{actions}</div>}
+          {(actions || extra) && (
+            <div className={styles.actions}>
+              {actions}
+              {extra}
+            </div>
+          )}
         </div>
       </header>
       <div className={wide ? `${styles.content} ${styles.wide}` : styles.content}>{children}</div>

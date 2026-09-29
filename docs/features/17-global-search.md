@@ -3,7 +3,16 @@
 | | |
 |---|---|
 | **ID** | F8 |
-| **Status** | Planned – ready for implementation |
+| **Status** | Implemented (v0.10.0) – with the simplifications below |
+
+> **Implementation notes (v0.10.0)**
+> - The index is built on the main thread with **MiniSearch** (prefix, fuzzy: 1 typo from 4 characters, 2 from 8, AND) and the shared normalizer. A full rebuild takes a few milliseconds for a band-sized data set, so the planned Web Worker and IndexedDB persistence were **not** needed for v1 (the `SearchSource` idea became one `docs` builder in `SearchProvider`).
+> - The index is rebuilt (debounced 200 ms) whenever songs, notes, events, setlists, chat, members or lyrics change. Lyrics are extracted one file at a time in the background (cached by file version in `localStorage`), with the hint "Songtexte werden noch indexiert".
+> - Sources: songs (+ tags, key, tuning, version labels), tags, lyrics (per line), notes (public + own private only), events (one entry per event → next or last date), setlists (name, entry notes, interlude texts, song titles, own personal notes), chat (incl. info lines), members, navigation/settings with synonyms.
+> - Date terms: months (`okt`), weekdays (full names only), `10.10.` / `10.10.2027`, `heute`, `morgen`, `übermorgen`, `nächste Woche`; matching dates are added to the Termine group; without a year the next upcoming date is used.
+> - Opens: phone `/search` (full page, deep link `?q=`), tablet/desktop overlay with `Ctrl/⌘ + K`, icon in every top bar. Search history and "Zuletzt geöffnet" are per member and device-local.
+> - Result targets: lyrics line (`?tab=lyrics&find=`, text/Word files – PDF opens the song text without a line marker), note (`?note=`), chat message (`?message=`), setlist (whole setlist).
+> - Switching profile clears the member-specific part of the index immediately.
 | **Depends on** | F2, F4, F5, F6, F7 |
 | **Used by** | – (consumer of all features) |
 

@@ -23,7 +23,8 @@
     "save": "Speichern",
     "edit": "Bearbeiten",
     "more": "Weitere Aktionen",
-    "ok": "OK"
+    "ok": "OK",
+    "clear": "Eingabe löschen"
   },
   "notFound": {
     "title": "Seite nicht gefunden",

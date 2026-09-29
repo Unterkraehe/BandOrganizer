@@ -7,7 +7,10 @@ export function LyricsContentView({ content, size, baseRem = 1.125 }: { content:
   if (content.kind === 'text')
     return (
       <div className={styles.text} style={{ fontSize: `${size * baseRem}rem` }}>
-        {content.text}
+        {/* one element per line: search results can scroll to and highlight a line (F8 §3.4) */}
+        {content.text.split('\n').map((line, i) => (
+          <div key={i}>{line || '\u00a0'}</div>
+        ))}
       </div>
     );
   if (content.kind === 'html') return <div className={styles.html} style={{ fontSize: `${size * baseRem}rem` }} dangerouslySetInnerHTML={{ __html: content.html }} />;

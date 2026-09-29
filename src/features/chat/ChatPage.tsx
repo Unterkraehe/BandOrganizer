@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
+import { useHighlightElement } from '@/features/search/useHighlightTarget';
 import { Button, EmptyState, Page } from '@/ui';
 import { useChat } from './ChatProvider';
 import { Composer } from './Composer';
@@ -12,6 +14,8 @@ export function ChatPage() {
   const { t } = useTranslation('chat');
   const { store, state, setFast } = useChat();
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
+  const [params] = useSearchParams();
+  const target = params.get('message');
   const [editing, setEditing] = useState<ChatMessage | null>(null);
   const firstUnread = useRef<string | null | undefined>(undefined);
   if (firstUnread.current === undefined && state.status === 'ready') firstUnread.current = store.unread()[0]?.id ?? null;
@@ -37,6 +41,7 @@ export function ChatPage() {
     if (!state.messages.length) return;
     if (initial.current) {
       initial.current = false;
+      if (target) return; // opened from a search result: the message is scrolled into view instead
       const divider = document.getElementById('chat-unread');
       if (divider) divider.scrollIntoView({ block: 'center' });
       else window.scrollTo({ top: document.body.scrollHeight });
@@ -47,6 +52,7 @@ export function ChatPage() {
   }, [state.messages.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const messages = useMemo(() => state.messages, [state.messages]);
+  useHighlightElement(target ? `msg-${target}` : null, state.messages.some((m) => m.id === target));
 
   return (
     <Page title={t('title')}>

@@ -1,4 +1,10 @@
 {
+  "0.10.0": [
+    "Suche: ein Feld für Songs, Songtexte, Notizen, Termine, Setlists, Chat und Mitglieder – oben rechts oder mit Strg + K.",
+    "Findet auch bei Tippfehlern und Umlauten, versteht Datumsangaben wie „okt“, „morgen“ oder „10.10.“.",
+    "Treffer öffnen die Stelle direkt: die Songtext-Zeile, die Notiz oder die Chat-Nachricht wird markiert.",
+    "Einstellungen sind auffindbar: „Dunkelmodus“ führt zur Darstellung."
+  ],
   "0.9.0": [
     "Band-Chat für alles rund um Songs, Termine und Setlists – mit Antworten und Reaktionen.",
     "Songs, Termine und Setlists im Chat teilen: direkt abspielen, zusagen oder üben.",

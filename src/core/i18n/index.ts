@@ -8,6 +8,7 @@ import common from '@/locales/de/common.json';
 import members from '@/locales/de/members.json';
 import profile from '@/locales/de/profile.json';
 import pwa from '@/locales/de/pwa.json';
+import search from '@/locales/de/search.json';
 import settings from '@/locales/de/settings.json';
 import setlists from '@/locales/de/setlists.json';
 import songs from '@/locales/de/songs.json';
@@ -20,7 +21,7 @@ import whatsNew from '@/locales/de/whatsNew.json';
  * src/locales/<lang>/ with the same namespaces, registered here.
  */
 export const resources = {
-  de: { auth, band, calendar, chat, common, members, profile, pwa, settings, setlists, songs, start, uploads, whatsNew },
+  de: { auth, band, calendar, chat, common, members, profile, pwa, search, settings, setlists, songs, start, uploads, whatsNew },
 } as const;
 
 export const defaultNS = 'common';

@@ -1,6 +1,6 @@
 # Implementation Roadmap
 
-> **Status:** M0–M7 ✅ (v0.9.0) · open tests: S1/S2, S5, S6, iPhone with effects · next: M8 Finden (search)
+> **Status:** M0–M8 ✅ (v0.10.0) · open tests: S1/S2, S5, S6, iPhone with effects · next: M9 v1.0 (calendar subscription, polish, band test phase)
 > Order and scope of the build, from an empty repository to v1.0. Each milestone ends with a **deployed version the band can use and test**.
 
 ## 1. Principles
@@ -23,7 +23,7 @@
 | M5 ✅ | **Planen** | Calendar, recurring events, answers, absences, .ics export, dashboard events | Plan rehearsals and gigs, answer, export dates | L |
 | M6 ✅ | **Setlists** | Setlist editor, print, stage view, setlist mode, suggestions | Build setlists, print them, use them on stage and for practice | L |
 | M7 ✅ | **Austauschen** | Chat, item discussions, cards, info lines, unread badges | Discuss app topics in context | M |
-| M8 | **Finden** | Global search incl. lyrics lines and date search | Find anything in the app from anywhere | M |
+| M8 ✅ | **Finden** | Global search incl. lyrics lines and date search | Find anything in the app from anywhere | M |
 | M9 | **v1.0** | Calendar subscription, polish, accessibility and performance review, band test | Everything in v1, stable | M |
 
 Sizes are relative (S/M/L), not time estimates.

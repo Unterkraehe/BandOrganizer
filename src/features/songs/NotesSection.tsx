@@ -134,7 +134,7 @@ function NoteItem({ entry, song, recording, notes, onJump }: { entry: NoteEntry;
       .catch(() => notify({ message: t('failed') }));
 
   return (
-    <li className={styles.note} data-pinned={note.pinned || undefined}>
+    <li className={styles.note} data-pinned={note.pinned || undefined} id={`note-${note.id}`}>
       <div className={styles.noteHead}>
         {entry.scope === 'public' && author && <Avatar name={author.displayName} color={author.color} size="sm" />}
         <span className={styles.noteMeta}>
