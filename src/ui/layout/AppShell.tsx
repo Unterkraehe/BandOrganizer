@@ -1,5 +1,5 @@
 import { MoreHorizontal } from 'lucide-react';
-import { useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, matchPath, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import type { FeatureRegistration } from '@/core/features/registry';
@@ -39,13 +39,22 @@ export function AppShell({ features, bottomSlot, children }: AppShellProps) {
   // Swiping left/right on a main screen moves through the bottom bar (Start, Songs, Kalender, Chat, Mehr)
   const tabs = [...features.filter((feature) => feature.placement !== 'more').map((feature) => feature.path), ...(hasMore ? ['/more'] : [])];
   const tabIndex = tabs.indexOf(pathname);
+  // The whole screen (also its empty lower part) is the swipe surface.
+  const swipeEnabled = phone && tabIndex >= 0;
+  useEffect(() => {
+    // touch-action: pan-y → the browser never treats a sideways swipe as its own gesture, so the
+    // swipe counts as a real user interaction. Without it Chrome marks the new history entries as
+    // "skippable" and the back button closes the app (history manipulation intervention).
+    document.documentElement.toggleAttribute('data-swipe-tabs', swipeEnabled);
+    return () => document.documentElement.removeAttribute('data-swipe-tabs');
+  }, [swipeEnabled]);
   useSwipe(
-    mainRef,
+    null,
     (direction) => {
       const next = tabs[tabIndex + (direction === 'left' ? 1 : -1)];
       if (next) navigate(next, { state: { swipe: direction } });
     },
-    phone && tabIndex >= 0,
+    swipeEnabled,
   );
   const swipe = (location.state as { swipe?: 'left' | 'right' } | null)?.swipe;
 

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState, useSyncExternal
 import { useTranslation } from 'react-i18next';
 import { useSession } from '@/core/session/BandSession';
 import { CalendarStore } from './store';
+import { onAppResume } from '@/core/resume';
 import { bandIcs, readSubscription, writeBandIcs, type Subscription } from './subscription';
 
 interface SubscriptionState {
@@ -33,7 +34,11 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
     // refresh when the app comes back to the foreground
     const onVisible = () => document.visibilityState === 'visible' && void store.load();
     document.addEventListener('visibilitychange', onVisible);
-    return () => document.removeEventListener('visibilitychange', onVisible);
+    const off = onAppResume(() => void store.load());
+    return () => {
+      off();
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [store]);
   // Calendar subscription: keep band.ics current after changes (F5 §6.5b)
   const { t } = useTranslation('calendar');

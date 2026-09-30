@@ -131,9 +131,45 @@ export function cleanTitle(fileName: string): string {
   return cleaned || withoutExt || fileName;
 }
 
-/** Title without additions in brackets, for version suggestions: "Slow Burn (Live)" → "slow burn". */
+/** Words that describe a version of a song rather than the song itself (v0.12.3). */
+const VERSION_WORDS = new Set(
+  (
+    'edit edited mix remix mixdown mastered master remaster remastered version ver v take final demo live probe proben ' +
+    'rehearsal akustik acoustic unplugged instrumental instr radio extended backing backingtrack playback karaoke ' +
+    'click klick fassung gesang vocals voc bearbeitet bearb aufnahme recording rec bounce export jam session test ' +
+    'idee skizze sketch kopie stereo mono mp3 wav'
+  ).split(' '),
+);
+
+/** Trailing version words and numbers/dates are not part of the title: "Hush edit 05" → "hush". */
+function stripVersionWords(normalized: string): string {
+  const words = normalized.split(' ').filter(Boolean);
+  while (words.length > 1) {
+    const last = words[words.length - 1]!;
+    if (VERSION_WORDS.has(last) || /^\d+$/.test(last) || /^(v|take|t)\d+$/.test(last)) words.pop();
+    else break;
+  }
+  return words.join(' ');
+}
+
+/**
+ * Base title for version suggestions: without additions in brackets and without trailing version
+ * words or numbers. "Slow Burn (Live)" → "slow burn", "Hush edit 05" → "hush", "Hush_Probe_17.05.26" → "hush".
+ */
 export function baseTitle(title: string): string {
-  return normalizeText(title.replace(/\s*[([].*?[)\]]\s*/g, ' '));
+  return stripVersionWords(normalizeText(title.replace(/\s*[([].*?[)\]]\s*/g, ' ')));
+}
+
+/** All base titles a title can stand for: the whole title and, for "Artist - Title", each part. */
+export function baseTitles(title: string): string[] {
+  const keys = new Set([baseTitle(title)]);
+  const parts = title.split(/\s+[-–]\s+/);
+  if (parts.length > 1) for (const part of parts) {
+    const key = baseTitle(part);
+    if (key.replace(/ /g, '').length >= 3) keys.add(key);
+  }
+  keys.delete('');
+  return [...keys];
 }
 
 function hash(text: string): string {
@@ -356,9 +392,15 @@ export function sortSongs(songs: Song[], sort: SongSort): Song[] {
 
 /** Other songs that look like versions of this one (same title without bracket additions). */
 export function versionSuggestions(song: Song, all: Song[]): Song[] {
-  const base = baseTitle(song.title);
-  if (!base) return [];
-  return all.filter((other) => other.id !== song.id && !other.hidden && other.recording && baseTitle(other.title) === base);
+  const keys = new Set([...baseTitles(song.title), ...song.recordings.flatMap((r) => baseTitles(cleanTitle(r.fileName)))]);
+  if (keys.size === 0) return [];
+  return all.filter(
+    (other) =>
+      other.id !== song.id &&
+      !other.hidden &&
+      other.recording &&
+      [...baseTitles(other.title), ...other.recordings.flatMap((r) => baseTitles(cleanTitle(r.fileName)))].some((k) => keys.has(k)),
+  );
 }
 
 /** Unlinked lyrics documents whose name matches the song title (F4 §6.3 – suggestion only). */

@@ -1,5 +1,5 @@
 import { ArrowLeft, Printer } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/ui';
@@ -11,6 +11,8 @@ import styles from './Setlists.module.css';
 
 const MY_NOTES_KEY = 'bandapp.print.myNotes';
 const ARTISTS_KEY = 'bandapp.print.artists';
+/** A4 at 96 dpi: the preview uses the paper's real width and is scaled to the screen */
+const PAPER_WIDTH = 794;
 const standFormat = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', timeZone: 'Europe/Berlin' });
 
 /** Print view (F7 §4.5): always black on white, no page break inside a block, own notes optional. */
@@ -30,6 +32,23 @@ export function PrintPage() {
   const [artistsChoice, setArtistsChoice] = useState<boolean | null>(() => {
     const v = localStorage.getItem(ARTISTS_KEY);
     return v === null ? null : v === '1';
+  });
+
+  const frame = useRef<HTMLDivElement>(null);
+  const paper = useRef<HTMLElement>(null);
+  const [scale, setScale] = useState(1);
+  const [paperHeight, setPaperHeight] = useState(0);
+  useLayoutEffect(() => {
+    const update = () => {
+      if (!frame.current || !paper.current) return;
+      setScale(Math.min(1, frame.current.clientWidth / PAPER_WIDTH));
+      setPaperHeight(paper.current.offsetHeight);
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    if (frame.current) observer.observe(frame.current);
+    if (paper.current) observer.observe(paper.current);
+    return () => observer.disconnect();
   });
 
   if (!setlist) return null;
@@ -75,9 +94,12 @@ export function PrintPage() {
       <p className={styles.hint} data-no-print>
         {t('print.hint')}
       </p>
-      <article className={styles.printPage}>
-        <PrintSheet setlist={setlist} songById={songById} personal={state.personal[setlist.id]?.notes ?? {}} showPersonal={myNotes} showArtists={showArtists} subtitle={subtitle} />
-      </article>
+      {/* The preview is laid out exactly like the A4 paper and scaled down to fit the screen (phones). */}
+      <div ref={frame} className={styles.previewFrame} style={{ height: paperHeight ? paperHeight * scale : undefined }}>
+        <article ref={paper} className={styles.printPage} style={{ transform: scale < 1 ? `scale(${scale})` : undefined }}>
+          <PrintSheet setlist={setlist} songById={songById} personal={state.personal[setlist.id]?.notes ?? {}} showPersonal={myNotes} showArtists={showArtists} subtitle={subtitle} />
+        </article>
+      </div>
     </div>
   );
 }

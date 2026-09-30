@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { kindOf } from '@/core/uploads/validate';
 import { formatDuration } from '@/core/i18n/format';
-import { normalizeText } from '@/core/search/normalize';
+import { normalizeText, searchHaystack } from '@/core/search/normalize';
 import { Button, Chip, EmptyState, IconButton, Menu, Page, SegmentedControl, VirtualList, type MenuItem } from '@/ui';
 import { useLibrary } from './LibraryProvider';
 import { recordingName, sortSongs, type Recording, type Song, type SongSort, type Tag } from './model';
@@ -71,7 +71,7 @@ export function SongsPage() {
 
   // Normalized once per data change, not on every keystroke (typing stays fast with hundreds of songs).
   const haystacks = useMemo(
-    () => new Map(songs.map((s) => [s.id, normalizeText(`${s.searchText} ${s.tagIds.map((id) => tagById.get(id)?.name ?? '').join(' ')}`)])),
+    () => new Map(songs.map((s) => [s.id, searchHaystack(`${s.searchText} ${s.tagIds.map((id) => tagById.get(id)?.name ?? '').join(' ')}`)])),
     [songs, tagById],
   );
 

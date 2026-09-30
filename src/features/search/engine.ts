@@ -33,7 +33,8 @@ export interface Hit {
   score: number;
 }
 
-const tokenize = (text: string) => text.split(/[\s\p{P}\p{S}]+/u);
+// apostrophes don't split words: "don't" is one term ("dont")
+const tokenize = (text: string) => text.replace(/['’‘`´]/g, '').split(/[\s\p{P}\p{S}]+/u);
 const processTerm = (term: string) => {
   const n = normalizeText(term);
   if (!n) return null;

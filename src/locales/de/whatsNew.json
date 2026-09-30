@@ -1,4 +1,11 @@
 {
+  "0.12.3": [
+    "Wischen zwischen den Bereichen klappt jetzt überall auf dem Bildschirm – und die Zurück-Taste führt danach wieder zum vorherigen Bereich statt die App zu schließen.",
+    "Die App holt sich neue Daten, wenn du nach längerer Zeit zu ihr zurückkehrst.",
+    "Suche großzügiger: „dont“ findet „Don’t“, „acdc“ findet „AC/DC“.",
+    "Mehr Versions-Vorschläge: „Hush edit 05“ wird „Hush“ zugeordnet.",
+    "Druckvorschau auf dem Handy zeigt die echte A4-Seite (verkleinert)."
+  ],
   "0.12.2": [
     "Gedruckte Setlist besser lesbar aus der Entfernung: große, fette Songtitel, die Zeilen füllen die Seite – bei wenigen Songs größer, bei vielen so groß, dass der Block noch auf eine Seite passt.",
     "Neue rote „DIREKT“-Pfeile: kräftiger, mit Kontur und klarer Pfeilspitze."

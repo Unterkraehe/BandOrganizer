@@ -16,6 +16,7 @@ import {
   type MemberInput,
 } from '@/features/members/repository';
 import { emitSystemEvent } from '@/core/events';
+import { onAppResume } from '@/core/resume';
 import { createDemoProvider, DEMO_HOME } from './demo';
 
 /**
@@ -114,6 +115,20 @@ export function SessionProvider({ children, autoStart = true }: { children: Reac
   const storage = useMemo(() => {
     if (!connection) return null;
     return new SafeStorage(connection.provider, { appRoot: connection.appRoot, home: connection.home });
+  }, [connection]);
+
+  // Back after a while: band settings and members may have changed on another device
+  useEffect(() => {
+    if (!connection) return;
+    return onAppResume(() => {
+      const appOnly = new SafeStorage(connection.provider, { appRoot: connection.appRoot });
+      void Promise.all([loadBand(appOnly, connection.appRoot), listMembers(appOnly, connection.appRoot)])
+        .then(([b, m]) => {
+          if (b) setBand(b);
+          setMembers(m);
+        })
+        .catch((error) => console.warn('Refreshing band data failed', error));
+    });
   }, [connection]);
 
   /** Loads band + members for a connection and decides the next screen. */

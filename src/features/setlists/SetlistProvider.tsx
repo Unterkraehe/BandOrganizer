@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useSession } from '@/core/session/BandSession';
 import { SetlistStore } from './store';
+import { onAppResume } from '@/core/resume';
 
 const Ctx = createContext<SetlistStore | null>(null);
 
@@ -14,6 +15,7 @@ export function SetlistProvider({ children }: { children: ReactNode }) {
   });
   useEffect(() => {
     void store.load();
+    return onAppResume(() => void store.load());
   }, [store]);
   return <Ctx.Provider value={store}>{children}</Ctx.Provider>;
 }

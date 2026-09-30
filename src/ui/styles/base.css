@@ -135,3 +135,8 @@ nav {
     opacity: 0.65;
   }
 }
+
+/* Tab screens on phones: sideways swipes belong to the app (see AppShell) */
+html[data-swipe-tabs] {
+  touch-action: pan-y;
+}

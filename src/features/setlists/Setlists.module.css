@@ -261,7 +261,15 @@
 
 /* ---------- print ---------- */
 
+.previewFrame {
+  overflow: hidden;
+}
+
 .printPage {
+  width: 794px; /* A4 */
+  box-sizing: border-box;
+  padding: 14mm 12mm !important; /* same margins as the printed page */
+  transform-origin: top left;
   background: #fff;
   color: #000;
   --text: #000;
@@ -301,8 +309,14 @@
     display: none;
   }
   .printPage {
-    padding: 0;
+    width: auto;
+    padding: 0 !important;
     border-radius: 0;
+    transform: none !important;
+  }
+  .previewFrame {
+    height: auto !important;
+    overflow: visible;
   }
 }
 

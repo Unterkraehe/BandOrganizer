@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { onSystemEvent } from '@/core/events';
+import { onAppResume } from '@/core/resume';
 import { useSession } from '@/core/session/BandSession';
 import { ChatStore } from './store';
 
@@ -19,8 +20,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void store.load();
     const off = onSystemEvent((event) => void store.system(event).catch(() => undefined));
+    // back after a while: read status and new months from HiDrive again
+    const offResume = onAppResume(() => void store.load());
     return () => {
       off();
+      offResume();
       store.dispose();
     };
   }, [store]);

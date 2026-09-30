@@ -3,6 +3,7 @@ import { PlayerProvider } from '@/core/audio/PlayerProvider';
 import { useSession } from '@/core/session/BandSession';
 import { dirname } from '@/core/storage';
 import { LibraryStore } from './library';
+import { onAppResume } from '@/core/resume';
 
 const LibraryContext = createContext<LibraryStore | null>(null);
 
@@ -25,7 +26,14 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     void store.load();
+    // back after a while: fresh song data from the band; a new file scan only if the last one is old
+    const off = onAppResume(() => {
+      void store.reloadMeta();
+      const last = store.getState().scannedAt;
+      if (!last || Date.now() - Date.parse(last) > 6 * 3_600_000) void store.scan();
+    });
     return () => {
+      off();
       void store.practice.flush();
       store.dispose();
     };

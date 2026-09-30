@@ -11,6 +11,8 @@ export function normalizeText(text: string): string {
     .replace(/ae/g, 'a')
     .replace(/oe/g, 'o')
     .replace(/ue/g, 'u')
+    // apostrophes join words: "don't" = "dont", "Guns'n'Roses" = "gunsnroses"
+    .replace(/['’‘`´]/g, '')
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim();
 }
@@ -19,6 +21,14 @@ export function normalizeText(text: string): string {
 export function matchesQuery(text: string, query: string): boolean {
   const words = normalizeText(query).split(' ').filter(Boolean);
   if (words.length === 0) return true;
-  const haystack = normalizeText(text);
-  return words.every((word) => haystack.includes(word));
+  return words.every((word) => searchHaystack(text).includes(word));
+}
+
+/**
+ * Normalized text plus a variant without spaces, so "acdc" finds "AC/DC" and "gunsn roses"
+ * still finds "Guns 'n' Roses" (v0.12.3). Compute once per item for long lists.
+ */
+export function searchHaystack(text: string): string {
+  const n = normalizeText(text);
+  return n.includes(' ') ? `${n} ${n.replace(/ /g, '')}` : n;
 }

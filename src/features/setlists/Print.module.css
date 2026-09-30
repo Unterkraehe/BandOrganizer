@@ -5,7 +5,7 @@
   --line: #000;
   --red: #e30613;
   display: grid;
-  gap: 48px;
+  gap: 0;
   color: var(--ink);
   font-family: Arial, Helvetica, 'Inter Variable', sans-serif;
   -webkit-print-color-adjust: exact;
@@ -228,5 +228,18 @@
   /* every block starts on its own page, like the band's sheets */
   .page + .page {
     break-before: page;
+  }
+}
+
+/* Preview on screen: every block is shown as a full A4 page, pages separated by a dashed line */
+@media screen {
+  .page {
+    min-height: 1017px; /* A4 height minus the page margins */
+    align-content: start;
+  }
+  .page + .page {
+    margin-top: 12mm;
+    padding-top: 14mm;
+    border-top: 2px dashed #b5b5b5;
   }
 }

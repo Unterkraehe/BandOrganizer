@@ -161,3 +161,16 @@ describe('notes (F4 §6.4)', () => {
     expect(await listNotes(storage, APP, ['song_1'], 'm_b')).toHaveLength(0);
   });
 });
+
+describe('version suggestions are generous (v0.12.3)', () => {
+  it('ignores version words, numbers and dates at the end', async () => {
+    const { baseTitle, baseTitles } = await import('./model');
+    expect(baseTitle('Hush edit 05')).toBe('hush');
+    expect(baseTitle('Hush')).toBe('hush');
+    expect(baseTitle('Hush_Probe_17.05.26')).toBe('hush');
+    expect(baseTitle('Turbo Lover (Live) v2')).toBe('turbo lover');
+    expect(baseTitle('18 and life')).toBe('18 and life');
+    expect(baseTitle('The End')).toBe('the end');
+    expect(baseTitles('Accept - Breaking the law')).toEqual(expect.arrayContaining(['breaking the law', 'accept']));
+  });
+});
