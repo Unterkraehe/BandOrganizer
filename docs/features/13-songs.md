@@ -7,6 +7,8 @@
 
 > **v0.11.0 performance:** the song list is windowed (`VirtualList`, above 60 rows), rows are memoized with fixed heights (title and details on one line), row menus are built lazily, sorting/filtering use one shared collator and pre-normalized search text, and the list no longer re-renders on playback position ticks. Measured with 300 songs at 4× CPU slowdown: tab tap 510–640 ms → 75–100 ms. Test with `?demo-songs=300` in demo mode.
 >
+> **Version suggestions (v0.12.4)** – similarity instead of equal titles: each song is compared by the "core" of its title and of all its file names (lower case, umlauts/punctuation normalised, spaces removed, numbers and version words like edit/mix/demo/live/probe/take/intro/ohne removed anywhere). Two cores match if they are equal; for cores of ≥ 6 letters also if one contains the other ("holydiver" in "dioholydiver") or they share a common part of ≥ 75 % of the shorter one ("dioholydiver" ~ "holydiverdio"). Short titles like "Hush" must match exactly. Suggestions only – nothing is grouped automatically. Track numbers at the start of file names are also recognised without a space ("01-Holy Diver"), but not when they belong to the title ("18 and life").
+
 > **M3b implementation notes (v0.5.0)**
 > - Detail tabs: **Songtext · Notizen für alle · Meine Notizen** (last tab remembered per device).
 > - Lyrics renderers in `src/core/lyrics/renderers.ts`: TXT (UTF-8, fallback Windows-1252), DOCX (mammoth, HTML sanitised to simple formatting), PDF (pdf.js **v4 legacy build**, works on older iOS Safari; v5+ needs very new JS features). Other formats: "Datei öffnen".

@@ -174,3 +174,39 @@ describe('version suggestions are generous (v0.12.3)', () => {
     expect(baseTitles('Accept - Breaking the law')).toEqual(expect.arrayContaining(['breaking the law', 'accept']));
   });
 });
+
+describe('version suggestions: Holy Diver family (v0.12.4)', () => {
+  it('every file name suggests every other one', async () => {
+    const { areSimilarSongs, cleanTitle } = await import('./model');
+    const names = [
+      '01-Holy Diver', '01-Holy Diver edit 05', '01-Holy Diver edit 05 ohne Intro', '01-Holy Diver Intro', '01-Holy Diver Intro edit 05',
+      'Holy Diver', 'Holy Diver edit 05', 'Holy Diver edit 05 ohne Intro', 'Holy Diver Intro', 'Holy Diver Intro edit 05',
+      'Dio - Holy Diver', 'Dio Holy Diver edit 05', 'Holy Diver - Dio edit 05', 'HolyDiver edit 05 ohne Intro', 'Holy Diver-Intro',
+    ];
+    const song = (file: string) => ({ title: cleanTitle(`${file}.mp3`), recordings: [{ fileName: `${file}.mp3` }] }) as never;
+    for (const a of names) for (const b of names) expect(areSimilarSongs(song(a), song(b)), `${a} ~ ${b}`).toBe(true);
+  });
+
+  it('does not mix up different songs', async () => {
+    const { areSimilarSongs } = await import('./model');
+    const song = (title: string) => ({ title, recordings: [{ fileName: `${title}.mp3` }] }) as never;
+    const pairs: [string, string][] = [
+      ['Holy Diver', 'Holy Smoke'],
+      ['Hush', 'Hush Hush'],
+      ['Run to the hills', 'Rainbow in the dark'],
+      ['Back in Black', 'Black Sabbath'],
+      ['18 and life', '18 till I die'],
+      ['Turbo Lover', 'Love Gun'],
+    ];
+    for (const [a, b] of pairs) expect(areSimilarSongs(song(a), song(b)), `${a} ≁ ${b}`).toBe(false);
+    expect(areSimilarSongs(song('Hush'), song('Hush edit 05'))).toBe(true);
+  });
+
+  it('keeps numbers that belong to the title', async () => {
+    const { cleanTitle } = await import('./model');
+    expect(cleanTitle('01-Holy Diver.mp3')).toBe('Holy Diver');
+    expect(cleanTitle('01 Holy Diver.mp3')).toBe('Holy Diver');
+    expect(cleanTitle('12 - Tokyo.mp3')).toBe('Tokyo');
+    expect(cleanTitle('18 and life.mp3')).toBe('18 and life');
+  });
+});

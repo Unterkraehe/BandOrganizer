@@ -125,7 +125,8 @@ export function cleanTitle(fileName: string): string {
   const withoutExt = ext ? fileName.slice(0, -(ext.length + 1)) : fileName;
   const cleaned = withoutExt
     .replace(/_/g, ' ')
-    .replace(/^\s*\d{1,3}\s*[-–.)]?\s+/, '')
+    // track numbers: "01-Holy Diver", "01 Holy Diver", "3. Song", "12 - Song" – but not "18 and life"
+    .replace(/^\s*(\d{1,3}\s*[-–.)]\s*|0\d\s+)(?=\D)/, '')
     .replace(/\s+/g, ' ')
     .trim();
   return cleaned || withoutExt || fileName;
@@ -391,16 +392,70 @@ export function sortSongs(songs: Song[], sort: SongSort): Song[] {
 }
 
 /** Other songs that look like versions of this one (same title without bracket additions). */
+/**
+ * Words that mark a version or a part of a recording – ignored ANYWHERE when comparing titles for
+ * version suggestions ("Holy Diver Intro edit 05 ohne Intro" ~ "Holy Diver"). Only used for suggestions.
+ */
+const SUGGESTION_NOISE = new Set([...VERSION_WORDS, 'ohne', 'mit', 'intro', 'outro', 'solo', 'teil', 'part', 'neu', 'new', 'alt', 'old', 'kurz', 'short', 'lang', 'long', 'full', 'ganz']);
+
+/** Compact core of a title for similarity: no numbers, no version words, no spaces ("Holy Diver edit 05" → "holydiver"). */
+export function titleCore(title: string): string {
+  const words = normalizeText(cleanTitle(title).replace(/\s*[([].*?[)\]]\s*/g, ' '))
+    .split(' ')
+    .filter((w) => w && !/^\d+$/.test(w) && !/^(v|take|t)\d+$/.test(w) && !SUGGESTION_NOISE.has(w));
+  return words.join('');
+}
+
+function longestCommonSubstring(a: string, b: string): number {
+  let best = 0;
+  const prev = new Array<number>(b.length + 1).fill(0);
+  for (let i = 1; i <= a.length; i++) {
+    let diag = 0;
+    for (let j = 1; j <= b.length; j++) {
+      const tmp = prev[j]!;
+      prev[j] = a[i - 1] === b[j - 1] ? diag + 1 : 0;
+      if (prev[j]! > best) best = prev[j]!;
+      diag = tmp;
+    }
+  }
+  return best;
+}
+
+/**
+ * Two title cores probably name the same song (v0.12.4):
+ * - short titles (< 6 letters, e.g. "hush") must be equal,
+ * - otherwise one contains the other ("holydiver" in "dioholydiver"), or they share a long common
+ *   part (≥ 75 % of the shorter one: "dioholydiver" ~ "holydiverdio").
+ */
+export function similarCores(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  const [short, long] = a.length <= b.length ? [a, b] : [b, a];
+  if (short.length < 6) return false;
+  if (long.includes(short)) return true;
+  return longestCommonSubstring(short, long) >= Math.max(6, Math.ceil(short.length * 0.75));
+}
+
+/** All cores a song can be recognised by: its title and the names of all its files. */
+export function songCores(song: Pick<Song, 'title' | 'recordings'>): string[] {
+  const cores = new Set([titleCore(song.title), ...song.recordings.map((r) => titleCore(r.fileName))]);
+  cores.delete('');
+  return [...cores];
+}
+
+export function areSimilarSongs(a: Pick<Song, 'title' | 'recordings'>, b: Pick<Song, 'title' | 'recordings'>): boolean {
+  const cb = songCores(b);
+  return songCores(a).some((x) => cb.some((y) => similarCores(x, y)));
+}
+
 export function versionSuggestions(song: Song, all: Song[]): Song[] {
-  const keys = new Set([...baseTitles(song.title), ...song.recordings.flatMap((r) => baseTitles(cleanTitle(r.fileName)))]);
-  if (keys.size === 0) return [];
-  return all.filter(
-    (other) =>
-      other.id !== song.id &&
-      !other.hidden &&
-      other.recording &&
-      [...baseTitles(other.title), ...other.recordings.flatMap((r) => baseTitles(cleanTitle(r.fileName)))].some((k) => keys.has(k)),
-  );
+  const mine = songCores(song);
+  if (mine.length === 0) return [];
+  return all.filter((other) => {
+    if (other.id === song.id || other.hidden || !other.recording) return false;
+    const theirs = songCores(other);
+    return mine.some((x) => theirs.some((y) => similarCores(x, y)));
+  });
 }
 
 /** Unlinked lyrics documents whose name matches the song title (F4 §6.3 – suggestion only). */

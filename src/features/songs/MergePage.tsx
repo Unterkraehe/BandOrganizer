@@ -6,7 +6,7 @@ import { useNotify } from '@/app/notify/NotifyProvider';
 import { matchesQuery } from '@/core/search/normalize';
 import { ConfirmDialog, Page } from '@/ui';
 import { useLibrary } from './LibraryProvider';
-import { baseTitle, sortSongs, type Song } from './model';
+import { areSimilarSongs, sortSongs, type Song } from './model';
 import styles from './Songs.module.css';
 
 /** "Als Version zu anderem Song hinzufügen" (F4 §6.8): pick the target song. */
@@ -22,13 +22,13 @@ export function MergePage() {
 
   const candidates = useMemo(() => {
     if (!source) return [];
-    const base = baseTitle(source.title);
     const list = sortSongs(
       songs.filter((s) => s.id !== source.id && !s.hidden && matchesQuery(s.searchText, query)),
       'az',
     );
     // similar titles first
-    return [...list.filter((s) => baseTitle(s.title) === base), ...list.filter((s) => baseTitle(s.title) !== base)];
+    const similar = list.filter((s) => areSimilarSongs(source, s));
+    return [...similar, ...list.filter((s) => !similar.includes(s))];
   }, [songs, source, query]);
 
   if (!source) return <Page title={t('merge.title')}>{null}</Page>;

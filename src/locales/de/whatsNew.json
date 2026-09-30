@@ -1,4 +1,8 @@
 {
+  "0.12.4": [
+    "Versions-Vorschläge finden jetzt alle Varianten eines Songs – z. B. „01-Holy Diver“, „Holy Diver Intro edit 05“, „Dio - Holy Diver“ und „HolyDiver edit 05 ohne Intro“ schlagen sich gegenseitig vor.",
+    "Tracknummern am Anfang von Dateinamen („01-…“) werden jetzt auch ohne Leerzeichen erkannt."
+  ],
   "0.12.3": [
     "Wischen zwischen den Bereichen klappt jetzt überall auf dem Bildschirm – und die Zurück-Taste führt danach wieder zum vorherigen Bereich statt die App zu schließen.",
     "Die App holt sich neue Daten, wenn du nach längerer Zeit zu ihr zurückkehrst.",
