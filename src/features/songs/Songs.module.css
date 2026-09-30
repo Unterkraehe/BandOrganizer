@@ -332,3 +332,13 @@ ul.muted {
   color: var(--on-accent);
   font-weight: 600;
 }
+
+.suggestedBadge {
+  flex: none;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}

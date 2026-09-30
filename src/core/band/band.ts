@@ -19,8 +19,13 @@ export interface BandConfig extends RecordBase {
   };
   scan: {
     excludedPaths: string[];
+    /** folder names that mark songs as member suggestions ("Vorschläge"), v0.13.2 */
+    suggestionFolders?: string[];
   };
 }
+
+/** Songs whose files all lie in a folder with this name (anywhere in the path) count as suggestions. */
+export const DEFAULT_SUGGESTION_FOLDERS = ['Vorschläge'];
 
 export const BAND_SCHEMA_VERSION = 1;
 /** Before a member exists, records created during setup are attributed to "setup". */

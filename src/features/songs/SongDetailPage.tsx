@@ -1,4 +1,4 @@
-import { ArchiveRestore, Maximize2, Music, Pencil, Plus } from 'lucide-react';
+import { ArchiveRestore, ListPlus, Maximize2, Music, Pencil, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState, type DragEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -16,6 +16,7 @@ import { PlayerControls } from './PlayerControls';
 import type { NoteEntry } from './repository';
 import { TagDialog } from './TagDialog';
 import { AddRecordingDialog } from './uploads/AddRecordingDialog';
+import { AdoptSuggestionDialog } from './uploads/AdoptSuggestionDialog';
 import { usePlaySong } from './usePlaySong';
 import { useSongActions } from './useSongActions';
 import { useSongNotes } from './useSongNotes';
@@ -54,6 +55,16 @@ export function SongDetailPage() {
   const [chosenId, setChosenId] = useState<string | null>(null);
   const recording: Recording | null = song?.recordings.find((r) => r.id === chosenId) ?? playingHere ?? song?.recording ?? null;
   const notes = useSongNotes(song);
+  // "In die Songliste übernehmen" – also opened from the row menu via ?adopt=1
+  const [adopting, setAdoptingState] = useState(false);
+  const adoptParam = params.get('adopt') === '1';
+  useEffect(() => {
+    if (adoptParam && song?.suggested) setAdoptingState(true);
+  }, [adoptParam, song?.suggested]);
+  const setAdopting = (value: boolean) => {
+    setAdoptingState(value);
+    if (!value && adoptParam) navigate(`/songs/${song?.id ?? ''}`, { replace: true });
+  };
   useHighlightElement(params.get('note') ? `note-${params.get('note')}` : null, notes.status === 'ready');
   useEffect(() => {
     if (song) rememberSong(song.id);
@@ -144,6 +155,17 @@ export function SongDetailPage() {
           </div>
         )}
 
+        {song.suggested && (
+          <div className={styles.banner}>
+            <span>
+              <strong>{t('suggested.badge')}</strong> · {t('suggested.badgeHint')}
+            </span>
+            <Button icon={<ListPlus size={18} />} onClick={() => setAdopting(true)}>
+              {t('suggested.adopt')}
+            </Button>
+          </div>
+        )}
+
         {(chips.length > 0 || songTags.length > 0) && (
           <div className={styles.chips}>
             {chips.map((chip) => (
@@ -193,6 +215,7 @@ export function SongDetailPage() {
         <VersionsSection song={song} onSelect={(r) => setChosenId(r.id)} onAdd={() => setAddRecording({})} />
       </div>
       {tagOpen && <TagDialog song={song} onClose={() => setTagOpen(false)} />}
+      {adopting && song.suggested && <AdoptSuggestionDialog song={song} onClose={() => setAdopting(false)} />}
       {addRecording && <AddRecordingDialog song={song} initialFile={addRecording.file} onClose={() => setAddRecording(null)} />}
       {lyricsDrop && <LyricsUploadDialog song={song} initialFile={lyricsDrop} onClose={() => setLyricsDrop(null)} />}
     </Page>

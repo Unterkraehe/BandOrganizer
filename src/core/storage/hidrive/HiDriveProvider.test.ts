@@ -138,3 +138,17 @@ describe('share links', () => {
     expect(del.url.searchParams.get('id')).toBe('abc');
   });
 });
+
+describe('server-side copy', () => {
+  it('uses POST /file/copy without on_exist (HiDrive refuses existing targets)', async () => {
+    const { provider, calls } = setup((_method, url) =>
+      url.pathname.endsWith('/meta') ? json({ type: 'file', name: 'Hush.mp3', mtime: 1, chash: 'a', size: 3 }) : json({}),
+    );
+    await provider.copyFile('/users/band/Vorschläge/Hush.mp3', '/users/band/Songs/Hush.mp3');
+    const post = calls.find((c) => c.method === 'POST')!;
+    expect(post.url.pathname).toBe('/2.1/file/copy');
+    expect(post.url.searchParams.get('src')).toBe('root/users/band/Vorschläge/Hush.mp3');
+    expect(post.url.searchParams.get('dst')).toBe('root/users/band/Songs/Hush.mp3');
+    expect(post.url.searchParams.has('on_exist')).toBe(false);
+  });
+});

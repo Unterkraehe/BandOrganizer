@@ -171,3 +171,19 @@ describe('share links (calendar subscription, F5 §6.5b)', () => {
     await expect(provider.sharedFile(link.url)).resolves.toBeNull();
   });
 });
+
+describe('copying files (v0.13.3, "in die Songliste übernehmen")', () => {
+  it('copies into the home create-only and never overwrites', async () => {
+    const provider = new MemoryStorageProvider();
+    provider.seed('/users/band/Vorschläge/Tom/Hush.mp3', 'audio');
+    provider.seed('/users/band/Songs/Hush.mp3', 'other');
+    const storage = new SafeStorage(provider, { appRoot: '/users/band/_BandApp', home: '/users/band' });
+    const copy = await storage.copyFile('/users/band/Vorschläge/Tom/Hush.mp3', '/users/band/Songs/Neu/Hush.mp3');
+    expect(copy.path).toBe('/users/band/Songs/Neu/Hush.mp3');
+    await expect(provider.readText('/users/band/Songs/Neu/Hush.mp3')).resolves.toBe('audio');
+    await expect(provider.readText('/users/band/Vorschläge/Tom/Hush.mp3')).resolves.toBe('audio'); // original stays
+    await expect(storage.copyFile('/users/band/Vorschläge/Tom/Hush.mp3', '/users/band/Songs/Hush.mp3')).rejects.toBeInstanceOf(AlreadyExistsError);
+    await expect(provider.readText('/users/band/Songs/Hush.mp3')).resolves.toBe('other');
+    await expect(storage.copyFile('/users/band/Songs/Hush.mp3', '/users/other/Hush.mp3')).rejects.toBeInstanceOf(GuardViolationError);
+  });
+});

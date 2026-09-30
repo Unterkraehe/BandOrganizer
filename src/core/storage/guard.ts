@@ -1,5 +1,5 @@
 import { dirname, isWithin, normalizePath } from './paths';
-import type { CreateOptions, FileContent, FileEntry, ShareLink, StorageProvider, WriteOptions } from './types';
+import { AlreadyExistsError, type CreateOptions, type FileContent, type FileEntry, type ShareLink, type StorageProvider, type WriteOptions } from './types';
 
 /**
  * The single safety guard for all write operations (R-DATA-01 … R-DATA-04).
@@ -13,7 +13,7 @@ import type { CreateOptions, FileContent, FileEntry, ShareLink, StorageProvider,
  * Feature code only ever receives a SafeStorage, never the raw provider.
  */
 
-export type WriteOperation = 'writeText' | 'writeJson' | 'createFile' | 'createFolder' | 'move' | 'delete' | 'shareLink';
+export type WriteOperation = 'writeText' | 'writeJson' | 'createFile' | 'createFolder' | 'move' | 'delete' | 'shareLink' | 'copyFile';
 
 export class GuardViolationError extends Error {
   constructor(
@@ -120,6 +120,20 @@ export class SafeStorage {
     const t = this.require('move', to, ['app']);
     await this.ensureFolder(dirname(t));
     return this.provider.move(f, t);
+  }
+
+  /**
+   * Copy a file to a NEW path in the app folder or anywhere in the home (create-only, R-DATA-03):
+   * the source stays untouched, an existing target is never overwritten. Uses a server-side copy
+   * when the storage offers one, otherwise download + upload (v0.13.3, "aus Vorschlägen übernehmen").
+   */
+  async copyFile(from: string, to: string, options?: CreateOptions): Promise<FileEntry> {
+    const source = normalizePath(from);
+    const target = this.require('copyFile', to, ['app', 'home']);
+    if (await this.provider.stat(target)) throw new AlreadyExistsError(target);
+    await this.ensureFolder(dirname(target));
+    if (this.provider.copyFile) return this.provider.copyFile(source, target);
+    return this.provider.createFile(target, await this.provider.readBlob(source), options);
   }
 
   get canShare(): boolean {

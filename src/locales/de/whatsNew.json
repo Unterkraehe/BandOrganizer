@@ -1,4 +1,12 @@
 {
+  "0.13.3": [
+    "Vorschläge übernehmen: „In die Songliste übernehmen“ (im ⋯-Menü oder auf der Song-Seite) kopiert die Band-Version in einen Ordner deiner Wahl – danach steht der Song in der normalen Liste. Die Datei im Vorschläge-Ordner bleibt unverändert."
+  ],
+  "0.13.2": [
+    "Song-Vorschläge: Songs, deren Dateien alle in einem Ordner „Vorschläge“ liegen, stehen nicht mehr in der normalen Songliste, sondern in einem eigenen Bereich „Vorschläge“ – ein- und ausblendbar.",
+    "Sobald es eine Aufnahme woanders gibt (z. B. aus der Probe), gehört der Song automatisch zur normalen Liste.",
+    "Der Ordnername ist einstellbar: Einstellungen → Songs finden."
+  ],
   "0.13.1": [
     "Die ⋯-Menüs heben sich jetzt deutlich vom Hintergrund ab und liegen immer über allem – auch ganz unten in der Liste oder beim Archiv."
   ],

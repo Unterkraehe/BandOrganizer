@@ -210,3 +210,20 @@ describe('version suggestions: Holy Diver family (v0.12.4)', () => {
     expect(cleanTitle('18 and life.mp3')).toBe('18 and life');
   });
 });
+
+describe('member suggestions (v0.13.2)', () => {
+  it('a song is a suggestion while all its files lie in a "Vorschläge" folder', async () => {
+    const { buildSongs, isSuggestionFolder } = await import('./model');
+    expect(isSuggestionFolder('Vorschläge/Lisa', ['Vorschläge'])).toBe(true);
+    expect(isSuggestionFolder('Band/Vorschlaege 2026', ['Vorschläge'])).toBe(true);
+    expect(isSuggestionFolder('Songs/Rock', ['Vorschläge'])).toBe(false);
+    const f = (path: string) => ({ path: `/h/${path}`, name: path.split('/').pop()!, id: path });
+    const songs = buildSongs([f('Vorschläge/Tom/Hush.mp3'), f('Songs/Tokyo.mp3'), f('Vorschläge/Shine.mp3'), f('Proben/Shine probe.mp3')], {}, '/h', Date.now(), undefined, ['Vorschläge']);
+    const byTitle = (title: string) => songs.find((s) => s.title === title)!;
+    expect(byTitle('Hush').suggested).toBe(true);
+    expect(byTitle('Tokyo').suggested).toBe(false);
+    // not grouped: "Shine probe" is its own song here – but a song WITH a rehearsal recording is not a suggestion
+    expect(byTitle('Shine').suggested).toBe(true);
+    expect(buildSongs([f('Vorschläge/Hush.mp3')], {}, '/h', Date.now(), undefined, []).find((s) => s.title === 'Hush')!.suggested).toBe(false);
+  });
+});

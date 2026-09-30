@@ -35,6 +35,8 @@ interface LibraryOptions {
   /** localStorage key prefix; null = no persistence (demo mode) */
   cacheKey: string | null;
   memberId: () => string;
+  /** folder names marking member suggestions (band setting) */
+  suggestionFolders?: string[];
 }
 
 export interface DetailsChange {
@@ -102,7 +104,19 @@ export class LibraryStore {
       this.options.home,
       Date.now(),
       this.state?.status === 'idle' ? undefined : documents,
+      this.options.suggestionFolders ?? [],
     );
+  }
+
+  get suggestionFolders(): string[] {
+    return this.options.suggestionFolders ?? [];
+  }
+
+  /** Band setting changed: re-evaluate which songs are suggestions. */
+  setSuggestionFolders(names: string[]) {
+    if (JSON.stringify(names) === JSON.stringify(this.options.suggestionFolders ?? [])) return;
+    this.options.suggestionFolders = names;
+    this.set({ metas: { ...this.state.metas } });
   }
 
   private set(patch: Partial<LibraryState>) {

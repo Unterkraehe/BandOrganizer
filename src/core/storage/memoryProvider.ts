@@ -120,6 +120,18 @@ export class MemoryStorageProvider implements StorageProvider {
     return this.fileEntry(t, file);
   }
 
+  async copyFile(from: string, to: string): Promise<FileEntry> {
+    const f = normalizePath(from);
+    const t = normalizePath(to);
+    const file = this.files.get(f);
+    if (!file) throw new NotFoundError(f);
+    if (this.files.has(t) || this.folders.has(t)) throw new AlreadyExistsError(t);
+    this.requireParent(t);
+    const copy = { ...file, modifiedAt: this.tick(), version: 1 };
+    this.files.set(t, copy);
+    return this.fileEntry(t, copy);
+  }
+
   async delete(path: string): Promise<void> {
     const p = normalizePath(path);
     if (this.files.delete(p)) return;

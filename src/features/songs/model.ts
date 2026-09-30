@@ -111,6 +111,18 @@ export interface Song {
   lyrics: SongLyrics | null;
   lyricsHistory: { path: string; savedAt: string; savedBy: string }[];
   source: 'scan' | 'app';
+  /** only suggested by a member so far: all files lie in a "Vorschläge" folder (v0.13.2) */
+  suggested: boolean;
+}
+
+/** A folder path (relative to the home) lies in a suggestions folder – anywhere, umlaut-tolerant. */
+export function isSuggestionFolder(folder: string, suggestionFolders: string[]): boolean {
+  if (!folder || suggestionFolders.length === 0) return false;
+  const names = suggestionFolders.map((n) => normalizeText(n)).filter(Boolean);
+  return folder.split('/').some((segment) => {
+    const s = normalizeText(segment);
+    return names.some((n) => s.includes(n));
+  });
 }
 
 export const NEW_DAYS = 14;
@@ -213,6 +225,7 @@ export function buildSongs(
   home: string,
   now = Date.now(),
   documents?: ScannedFile[],
+  suggestionFolders: string[] = [],
 ): Song[] {
   // 1. Every file with its deterministic ids
   const refs: FileRef[] = files.map((file) => ({ file, recordingId: recordingIdFor(file), originSongId: songIdFor(file) }));
@@ -371,6 +384,8 @@ export function buildSongs(
         : null,
       lyricsHistory: meta?.lyricsHistory ?? [],
       source: meta?.source ?? 'scan',
+      // a suggestion until the band has a recording of it somewhere else (e.g. from a rehearsal)
+      suggested: present.length > 0 && present.every((r) => isSuggestionFolder(r.folder, suggestionFolders)),
     });
   }
   return songs;

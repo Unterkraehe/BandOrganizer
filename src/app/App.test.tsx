@@ -569,3 +569,43 @@ describe('Notifications settings (v0.13)', () => {
     expect(screen.getByText(/Demo-Modus gibt es keine Benachrichtigungen/)).toBeInTheDocument();
   });
 });
+
+describe('Member suggestions (v0.13.2)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('keeps songs from "Vorschläge" folders out of the main list', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/songs');
+    expect(await screen.findByText('6 Songs')).toBeInTheDocument();
+    expect(screen.queryByText('Velvet Horizon')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Vorschläge anzeigen (2)' }));
+    expect(await screen.findByText('Velvet Horizon')).toBeInTheDocument();
+    expect(screen.getByText('Paper Crown')).toBeInTheDocument();
+    expect(localStorage.getItem('bandapp.songs.showSuggested')).toBe('1');
+    await user.click(screen.getByRole('button', { name: 'Vorschläge ausblenden' }));
+    expect(screen.queryByText('Velvet Horizon')).not.toBeInTheDocument();
+  });
+});
+
+describe('Adopting a suggestion (v0.13.3)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('copies the Band-Version out of "Vorschläge" and the song joins the main list', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/songs');
+    expect(await screen.findByText('6 Songs')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Vorschläge anzeigen (2)' }));
+    await user.click(await screen.findByRole('button', { name: 'Weitere Aktionen für Velvet Horizon' }));
+    await user.click(screen.getByRole('menuitem', { name: 'In die Songliste übernehmen' }));
+    const dialog = await screen.findByRole('dialog', { name: 'In die Songliste übernehmen' });
+    expect(within(dialog).getByText('Band-App Uploads')).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Übernehmen' }));
+    expect(await screen.findByText('„Velvet Horizon“ steht jetzt in der Songliste')).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: 'Songs' }));
+    expect(await screen.findByText('7 Songs')).toBeInTheDocument();
+    // the section stays open (remembered) – only "Paper Crown" is left in it
+    await user.click(screen.getByRole('button', { name: 'Vorschläge ausblenden' }));
+    expect(screen.getByRole('button', { name: 'Vorschläge anzeigen (1)' })).toBeInTheDocument();
+    expect(screen.getByText('Velvet Horizon')).toBeInTheDocument();
+  });
+});

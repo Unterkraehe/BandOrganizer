@@ -64,7 +64,7 @@ interface SessionContextValue {
   createProfile: (input: MemberInput) => Promise<Member>;
   updateProfile: (input: MemberInput) => Promise<void>;
   setMemberActiveState: (memberId: string, active: boolean) => Promise<void>;
-  updateBandSettings: (changes: Partial<Pick<BandConfig, 'bandName' | 'branding' | 'uploads'>>) => Promise<void>;
+  updateBandSettings: (changes: Partial<Pick<BandConfig, 'bandName' | 'branding' | 'uploads' | 'scan'>>) => Promise<void>;
   uploadLogo: (variant: LogoVariant, file: File) => Promise<void>;
   removeLogo: (variant: LogoVariant) => Promise<void>;
 }

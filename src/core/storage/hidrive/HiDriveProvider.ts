@@ -165,6 +165,14 @@ export class HiDriveProvider implements StorageProvider {
     return (await this.stat(to)) ?? { ...source, path: to, name: basename(to) };
   }
 
+  /** POST /file/copy without on_exist: HiDrive refuses an existing target (create-only). */
+  async copyFile(from: string, to: string): Promise<FileEntry> {
+    const source = await this.stat(from);
+    if (!source) throw new NotFoundError(from);
+    await this.request('POST', '/file/copy', { src: toApiPath(from), dst: toApiPath(to) });
+    return (await this.stat(to)) ?? { ...source, path: to, name: basename(to) };
+  }
+
   async delete(path: string): Promise<void> {
     const target = await this.stat(path);
     if (!target) throw new NotFoundError(path);

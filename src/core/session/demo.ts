@@ -18,6 +18,10 @@ export function createDemoProvider(extraSongs = demoSongCountFromUrl()): MemoryS
   provider.seed(`${DEMO_HOME}/Texte/Midnight Engine.txt`, MIDNIGHT_ENGINE);
   provider.seed(`${DEMO_HOME}/Texte/Open Road - Text.pdf`, makePdf('Open Road', OPEN_ROAD.split('\n')));
   provider.seed(`${DEMO_HOME}/Fotos/Proberaum.jpg`, 'demo photo');
+  // Songs members have suggested (shown in their own "Vorschläge" section, v0.13.2) – reuse demo audio
+  const audio = Object.values(createDemoSongs(short));
+  provider.seed(`${DEMO_HOME}/Vorschläge/Tom/Velvet Horizon.wav`, audio[0]!, daysAgo(5));
+  provider.seed(`${DEMO_HOME}/Vorschläge/Lisa/Paper Crown.wav`, audio[1]!, daysAgo(12));
   provider.seed(`${DEMO_HOME}/.versteckt/nicht-scannen.mp3`, 'hidden');
   seedManySongs(provider, extraSongs);
   return provider;

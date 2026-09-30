@@ -36,7 +36,8 @@ export function lastPlayed(pastOccurrences: Occurrence[], setlists: Setlist[], s
 /** Active songs not in the setlist, never played first, then longest ago – no threshold (decided). */
 export function suggestions(songs: Song[], played: Map<string, Played>, inSetlist: Set<string>): { song: Song; played: Played | null }[] {
   return songs
-    .filter((s) => !s.archived && !s.hidden && s.recording && !inSetlist.has(s.id))
+    // member suggestions were never meant to be played yet - not "long not played" (v0.13.2)
+    .filter((s) => !s.archived && !s.hidden && !s.suggested && s.recording && !inSetlist.has(s.id))
     .map((song) => ({ song, played: played.get(song.id) ?? null }))
     .sort((a, b) => (a.played?.date ?? '').localeCompare(b.played?.date ?? '') || a.song.title.localeCompare(b.song.title, 'de'));
 }

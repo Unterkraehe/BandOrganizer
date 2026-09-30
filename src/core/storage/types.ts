@@ -49,6 +49,9 @@ export interface StorageProvider {
   move(from: string, to: string): Promise<FileEntry>;
   delete(path: string): Promise<void>;
 
+  /** Server-side copy of ONE file to a path that must not exist yet (optional capability). */
+  copyFile?(from: string, to: string): Promise<FileEntry>;
+
   // --- sharing (optional capability, only called by the guard) ---
   /** Public, read-only link to ONE file – used for the calendar subscription (F5 §6.5b). */
   createShareLink?(path: string): Promise<ShareLink>;

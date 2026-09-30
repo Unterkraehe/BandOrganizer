@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState, useSyncExternal
 import { PlayerProvider } from '@/core/audio/PlayerProvider';
 import { useSession } from '@/core/session/BandSession';
 import { dirname } from '@/core/storage';
+import { DEFAULT_SUGGESTION_FOLDERS } from '@/core/band/band';
 import { LibraryStore } from './library';
 import { onAppResume } from '@/core/resume';
 
@@ -21,8 +22,11 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       skip: [appRoot, ...band.scan.excludedPaths],
       cacheKey: mode === 'demo' ? null : `bandapp.library.${band.id}`,
       memberId: () => memberRef.current,
+      suggestionFolders: band.scan.suggestionFolders ?? DEFAULT_SUGGESTION_FOLDERS,
     });
   });
+  const suggestionFolders = band?.scan.suggestionFolders ?? DEFAULT_SUGGESTION_FOLDERS;
+  useEffect(() => store.setSuggestionFolders(suggestionFolders), [store, suggestionFolders]);
 
   useEffect(() => {
     void store.load();

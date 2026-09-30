@@ -120,7 +120,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
         title: s.title,
         text: '',
         extra: [...s.tagIds.map((id) => tagName.get(id) ?? ''), s.key ?? '', s.tuning ?? '', ...s.recordings.map((r) => r.label ?? '')].join(' '),
-        context: [t('search:types.song'), s.key, s.recording ? recordingName(s.recording) : null].filter(Boolean).join(' · '),
+        context: [t('search:types.song'), s.suggested ? t('songs:suggested.badge') : null, s.key, s.recording ? recordingName(s.recording) : null].filter(Boolean).join(' · '),
         route: `/songs/${s.id}`,
         archived: s.archived,
       });

@@ -1,4 +1,4 @@
-import { Archive, ArchiveRestore, EyeOff, Eye, Layers, Pencil, Tags } from 'lucide-react';
+import { Archive, ArchiveRestore, Eye, EyeOff, Layers, ListPlus, Pencil, Tags } from 'lucide-react';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -35,6 +35,7 @@ export function useSongActions(openTags: (song: Song) => void) {
       hidden: song.hidden,
     },
     { label: t('actions.tags'), icon: <Tags size={18} />, onSelect: () => openTags(song), hidden: song.hidden },
+    { label: t('suggested.adopt'), icon: <ListPlus size={18} />, onSelect: () => navigate(`/songs/${song.id}?adopt=1`), hidden: !song.suggested || !song.recording },
     { label: t('actions.merge'), icon: <Layers size={18} />, onSelect: () => navigate(`/songs/${song.id}/merge`), hidden: song.hidden },
     {
       label: song.hidden ? t('actions.unhide') : t('actions.hide'),

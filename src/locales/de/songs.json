@@ -50,7 +50,10 @@
     "folders_one": "{{count}} Ordner durchsucht",
     "folders_other": "{{count}} Ordner durchsucht",
     "failed_one": "{{count}} Ordner konnte nicht gelesen werden:",
-    "failed_other": "{{count}} Ordner konnten nicht gelesen werden:"
+    "failed_other": "{{count}} Ordner konnten nicht gelesen werden:",
+    "suggestionFolders": "Ordner mit Song-Vorschlägen",
+    "suggestionFoldersHint": "Songs, deren Dateien alle in einem Ordner mit diesem Namen liegen (egal wo im Pfad), erscheinen als „Vorschläge“ getrennt von der Songliste. Mehrere Namen mit Komma trennen.",
+    "suggestionFoldersSaved": "Gespeichert"
   },
   "versionsCount_one": "{{count}} Version",
   "versionsCount_other": "{{count}} Versionen",
@@ -284,5 +287,24 @@
     "noLyrics": "Kein Songtext verknüpft.",
     "textSize": "Schrift größer",
     "smaller": "Schrift kleiner"
+  },
+  "suggested": {
+    "title": "Vorschläge",
+    "show": "Vorschläge anzeigen ({{count}})",
+    "hide": "Vorschläge ausblenden",
+    "searchHits_one": "{{count}} Treffer in Vorschlägen anzeigen",
+    "searchHits_other": "{{count}} Treffer in Vorschlägen anzeigen",
+    "hint": "Songs, die Mitglieder vorgeschlagen haben (alle Dateien liegen in einem Ordner „Vorschläge“). Sobald es eine Aufnahme woanders gibt – z. B. aus der Probe –, steht der Song in der normalen Liste.",
+    "badge": "Vorschlag",
+    "badgeHint": "Von einem Mitglied vorgeschlagen – noch nicht gespielt.",
+    "adopt": "In die Songliste übernehmen",
+    "adoptTitle": "In die Songliste übernehmen",
+    "adopting": "Wird kopiert …",
+    "adoptText": "Die Band-Version „{{file}}“ wird in den Ordner kopiert, den du hier wählst. Die Kopie wird die neue Band-Version – damit steht der Song in der normalen Songliste.",
+    "adoptFolder": "Kopieren nach",
+    "adoptInvalid": "Dieser Ordner ist ein Vorschläge-Ordner – dort bliebe der Song ein Vorschlag. Bitte einen anderen Ordner wählen.",
+    "adoptKeep": "Die Datei im Vorschläge-Ordner bleibt unverändert; sie ist danach eine weitere Version des Songs.",
+    "adopted": "„{{title}}“ steht jetzt in der Songliste",
+    "adoptConfirm": "Übernehmen"
   }
 }

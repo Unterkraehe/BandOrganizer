@@ -1,6 +1,7 @@
 import { CalendarSync, Cloud, LogOut, Music, Palette, RefreshCw, Tags, UserRoundPen, Users } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { DEFAULT_SUGGESTION_FOLDERS } from '@/core/band/band';
 import { NotificationSettings } from '@/features/notifications/NotificationSettings';
 import { readTextSize, writeTextSize, type TextSize } from '@/core/theme/textSize';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +12,8 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import type { ThemePreference } from '@/core/theme/theme';
 import { basename } from '@/core/storage';
 import { useLibrary } from '@/features/songs/LibraryProvider';
-import { Avatar, BandMark, Button, ConfirmDialog, Page, Section, SegmentedControl, SettingRow } from '@/ui';
+import { Avatar, BandMark, Button, ConfirmDialog, Page, Section, SegmentedControl, SettingRow, TextField } from '@/ui';
+import { useNotify } from '@/app/notify/NotifyProvider';
 import styles from './Settings.module.css';
 
 /** Settings (F3 §4.3). */
@@ -178,11 +180,43 @@ function SongScanSection() {
           )}
         </div>
       )}
+      <SuggestionFoldersRow />
       <SettingRow label={t('tagsSettings.title')} hint={t('tagsSettings.summary', { count: tags.length })}>
         <Button icon={<Tags size={18} />} onClick={() => navigate('/settings/tags')}>
           {t('tagsSettings.manage')}
         </Button>
       </SettingRow>
     </Section>
+  );
+}
+
+/** Band setting: which folder names mark member suggestions (v0.13.2). */
+function SuggestionFoldersRow() {
+  const { t } = useTranslation('songs');
+  const notify = useNotify();
+  const { band, updateBandSettings } = useSession();
+  const current = (band?.scan.suggestionFolders ?? DEFAULT_SUGGESTION_FOLDERS).join(', ');
+  const [value, setValue] = useState(current);
+  useEffect(() => setValue(current), [current]);
+  if (!band) return null;
+  const save = () => {
+    const names = [...new Set(value.split(',').map((s) => s.trim()).filter(Boolean))];
+    if (names.join(', ') === current) return;
+    void updateBandSettings({ scan: { ...band.scan, suggestionFolders: names } })
+      .then(() => notify({ message: t('settings.suggestionFoldersSaved') }))
+      .catch(() => notify({ message: t('failed') }));
+  };
+  return (
+    <div style={{ paddingTop: 'var(--space-3)' }}>
+      <TextField
+        label={t('settings.suggestionFolders')}
+        hint={t('settings.suggestionFoldersHint')}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={save}
+        onKeyDown={(e) => e.key === 'Enter' && save()}
+        maxLength={200}
+      />
+    </div>
   );
 }

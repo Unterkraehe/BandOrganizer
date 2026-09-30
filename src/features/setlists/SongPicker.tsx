@@ -39,7 +39,11 @@ export function SongPicker({ inSetlist, onAdd, rehearsal, targetLabel }: SongPic
 
   const matches = (s: Song) => matchesQuery(s.searchText, query) && tagIds.every((id) => s.tagIds.includes(id));
   const usable = songs.filter((s) => !s.hidden && s.recording);
-  const active = sortSongs(usable.filter((s) => !s.archived && matches(s)), 'az');
+  // suggestions of members come after the band's songs
+  const active = [
+    ...sortSongs(usable.filter((s) => !s.archived && !s.suggested && matches(s)), 'az'),
+    ...sortSongs(usable.filter((s) => !s.archived && s.suggested && matches(s)), 'az'),
+  ];
   const archived = sortSongs(usable.filter((s) => s.archived && matches(s)), 'az');
 
   const played = useMemo(() => {
@@ -64,7 +68,7 @@ export function SongPicker({ inSetlist, onAdd, rehearsal, targetLabel }: SongPic
             {song.archived && <small className={styles.meta}> · {t('archived')}</small>}
           </strong>
           <span className={styles.meta}>
-            {[song.recording?.durationSec ? formatDuration(song.recording.durationSec) : null, song.key, inSetlist.has(song.id) ? t('picker.alreadyIn') : null, extra]
+            {[song.recording?.durationSec ? formatDuration(song.recording.durationSec) : null, song.key, song.suggested ? t('songs:suggested.badge') : null, inSetlist.has(song.id) ? t('picker.alreadyIn') : null, extra]
               .filter(Boolean)
               .join(' · ')}
           </span>

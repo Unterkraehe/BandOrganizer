@@ -19,6 +19,7 @@ import styles from './Songs.module.css';
 
 const SORT_KEY = 'bandapp.songs.sort';
 const VIEW_KEY = 'bandapp.songs.view';
+const SUGGESTED_KEY = 'bandapp.songs.showSuggested';
 type View = 'list' | 'folders';
 
 /** Song list (F4 §4.1): search, sort, "Neu" and tag filters, archive at the end. */
@@ -38,6 +39,12 @@ export function SongsPage() {
   const deferredQuery = useDeferredValue(query);
   const [onlyNew, setOnlyNew] = useState(false);
   const [showArchive, setShowArchive] = useState(false);
+  // member suggestions: an own section, collapsed by default, remembered per device (v0.13.2)
+  const [showSuggested, setShowSuggestedState] = useState(() => localStorage.getItem(SUGGESTED_KEY) === '1');
+  const setShowSuggested = (value: boolean) => {
+    setShowSuggestedState(value);
+    localStorage.setItem(SUGGESTED_KEY, value ? '1' : '0');
+  };
   const [showHidden, setShowHidden] = useState(false);
   const [tagSong, setTagSong] = useState<Song | null>(null);
   const [sort, setSortState] = useState<SongSort>(() => (localStorage.getItem(SORT_KEY) === 'recent' ? 'recent' : 'az'));
@@ -75,7 +82,7 @@ export function SongsPage() {
     [songs, tagById],
   );
 
-  const { active, archived, hidden } = useMemo(() => {
+  const { active, suggested, archived, hidden } = useMemo(() => {
     const words = normalizeText(deferredQuery).split(' ').filter(Boolean);
     const matches = (song: Song) =>
       (!onlyNew || song.isNew) &&
@@ -83,7 +90,8 @@ export function SongsPage() {
       (words.length === 0 || words.every((w) => haystacks.get(song.id)?.includes(w)));
     const filtered = songs.filter(matches);
     return {
-      active: sortSongs(filtered.filter((s) => !s.archived && !s.hidden), sort),
+      active: sortSongs(filtered.filter((s) => !s.archived && !s.hidden && !s.suggested), sort),
+      suggested: sortSongs(filtered.filter((s) => !s.archived && !s.hidden && s.suggested), sort),
       archived: sortSongs(filtered.filter((s) => s.archived && !s.hidden), sort),
       hidden: sortSongs(songs.filter((s) => s.hidden), 'az'),
     };
@@ -243,11 +251,30 @@ export function SongsPage() {
             {active.length === 0 ? (
               <p className={styles.noResults}>{t('noResults', { query })}</p>
             ) : view === 'folders' ? (
-              <SongFolders songs={active.filter((s) => s.recording)} filtering={filtering} renderEntry={(song, recording) => row(song, recording)} />
+              <SongFolders songs={[...active, ...(showSuggested ? suggested : [])].filter((s) => s.recording)} filtering={filtering} renderEntry={(song, recording) => row(song, recording)} />
             ) : (
               <VirtualList className={styles.list} items={active} getKey={rowKey} estimateSize={rowHeight} renderItem={(song) => row(song)} />
             )}
           </div>
+
+          {suggested.length > 0 && (
+            <div className={styles.more}>
+              <Button variant="ghost" aria-expanded={showSuggested} onClick={() => setShowSuggested(!showSuggested)}>
+                {showSuggested
+                  ? t('suggested.hide')
+                  : filtering
+                    ? t('suggested.searchHits', { count: suggested.length })
+                    : t('suggested.show', { count: suggested.length })}
+              </Button>
+              {showSuggested && view === 'list' && (
+                <>
+                  <h2 className={styles.sectionTitle}>{t('suggested.title')}</h2>
+                  <p className={styles.muted}>{t('suggested.hint')}</p>
+                  <VirtualList className={styles.list} items={suggested} getKey={rowKey} estimateSize={rowHeight} renderItem={(song) => row(song)} />
+                </>
+              )}
+            </div>
+          )}
 
           {archived.length > 0 && (
             <div className={styles.more}>
@@ -336,6 +363,12 @@ const SongRow = memo(function SongRow({ song, recording, version, tagById, curre
           <span className={styles.rowTitleText}>{song.title}</span>
           {version && <span className={styles.versionTag}>· {version}</span>}
           {song.isNew && <span className={styles.badge}>{t('newBadge')}</span>}
+          {/* only in the folder view, where suggestions are mixed with the band's songs */}
+          {song.suggested && recording && (
+            <span className={styles.suggestedBadge} title={t('suggested.badgeHint')}>
+              {t('suggested.badge')}
+            </span>
+          )}
         </span>
         <span className={styles.rowMeta}>{meta}</span>
         {tags.length > 0 && (
