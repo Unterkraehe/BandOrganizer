@@ -120,12 +120,18 @@
 
 .versionSelect {
   display: grid;
+  min-width: 0;
   gap: var(--space-1);
   font-size: var(--fs-sm);
   color: var(--text-muted);
 }
 
 .versionSelect select {
+  /* a <select> is as wide as its longest option by default – long file names pushed the page sideways */
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  text-overflow: ellipsis;
   min-height: var(--touch);
   padding: 0 var(--space-3);
   border: 1px solid var(--border);
@@ -316,6 +322,7 @@ span.versionMain {
 }
 
 .versionMeta {
+  overflow-wrap: anywhere;
   font-size: var(--fs-sm);
   color: var(--text-muted);
   overflow-wrap: anywhere;

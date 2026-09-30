@@ -60,3 +60,8 @@ src/
 └─ locales/de/   German texts, one JSON file per namespace
 token-helper/    Cloudflare Worker for the HiDrive token exchange (see its README)
 ```
+
+## Testing tips
+
+- `?demo-songs=300` – demo with many songs (list performance)
+- `?demo-latency=250` – every storage call in the demo takes 250 ms, like a real HiDrive connection on a phone

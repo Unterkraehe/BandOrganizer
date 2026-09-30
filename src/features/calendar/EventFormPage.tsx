@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useNotify } from '@/app/notify/NotifyProvider';
+import { newId } from '@/core/data/ids';
 import { useSession } from '@/core/session/BandSession';
 import { ConflictError } from '@/core/storage';
 import { Button, Page, TextArea, TextField } from '@/ui';
@@ -86,7 +87,6 @@ function EventForm({ type, occ, date: presetDate }: { type: EventType; occ?: Occ
   const { currentMember, members } = useSession();
   const [scopeOpen, setScopeOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
 
   const locations = useMemo(
     () => [...new Set(state.events.map((e) => e.value.location?.name).filter((n): n is string => Boolean(n)))].sort(),
@@ -181,24 +181,21 @@ function EventForm({ type, occ, date: presetDate }: { type: EventType; occ?: Occ
     return { ...common, allDay: false, start, end, meetingTime };
   };
 
-  const save = async (scope: EditScope = 'all') => {
+  // Optimistic (R-UX-07): the change is visible and the form closes right away; saving continues in
+  // the background. If it fails, the change is undone and a message explains it.
+  const save = (scope: EditScope = 'all') => {
     setScopeOpen(false);
-    setBusy(true);
     setError(null);
-    try {
-      const input = buildInput();
-      if (occ) {
-        await store.update(occ, input, scope);
-        navigate(-1);
-      } else {
-        const created = await store.create(input);
-        const first = store.upcoming(1, (o) => o.event.id === created.id)[0] ?? store.occurrence(created.id, created.recurrence ? form.date : 'single');
-        navigate(first ? occurrencePath(first) : '/calendar', { replace: true });
-      }
-      notify({ message: t('form.saved') });
-    } catch (e) {
-      setBusy(false);
-      setError(e instanceof ConflictError ? t('form.conflict') : t('form.failed'));
+    const input = buildInput();
+    const failed = (e: unknown) => notify({ message: e instanceof ConflictError ? t('form.conflict') : t('form.failed') });
+    if (occ) {
+      store.update(occ, input, scope).catch(failed);
+      navigate(-1);
+    } else {
+      const id = newId('e');
+      store.create(input, id).catch(failed);
+      const first = store.upcoming(1, (o) => o.event.id === id)[0] ?? store.occurrence(id, input.recurrence ? form.date : 'single');
+      navigate(first ? occurrencePath(first) : '/calendar', { replace: true });
     }
   };
 
@@ -207,7 +204,7 @@ function EventForm({ type, occ, date: presetDate }: { type: EventType; occ?: Occ
     if (needsTitle && !form.title.trim()) return setError(t('form.required'));
     if (form.allDay && form.endDate < form.date) return setError(t('form.endBeforeStart'));
     if (occ?.event.recurrence) setScopeOpen(true);
-    else void save('all');
+    else save('all');
   };
 
   const nth = Math.ceil(Number(form.date.slice(8, 10)) / 7);
@@ -332,7 +329,7 @@ function EventForm({ type, occ, date: presetDate }: { type: EventType; occ?: Occ
           </p>
         )}
         <div className={styles.actions}>
-          <Button type="submit" variant="primary" size="lg" disabled={busy}>
+          <Button type="submit" variant="primary" size="lg">
             {t('form.save')}
           </Button>
           <Button variant="ghost" size="lg" onClick={() => navigate(-1)}>
@@ -340,7 +337,7 @@ function EventForm({ type, occ, date: presetDate }: { type: EventType; occ?: Occ
           </Button>
         </div>
       </form>
-      <ScopeDialog open={scopeOpen} onClose={() => setScopeOpen(false)} onChoose={(scope) => void save(scope)} />
+      <ScopeDialog open={scopeOpen} onClose={() => setScopeOpen(false)} onChoose={(scope) => save(scope)} />
     </Page>
   );
 }

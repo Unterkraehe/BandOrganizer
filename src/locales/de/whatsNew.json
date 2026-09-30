@@ -1,4 +1,8 @@
 {
+  "0.12.5": [
+    "Schneller: Änderungen erscheinen sofort – Versionen hinzufügen, Tags, Notizen, Zu-/Absagen, Termine und neue Setlists. Gespeichert wird im Hintergrund; klappt das nicht, wird die Änderung zurückgenommen und du bekommst einen Hinweis.",
+    "Behoben: Lange Dateinamen im Versions-Auswahlfeld haben die Song-Seite seitlich verschiebbar gemacht."
+  ],
   "0.12.4": [
     "Versions-Vorschläge finden jetzt alle Varianten eines Songs – z. B. „01-Holy Diver“, „Holy Diver Intro edit 05“, „Dio - Holy Diver“ und „HolyDiver edit 05 ohne Intro“ schlagen sich gegenseitig vor.",
     "Tracknummern am Anfang von Dateinamen („01-…“) werden jetzt auch ohne Leerzeichen erkannt."

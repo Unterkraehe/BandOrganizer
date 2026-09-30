@@ -87,3 +87,30 @@ function makePdf(title: string, lines: string[]): Blob {
   // latin-1 bytes so umlauts stay single bytes (WinAnsi)
   return new Blob([Uint8Array.from(pdf, (c) => c.charCodeAt(0) & 0xff)], { type: 'application/pdf' });
 }
+
+/**
+ * `?demo-latency=300` makes every storage call in the demo take that many milliseconds –
+ * to feel and test the app like with a real HiDrive connection on a phone (v0.12.5).
+ */
+export function withDemoLatency<T extends object>(provider: T): T {
+  if (typeof location === 'undefined') return provider;
+  const ms = Number(new URLSearchParams(location.search).get('demo-latency'));
+  if (!Number.isFinite(ms) || ms <= 0) return provider;
+  return new Proxy(provider, {
+    get(target, prop, receiver) {
+      const value = Reflect.get(target, prop, receiver);
+      if (typeof value !== 'function' || prop === 'constructor') return value;
+      return (...args: unknown[]) => {
+        const result = (value as (...a: unknown[]) => unknown).apply(target, args);
+        if (!(result instanceof Promise)) return result;
+        // handlers attached at once (a late handler would count as an unhandled rejection)
+        return new Promise((resolve, reject) =>
+          result.then(
+            (value) => setTimeout(() => resolve(value), ms),
+            (error: unknown) => setTimeout(() => reject(error), ms),
+          ),
+        );
+      };
+    },
+  });
+}

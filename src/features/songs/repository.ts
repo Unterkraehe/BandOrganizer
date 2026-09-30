@@ -187,10 +187,11 @@ export async function createNote(
   scope: NoteScope,
   memberId: string,
   fields: { text: string; positionSec: number | null; recordingId: string | null },
+  id = newId('n'),
 ): Promise<NoteEntry> {
   const now = nowIso();
   const note: SongNote = {
-    id: newId('n'),
+    id,
     schemaVersion: 1,
     text: validText(fields.text),
     positionSec: fields.positionSec,

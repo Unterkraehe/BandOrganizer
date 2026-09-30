@@ -1,5 +1,6 @@
 import type { Versioned } from '@/core/band/band';
 import { newId } from '@/core/data/ids';
+import { touchRecord } from '@/core/data/record';
 import { emitSystemEvent } from '@/core/events';
 import { scanFiles, type ScannedFile, type ScanReport } from '@/core/files/scan';
 import { ConflictError, type FileEntry, type SafeStorage } from '@/core/storage';
@@ -162,19 +163,31 @@ export class LibraryStore {
     seed?: () => SongMeta,
   ) {
     const memberId = this.options.memberId();
-    const saved = await updateSongMeta(
-      this.options.storage,
-      this.options.appRoot,
-      songId,
-      seed ?? (() => seedMeta(songId, this.song(songId), memberId)),
-      mutate,
-      memberId,
-      guard,
-    );
-    const metas = { ...this.state.metas, [songId]: saved };
-    this.write('metas', metas);
-    this.set({ metas });
-    return saved;
+    const makeSeed = seed ?? (() => seedMeta(songId, this.song(songId), memberId));
+
+    // Optimistic (R-UX-07): show the change right away, save in the background, undo on failure.
+    const before = this.state.metas[songId];
+    const local = before ? structuredClone(before.value) : makeSeed();
+    guard?.(local);
+    const optimistic = { value: touchRecord(mutate(structuredClone(local)), memberId), version: before?.version };
+    this.set({ metas: { ...this.state.metas, [songId]: optimistic } });
+
+    try {
+      const saved = await updateSongMeta(this.options.storage, this.options.appRoot, songId, makeSeed, mutate, memberId, guard);
+      const metas = { ...this.state.metas, [songId]: saved };
+      this.write('metas', metas);
+      this.set({ metas });
+      return saved;
+    } catch (error) {
+      // only roll back if nothing newer was applied meanwhile
+      if (this.state.metas[songId] === optimistic) {
+        const metas = { ...this.state.metas };
+        if (before) metas[songId] = before;
+        else delete metas[songId];
+        this.set({ metas });
+      }
+      throw error;
+    }
   }
 
   /** Makes sure a recording has an entry in the song's meta (for labels/durations). */
@@ -266,8 +279,9 @@ export class LibraryStore {
     const source = this.song(sourceId);
     const target = this.song(targetId);
     if (!source || !target || sourceId === targetId) return;
-    await this.update(sourceId, (meta) => ({ ...meta, mergedInto: targetId }));
-    await this.update(targetId, (meta) => {
+    // both files change independently – update both at once (and both show immediately)
+    const marking = this.update(sourceId, (meta) => ({ ...meta, mergedInto: targetId }));
+    const adding = this.update(targetId, (meta) => {
       const m = { ...meta, mergedSongIds: [...new Set([...meta.mergedSongIds, sourceId, ...source.mergedSongIds])] };
       for (const rec of source.recordings) {
         if (!m.recordings.some((r) => r.id === rec.id)) {
@@ -276,6 +290,7 @@ export class LibraryStore {
       }
       return m;
     });
+    await Promise.all([marking, adding]);
   }
 
   /** "Als eigenen Song abtrennen": the recording's original song becomes independent again. */

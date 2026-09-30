@@ -314,3 +314,8 @@
     padding: 0 !important;
   }
 }
+
+/* Safety net: nothing may make a screen scroll sideways on a phone (sticky headers keep working with clip) */
+.screen {
+  overflow-x: clip;
+}

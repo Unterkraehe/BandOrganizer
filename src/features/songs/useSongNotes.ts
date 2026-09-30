@@ -1,31 +1,42 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useSession } from '@/core/session/BandSession';
-import { useLibrary } from './LibraryProvider';
-import type { Song } from './model';
-import { createNote, listNotes, saveNote, type NoteEntry, type NoteScope } from './repository';
+import { newId } from "@/core/data/ids";
+import { useCallback, useEffect, useState } from "react";
+import { useSession } from "@/core/session/BandSession";
+import { useLibrary } from "./LibraryProvider";
+import type { Song } from "./model";
+import {
+  createNote,
+  listNotes,
+  saveNote,
+  type NoteEntry,
+  type NoteScope,
+} from "./repository";
 
 /** Notes of a song incl. merged songs (F4 §6.4, §6.8). Loaded when the song is opened. */
 export function useSongNotes(song: Song | undefined) {
   const { store } = useLibrary();
   const { currentMember } = useSession();
-  const memberId = currentMember?.id ?? 'unknown';
+  const memberId = currentMember?.id ?? "unknown";
   const [entries, setEntries] = useState<NoteEntry[]>([]);
-  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [status, setStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
   const songIds = song ? [song.id, ...song.mergedSongIds] : [];
-  const key = songIds.join(',');
+  const key = songIds.join(",");
 
   const reload = useCallback(async () => {
     if (!key) return;
     try {
-      setEntries(await listNotes(store.storage, store.appRoot, key.split(','), memberId));
-      setStatus('ready');
+      setEntries(
+        await listNotes(store.storage, store.appRoot, key.split(","), memberId),
+      );
+      setStatus("ready");
     } catch {
-      setStatus('error');
+      setStatus("error");
     }
   }, [key, memberId, store]);
 
   useEffect(() => {
-    setStatus('loading');
+    setStatus("loading");
     void reload();
   }, [reload]);
 
@@ -39,14 +50,87 @@ export function useSongNotes(song: Song | undefined) {
     status,
     entries,
     memberId,
-    add: async (scope: NoteScope, text: string, positionSec: number | null, recordingId: string | null) => {
+    // Optimistic (R-UX-07): the note appears/changes immediately and is saved in the background.
+    add: async (
+      scope: NoteScope,
+      text: string,
+      positionSec: number | null,
+      recordingId: string | null,
+    ) => {
       if (!song) return;
-      replace(await createNote(store.storage, store.appRoot, song.id, scope, memberId, { text, positionSec, recordingId }));
+      const id = newId("n");
+      const now = new Date().toISOString();
+      const pending: NoteEntry = {
+        songId: song.id,
+        scope,
+        version: undefined,
+        note: {
+          id,
+          schemaVersion: 1,
+          text: text.trim(),
+          positionSec,
+          recordingId: positionSec !== null ? recordingId : null,
+          pinned: false,
+          createdAt: now,
+          createdBy: memberId,
+          updatedAt: now,
+          updatedBy: memberId,
+          deletedAt: null,
+          deletedBy: null,
+        },
+      };
+      replace(pending);
+      try {
+        replace(
+          await createNote(
+            store.storage,
+            store.appRoot,
+            song.id,
+            scope,
+            memberId,
+            { text, positionSec, recordingId },
+            id,
+          ),
+        );
+      } catch (error) {
+        setEntries((list) => list.filter((e) => e.note.id !== id));
+        throw error;
+      }
     },
-    change: async (entry: NoteEntry, change: 'edit' | 'pin' | 'unpin' | 'delete' | 'restore', text?: string) => {
-      const saved = await saveNote(store.storage, store.appRoot, entry, memberId, change, text);
-      replace(saved);
-      return saved;
+    change: async (
+      entry: NoteEntry,
+      change: "edit" | "pin" | "unpin" | "delete" | "restore",
+      text?: string,
+    ) => {
+      const now = new Date().toISOString();
+      const n = entry.note;
+      const local: NoteEntry = {
+        ...entry,
+        note:
+          change === "edit"
+            ? { ...n, text: (text ?? "").trim(), updatedAt: now }
+            : change === "pin" || change === "unpin"
+              ? { ...n, pinned: change === "pin", updatedAt: now }
+              : change === "delete"
+                ? { ...n, deletedAt: now, deletedBy: memberId }
+                : { ...n, deletedAt: null, deletedBy: null },
+      };
+      replace(local);
+      try {
+        const saved = await saveNote(
+          store.storage,
+          store.appRoot,
+          entry,
+          memberId,
+          change,
+          text,
+        );
+        replace(saved);
+        return saved;
+      } catch (error) {
+        replace(entry);
+        throw error;
+      }
     },
   };
 }

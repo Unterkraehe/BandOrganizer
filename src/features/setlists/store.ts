@@ -57,11 +57,12 @@ export class SetlistStore {
     return this.state.setlists.find((s) => s.value.id === id);
   }
 
-  async create(name: string, kind: Setlist['kind'], blocks?: Block[], copiedFrom: string | null = null): Promise<Setlist> {
+  /** Optimistic: the setlist exists in the app immediately (synchronously), then it is saved. */
+  async create(name: string, kind: Setlist['kind'], blocks?: Block[], copiedFrom: string | null = null, id = newId('s')): Promise<Setlist> {
     const memberId = this.options.memberId();
     const now = nowIso();
     const setlist: Setlist = {
-      id: newId('s'),
+      id,
       schemaVersion: 1,
       name: name.trim(),
       kind,
@@ -74,18 +75,33 @@ export class SetlistStore {
       deletedAt: null,
       deletedBy: null,
     };
-    const entry = await this.options.storage.createFile(setlistPath(this.options.appRoot, setlist.id), JSON.stringify(setlist, null, 2) + '\n');
-    this.set({ setlists: [...this.state.setlists, { value: setlist, version: entry.version }] });
-    return setlist;
+    const optimistic = { value: setlist, version: undefined as string | undefined };
+    this.set({ setlists: [...this.state.setlists, optimistic] });
+    try {
+      const entry = await this.options.storage.createFile(setlistPath(this.options.appRoot, setlist.id), JSON.stringify(setlist, null, 2) + '\n');
+      this.set({ setlists: this.state.setlists.map((s) => (s.value.id === setlist.id && s.version === undefined ? { value: s.value, version: entry.version } : s)) });
+      return setlist;
+    } catch (error) {
+      this.set({ setlists: this.state.setlists.filter((s) => s !== optimistic) });
+      throw error;
+    }
   }
 
   /** Save with conflict check: throws ConflictError if someone saved meanwhile (F7 §6.7). */
   async save(setlist: Setlist, version: string | undefined): Promise<Versioned<Setlist>> {
     const next = normalizeSegues(touchRecord(setlist, this.options.memberId()));
-    const entry = await this.options.storage.writeJson(setlistPath(this.options.appRoot, next.id), next, { expectedVersion: version });
-    const saved = { value: next, version: entry.version };
-    this.set({ setlists: this.state.setlists.map((s) => (s.value.id === next.id ? saved : s)) });
-    return saved;
+    const previous = this.get(next.id);
+    const optimistic = { value: next, version };
+    this.set({ setlists: this.state.setlists.map((s) => (s.value.id === next.id ? optimistic : s)) });
+    try {
+      const entry = await this.options.storage.writeJson(setlistPath(this.options.appRoot, next.id), next, { expectedVersion: version });
+      const saved = { value: next, version: entry.version };
+      this.set({ setlists: this.state.setlists.map((s) => (s === optimistic ? saved : s)) });
+      return saved;
+    } catch (error) {
+      if (previous) this.set({ setlists: this.state.setlists.map((s) => (s === optimistic ? previous : s)) });
+      throw error;
+    }
   }
 
   /** "Aus vorheriger Setlist" / "Duplizieren" (F7 §6.5): a NEW setlist; own personal notes are copied. */
@@ -132,8 +148,17 @@ export class SetlistStore {
   async savePersonal(id: string, notes: Record<string, string>) {
     const clean = Object.fromEntries(Object.entries(notes).filter(([, v]) => v.trim()).map(([k, v]) => [k, v.trim().slice(0, 80)]));
     const file: PersonalNotes = { schemaVersion: 1, notes: clean, updatedAt: nowIso() };
-    await this.options.storage.writeJson(personalPath(this.options.appRoot, id, this.options.memberId()), file);
-    this.set({ personal: { ...this.state.personal, [id]: file } });
+    const previous = this.state.personal[id];
+    this.set({ personal: { ...this.state.personal, [id]: file } }); // optimistic
+    try {
+      await this.options.storage.writeJson(personalPath(this.options.appRoot, id, this.options.memberId()), file);
+    } catch (error) {
+      const personal = { ...this.state.personal };
+      if (previous) personal[id] = previous;
+      else delete personal[id];
+      this.set({ personal });
+      throw error;
+    }
   }
 
   private read(): Versioned<Setlist>[] | null {

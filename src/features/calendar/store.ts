@@ -137,12 +137,13 @@ export class CalendarStore {
     return nowIso();
   }
 
-  async create(input: EventInput): Promise<CalendarEvent> {
+  /** Optimistic: the event is in the calendar immediately (synchronously), then saved. */
+  async create(input: EventInput, id = newId('e')): Promise<CalendarEvent> {
     const memberId = this.options.memberId();
     const now = this.now();
     const event: CalendarEvent = {
       ...input,
-      id: newId('e'),
+      id,
       schemaVersion: 1,
       setlistId: null,
       status: 'active',
@@ -155,15 +156,30 @@ export class CalendarStore {
       deletedAt: null,
       deletedBy: null,
     };
-    const saved = await writeEvent(this.options.storage, this.options.appRoot, event, undefined, true);
-    this.set({ events: [...this.state.events, saved] });
-    return event;
+    const optimistic = { value: event, version: undefined as string | undefined };
+    this.set({ events: [...this.state.events, optimistic] });
+    try {
+      const saved = await writeEvent(this.options.storage, this.options.appRoot, event, undefined, true);
+      this.set({ events: this.state.events.map((e) => (e === optimistic ? saved : e)) });
+      return event;
+    } catch (error) {
+      this.set({ events: this.state.events.filter((e) => e !== optimistic) });
+      throw error;
+    }
   }
 
+  /** Optimistic (R-UX-07): visible immediately, rolled back if saving fails. */
   private async saveEvent(event: CalendarEvent) {
     const current = this.event(event.id);
-    const saved = await writeEvent(this.options.storage, this.options.appRoot, event, current?.version);
-    this.set({ events: this.state.events.map((e) => (e.value.id === event.id ? saved : e)) });
+    const optimistic = { value: event, version: current?.version };
+    this.set({ events: this.state.events.map((e) => (e.value.id === event.id ? optimistic : e)) });
+    try {
+      const saved = await writeEvent(this.options.storage, this.options.appRoot, event, current?.version);
+      this.set({ events: this.state.events.map((e) => (e === optimistic ? saved : e)) });
+    } catch (error) {
+      if (current) this.set({ events: this.state.events.map((e) => (e === optimistic ? current : e)) });
+      throw error;
+    }
   }
 
   private async saveException(eventId: string, date: string, patch: (ex: EventException) => EventException) {
@@ -178,9 +194,18 @@ export class CalendarStore {
       updatedBy: '',
     };
     const next = { ...patch(structuredClone(base)), updatedAt: this.now(), updatedBy: this.options.memberId() };
-    const saved = await writeException(this.options.storage, this.options.appRoot, next);
-    const list = (this.state.exceptions[eventId] ?? []).filter((x) => x.value.occurrenceDate !== date);
-    this.set({ exceptions: { ...this.state.exceptions, [eventId]: [...list, saved] } });
+    const previous = this.state.exceptions[eventId] ?? [];
+    const others = previous.filter((x) => x.value.occurrenceDate !== date);
+    const oldVersion = previous.find((x) => x.value.occurrenceDate === date)?.version;
+    this.set({ exceptions: { ...this.state.exceptions, [eventId]: [...others, { value: next, version: oldVersion }] } });
+    try {
+      const saved = await writeException(this.options.storage, this.options.appRoot, next);
+      const list = (this.state.exceptions[eventId] ?? []).filter((x) => x.value.occurrenceDate !== date);
+      this.set({ exceptions: { ...this.state.exceptions, [eventId]: [...list, saved] } });
+    } catch (error) {
+      this.set({ exceptions: { ...this.state.exceptions, [eventId]: previous } });
+      throw error;
+    }
   }
 
   /** Info line in the chat for changed/cancelled events (F5 §6.7, F6 §4.2). */
@@ -292,10 +317,16 @@ export class CalendarStore {
       answeredFor: occ.start,
       updatedAt: this.now(),
     };
-    await writeAnswer(this.options.storage, this.options.appRoot, answer);
+    // Optimistic: the button reacts at once, the file is written in the background
     const id = occurrenceId(occ);
-    const others = (this.state.answers[id] ?? []).filter((a) => a.memberId !== memberId);
-    this.set({ answers: { ...this.state.answers, [id]: [...others, answer] } });
+    const previous = this.state.answers[id] ?? [];
+    this.set({ answers: { ...this.state.answers, [id]: [...previous.filter((a) => a.memberId !== memberId), answer] } });
+    try {
+      await writeAnswer(this.options.storage, this.options.appRoot, answer);
+    } catch (error) {
+      this.set({ answers: { ...this.state.answers, [id]: previous } });
+      throw error;
+    }
   }
 
   private read<T>(): T | null {

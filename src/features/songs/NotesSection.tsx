@@ -59,7 +59,6 @@ function NoteForm({ song, recording, scope, onSave }: { song: Song; recording: R
   const { state } = usePlayer();
   const [text, setText] = useState('');
   const [position, setPosition] = useState<number | null>(null);
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const loaded = Boolean(recording) && state.track?.songId === song.id && state.track.id === recording?.id;
 
@@ -69,16 +68,19 @@ function NoteForm({ song, recording, scope, onSave }: { song: Song; recording: R
       setError(t('notes.tooLong'));
       return;
     }
-    setBusy(true);
     setError(null);
+    // The note appears at once (optimistic); if saving fails the text comes back into the field.
+    const sentText = text;
+    const sentPosition = position;
+    setText('');
+    setPosition(null);
     try {
-      await onSave(scope, text, position, position !== null ? (recording?.id ?? null) : null);
-      setText('');
-      setPosition(null);
+      await onSave(scope, sentText, sentPosition, sentPosition !== null ? (recording?.id ?? null) : null);
     } catch {
+      setText(sentText);
+      setPosition(sentPosition);
       setError(t('failed'));
     }
-    setBusy(false);
   };
 
   return (
@@ -104,7 +106,7 @@ function NoteForm({ song, recording, scope, onSave }: { song: Song; recording: R
             {t('notes.usePosition', { time: formatDuration(position ?? state.position) })}
           </label>
         )}
-        <Button variant="primary" onClick={() => void save()} disabled={busy || !text.trim()}>
+        <Button variant="primary" onClick={() => void save()} disabled={!text.trim()}>
           {t('notes.save')}
         </Button>
       </div>

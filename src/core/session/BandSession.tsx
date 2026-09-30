@@ -17,7 +17,7 @@ import {
 } from '@/features/members/repository';
 import { emitSystemEvent } from '@/core/events';
 import { onAppResume } from '@/core/resume';
-import { createDemoProvider, DEMO_HOME } from './demo';
+import { createDemoProvider, DEMO_HOME, withDemoLatency } from './demo';
 
 /**
  * Connection, band and member session for the whole app (F1, F2).
@@ -239,7 +239,7 @@ export function SessionProvider({ children, autoStart = true }: { children: Reac
 
     startDemo: async () => {
       setStatus({ kind: 'loading' });
-      await enter({ mode: 'demo', provider: createDemoProvider(), home: DEMO_HOME, appRoot: appRootFor(DEMO_HOME), alias: null });
+      await enter({ mode: 'demo', provider: withDemoLatency(createDemoProvider()), home: DEMO_HOME, appRoot: appRootFor(DEMO_HOME), alias: null });
     },
 
     disconnect: () => {

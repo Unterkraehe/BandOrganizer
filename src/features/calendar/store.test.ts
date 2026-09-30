@@ -126,3 +126,28 @@ describe('calendar subscription (F5 §6.5b)', () => {
     expect(await provider.sharedFile(renewed.url!)).toBeNull();
   });
 });
+
+describe('optimistic updates (v0.12.5)', () => {
+  it('shows an answer immediately and rolls it back if saving fails', async () => {
+    const provider = new MemoryStorageProvider();
+    provider.seedFolder('/h');
+    const storage = new SafeStorage(provider, { appRoot: APP });
+    const store = new CalendarStore({ storage, appRoot: APP, memberId: () => 'm_lisa', cacheKey: null });
+    await store.load();
+    await store.create({ type: 'rehearsal', title: null, allDay: false, start: fromLocal('2026-10-01', '19:00'), end: fromLocal('2026-10-01', '22:00'), meetingTime: null, location: null, description: null, recurrence: null, answersEnabled: true, memberId: null });
+    const occ = store.occurrences('2026-10-01', '2026-10-01')[0]!;
+
+    let release: (() => void) | undefined;
+    const original = provider.writeText.bind(provider);
+    provider.writeText = (...args) => new Promise((resolve, reject) => (release = () => original(...args).then(resolve, reject)));
+    const pending = store.answer(occ, 'yes', null);
+    expect(store.answersFor(occ).map((a) => a.status)).toEqual(['yes']); // before the write finished
+    while (!release) await new Promise((r) => setTimeout(r, 1));
+    release();
+    await pending;
+
+    provider.writeText = () => Promise.reject(new Error('offline'));
+    await expect(store.answer(occ, 'no', null)).rejects.toThrow('offline');
+    expect(store.answersFor(occ).map((a) => a.status)).toEqual(['yes']); // rolled back
+  });
+});

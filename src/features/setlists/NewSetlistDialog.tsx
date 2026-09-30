@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useNotify } from '@/app/notify/NotifyProvider';
+import { newId } from '@/core/data/ids';
 import { Button, Dialog, SegmentedControl, TextField } from '@/ui';
 import { useSetlists } from './SetlistProvider';
 import styles from './Setlists.module.css';
@@ -19,12 +20,18 @@ export function NewSetlistDialog({ onClose, defaultName, defaultKind, onCreated 
   const [busy, setBusy] = useState(false);
 
   const create = async () => {
+    if (mode === 'empty') {
+      // optimistic: open the editor right away, saving runs in the background
+      const id = newId('s');
+      store.create(name.trim() || t('newDefaultName'), kind, undefined, null, id).catch(() => notify({ message: t('editor.failed') }));
+      void Promise.resolve(onCreated?.(id)).catch(() => undefined);
+      onClose();
+      navigate(`/setlists/${id}/edit`);
+      return;
+    }
     setBusy(true);
     try {
-      const created =
-        mode === 'copy' && source
-          ? await store.duplicate(source, name.trim() || t('copyOf', { name: setlists.find((s) => s.id === source)?.name ?? '' }))
-          : await store.create(name.trim() || t('newDefaultName'), kind);
+      const created = await store.duplicate(source, name.trim() || t('copyOf', { name: setlists.find((s) => s.id === source)?.name ?? '' }));
       await onCreated?.(created.id);
       onClose();
       navigate(`/setlists/${created.id}/edit`);

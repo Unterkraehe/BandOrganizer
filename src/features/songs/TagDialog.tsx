@@ -23,9 +23,9 @@ export function TagDialog({ song, onClose }: { song: Song | null; onClose: () =>
 
   const toggle = async (tagId: string) => {
     const next = selected.has(tagId) ? song.tagIds.filter((id) => id !== tagId) : [...song.tagIds, tagId];
-    setBusy(true);
+    setError(null);
+    // optimistic: the checkmark changes immediately, saving runs in the background
     await store.setTags(song.id, next).catch(() => setError(t('failed')));
-    setBusy(false);
   };
 
   const create = async () => {
