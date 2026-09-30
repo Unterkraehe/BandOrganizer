@@ -32,15 +32,17 @@
   outline: none;
 }
 
+/* First row: sorting and view side by side (also on phones – each takes half the width) */
 .filters {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
 }
 
 .filters > fieldset {
-  width: 200px;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 220px;
 }
 
 .status {

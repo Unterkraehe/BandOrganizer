@@ -1,4 +1,7 @@
 {
+  "0.13.4": [
+    "Songliste: Sortierung und Ansicht (Liste/Ordner) stehen jetzt nebeneinander in einer Zeile, darunter in einer zweiten Zeile „Neu“ und die Tags – auch auf dem Handy."
+  ],
   "0.13.3": [
     "Vorschläge übernehmen: „In die Songliste übernehmen“ (im ⋯-Menü oder auf der Song-Seite) kopiert die Band-Version in einen Ordner deiner Wahl – danach steht der Song in der normalen Liste. Die Datei im Vorschläge-Ordner bleibt unverändert."
   ],

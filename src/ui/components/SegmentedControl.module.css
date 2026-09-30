@@ -42,3 +42,11 @@
   outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
+
+/* Very narrow phones (≤ 359 px): tighter buttons so two switches still fit side by side */
+@media (max-width: 359px) {
+  .option {
+    padding: 0 var(--space-2);
+    font-size: var(--fs-sm);
+  }
+}

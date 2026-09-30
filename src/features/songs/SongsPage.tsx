@@ -185,9 +185,6 @@ export function SongsPage() {
               { value: 'recent', label: t('sort.recent') },
             ]}
           />
-          <Chip pressed={onlyNew} onClick={() => setOnlyNew((v) => !v)}>
-            {t('filter.new')}
-          </Chip>
           <SegmentedControl
             label={t('view.label')}
             value={view}
@@ -198,15 +195,17 @@ export function SongsPage() {
             ]}
           />
         </div>
-        {usedTags.length > 0 && (
-          <div className={styles.tagFilters} role="group" aria-label={t('tagsFilter')}>
-            {usedTags.map((tag) => (
-              <Chip key={tag.id} pressed={selectedTags.includes(tag.id)} onClick={() => toggleTag(tag.id)}>
-                {tag.name}
-              </Chip>
-            ))}
-          </div>
-        )}
+        {/* second row: filters – "Neu" and the tags */}
+        <div className={styles.tagFilters} role="group" aria-label={t('tagsFilter')}>
+          <Chip pressed={onlyNew} onClick={() => setOnlyNew((v) => !v)}>
+            {t('filter.new')}
+          </Chip>
+          {usedTags.map((tag) => (
+            <Chip key={tag.id} pressed={selectedTags.includes(tag.id)} onClick={() => toggleTag(tag.id)}>
+              {tag.name}
+            </Chip>
+          ))}
+        </div>
         {filtering && (
           <div>
             <Button
