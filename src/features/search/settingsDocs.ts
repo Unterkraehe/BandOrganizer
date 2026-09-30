@@ -16,6 +16,7 @@ export function settingsDocs(t: TFunction): SearchDoc[] {
     ['subscription', '/calendar/subscribe', 'Kalender abonnieren Abo Handy-Kalender iCal ics Google Outlook synchronisieren'],
     ['setlists', '/setlists', 'Setlists Setliste'],
     ['chat', '/chat', 'Chat Nachrichten'],
+    ['notifications', '/settings', 'Benachrichtigungen Push Mitteilungen Hinweise Handy Ton'],
     ['about', '/settings', 'Über die App Version Neuigkeiten'],
   ];
   return entries.map(([key, route, synonyms]) => ({

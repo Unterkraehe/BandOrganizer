@@ -1,4 +1,8 @@
 {
+  "0.13.0": [
+    "Benachrichtigungen: Neue Chat-Nachrichten und geänderte oder abgesagte Termine kommen als Mitteilung aufs Handy – auch wenn die App geschlossen ist. Einschalten unter Einstellungen → Benachrichtigungen.",
+    "Auf dem iPhone: App vorher auf dem Home-Bildschirm installieren (iOS 16.4 oder neuer)."
+  ],
   "0.12.5": [
     "Schneller: Änderungen erscheinen sofort – Versionen hinzufügen, Tags, Notizen, Zu-/Absagen, Termine und neue Setlists. Gespeichert wird im Hintergrund; klappt das nicht, wird die Änderung zurückgenommen und du bekommst einen Hinweis.",
     "Behoben: Lange Dateinamen im Versions-Auswahlfeld haben die Song-Seite seitlich verschiebbar gemacht."

@@ -69,3 +69,102 @@ describe('token helper worker (R-CODE-10)', () => {
     expect((await worker.fetch(post('/token', { code: 'x' }), { ALLOWED_ORIGINS: ORIGIN })).status).toBe(500);
   });
 });
+
+describe('push notifications (F6 §4.5)', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  async function vapidEnv() {
+    const pair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+    const jwk = await crypto.subtle.exportKey('jwk', pair.privateKey);
+    const raw = new Uint8Array(await crypto.subtle.exportKey('raw', pair.publicKey));
+    return {
+      pair,
+      env: {
+        ...env,
+        VAPID_PUBLIC_KEY: Buffer.from(raw).toString('base64url'),
+        VAPID_PRIVATE_KEY: jwk.d!,
+        VAPID_SUBJECT: 'mailto:band@example.com',
+        BAND_ACCOUNT: 'rockband',
+      },
+    };
+  }
+
+  async function device() {
+    const nodeCrypto = await import('node:crypto');
+    const ecdh = nodeCrypto.createECDH('prime256v1');
+    ecdh.generateKeys();
+    const auth = nodeCrypto.randomBytes(16);
+    return { ecdh, auth, sub: { endpoint: 'https://fcm.googleapis.com/fcm/send/abc123', keys: { p256dh: ecdh.getPublicKey().toString('base64url'), auth: auth.toString('base64url') } } };
+  }
+
+  const pushRequest = (body: unknown, token = 'good-token') =>
+    new Request('https://h.example/push', {
+      method: 'POST',
+      headers: { Origin: ORIGIN, 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
+    });
+
+  it('encrypts per device so that only the device can read it, signed with VAPID', async () => {
+    const { env: pushEnv, pair } = await vapidEnv();
+    const dev = await device();
+    const sent: { url: string; init: RequestInit }[] = [];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const url = String(input);
+      if (url.includes('/user/me')) return new Response(JSON.stringify({ alias: 'rockband' }), { status: 200 });
+      sent.push({ url, init: init! });
+      return new Response(null, { status: 201 });
+    });
+    const payload = { title: 'Lisa', body: 'Probe heute 30 min später?', url: '/chat' };
+    const res = await worker.fetch(pushRequest({ subscriptions: [dev.sub], payload }), pushEnv);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ results: [{ endpoint: dev.sub.endpoint, status: 201 }] });
+
+    // decrypt with an independent implementation (http_ece, RFC 8188/8291)
+    const ece = (await import('http_ece')).default;
+    const body = Buffer.from(sent[0]!.init.body as Uint8Array);
+    const plain = ece.decrypt(body, { version: 'aes128gcm', privateKey: dev.ecdh, authSecret: dev.auth });
+    expect(JSON.parse(plain.toString('utf8'))).toEqual(payload);
+
+    // VAPID header: signature valid for the push service's origin
+    const headers = sent[0]!.init.headers as Record<string, string>;
+    expect(headers['Content-Encoding']).toBe('aes128gcm');
+    const [, jwt, k] = headers.Authorization!.match(/^vapid t=([^,]+), k=(.+)$/)!;
+    expect(k).toBe(pushEnv.VAPID_PUBLIC_KEY);
+    const [h, c, s] = jwt!.split('.');
+    const claims = JSON.parse(Buffer.from(c!, 'base64url').toString());
+    expect(claims.aud).toBe('https://fcm.googleapis.com');
+    const ok = await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, pair.publicKey, Buffer.from(s!, 'base64url'), new TextEncoder().encode(`${h}.${c}`));
+    expect(ok).toBe(true);
+  });
+
+  it('only the band account may send, only to real push services', async () => {
+    const { env: pushEnv } = await vapidEnv();
+    const dev = await device();
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.includes('/user/me')) return new Response(JSON.stringify({ alias: 'someone-else' }), { status: 200 });
+      return new Response(null, { status: 201 });
+    });
+    expect((await worker.fetch(pushRequest({ subscriptions: [dev.sub], payload: {} }), pushEnv)).status).toBe(403);
+    expect((await worker.fetch(new Request('https://h.example/push', { method: 'POST', headers: { Origin: ORIGIN }, body: '{}' }), pushEnv)).status).toBe(401);
+
+    vi.restoreAllMocks();
+    const calls: string[] = [];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      calls.push(url);
+      if (url.includes('/user/me')) return new Response(JSON.stringify({ alias: 'RockBand' }), { status: 200 });
+      return new Response(null, { status: 201 });
+    });
+    const evil = { ...dev.sub, endpoint: 'https://internal.example.com/admin' };
+    const res = await worker.fetch(pushRequest({ subscriptions: [evil], payload: {} }), pushEnv);
+    expect(await res.json()).toEqual({ results: [{ endpoint: evil.endpoint, status: 'invalid' }] });
+    expect(calls.some((u) => u.includes('internal.example.com'))).toBe(false);
+  });
+
+  it('publishes the public key for the app', async () => {
+    const { env: pushEnv } = await vapidEnv();
+    const res = await worker.fetch(new Request('https://h.example/push/key', { headers: { Origin: ORIGIN } }), pushEnv);
+    expect(await res.json()).toEqual({ publicKey: pushEnv.VAPID_PUBLIC_KEY });
+  });
+});

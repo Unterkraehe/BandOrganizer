@@ -1,7 +1,7 @@
 {
   "name": "band-organizer",
   "private": true,
-  "version": "0.12.5",
+  "version": "0.13.0",
   "type": "module",
   "description": "Overload App – PWA for band organization on top of HiDrive",
   "engines": {
@@ -45,6 +45,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^17.12.0",
+    "http_ece": "^1.2.1",
     "jsdom": "^30.1.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.70.1",

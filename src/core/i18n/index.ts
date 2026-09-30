@@ -6,6 +6,7 @@ import chat from '@/locales/de/chat.json';
 import band from '@/locales/de/band.json';
 import common from '@/locales/de/common.json';
 import members from '@/locales/de/members.json';
+import notifications from '@/locales/de/notifications.json';
 import profile from '@/locales/de/profile.json';
 import pwa from '@/locales/de/pwa.json';
 import search from '@/locales/de/search.json';
@@ -21,7 +22,7 @@ import whatsNew from '@/locales/de/whatsNew.json';
  * src/locales/<lang>/ with the same namespaces, registered here.
  */
 export const resources = {
-  de: { auth, band, calendar, chat, common, members, profile, pwa, search, settings, setlists, songs, start, uploads, whatsNew },
+  de: { auth, band, calendar, chat, common, members, notifications, profile, pwa, search, settings, setlists, songs, start, uploads, whatsNew },
 } as const;
 
 export const defaultNS = 'common';

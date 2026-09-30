@@ -2,18 +2,37 @@ import { createContext, useContext, useEffect, useRef, useState, useSyncExternal
 import { onSystemEvent } from '@/core/events';
 import { onAppResume } from '@/core/resume';
 import { useSession } from '@/core/session/BandSession';
+import { useTranslation } from 'react-i18next';
+import { sendPush } from '@/features/notifications/push';
+import { pushPayloadFor } from '@/features/notifications/payload';
+import type { ChatMessage } from './model';
 import { ChatStore } from './store';
 
 const Ctx = createContext<{ store: ChatStore; setFast: (fast: boolean) => void } | null>(null);
 
 /** Chat store + polling: 10 s while the chat is visible, 60 s otherwise, none in the background (F6 §4.3). */
 export function ChatProvider({ children }: { children: ReactNode }) {
-  const { storage, appRoot, band, mode, currentMember } = useSession();
+  const { storage, appRoot, band, mode, currentMember, members } = useSession();
+  const { t } = useTranslation();
   const member = useRef(currentMember?.id ?? 'unknown');
   member.current = currentMember?.id ?? 'unknown';
+  // push notifications to the other members (F6 §4.5) – not in the demo (no real HiDrive login)
+  const notifyRef = useRef<(message: ChatMessage) => void>(() => undefined);
+  notifyRef.current = (message) => {
+    if (mode === 'demo' || !storage || !appRoot) return;
+    const payload = pushPayloadFor(message, t, members, band?.bandName ?? '');
+    if (!payload) return;
+    void sendPush(storage, appRoot, message.createdBy, payload.kind, payload.payload).catch((error) => console.warn('Push failed', error));
+  };
   const [store] = useState(() => {
     if (!storage || !appRoot || !band) throw new Error('ChatProvider needs a ready session');
-    return new ChatStore({ storage, appRoot, memberId: () => member.current, cacheKey: mode === 'demo' ? null : `bandapp.chat.${band.id}.${member.current}` });
+    return new ChatStore({
+      storage,
+      appRoot,
+      memberId: () => member.current,
+      cacheKey: mode === 'demo' ? null : `bandapp.chat.${band.id}.${member.current}`,
+      onSaved: (message) => notifyRef.current(message),
+    });
   });
   const [fast, setFast] = useState(false);
 

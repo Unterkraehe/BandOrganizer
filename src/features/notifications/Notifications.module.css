@@ -1,0 +1,41 @@
+.box {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.hint {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.on {
+  font-weight: 600;
+  color: var(--success);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch);
+  cursor: pointer;
+}
+
+.check input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}
+
+.error {
+  color: var(--danger);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+}

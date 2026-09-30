@@ -88,6 +88,16 @@ Created by the device that performs the action, stored like messages with `type:
 - Written at most every few seconds while reading (debounced).
 - Unread count = messages after `lastReadAt` from other members (info lines count too).
 
+### 4.6 Push notifications (v0.13)
+
+- **Opt-in per device** in Einstellungen → Benachrichtigungen ("Einschalten" → the phone's permission prompt). Two switches: *Chat-Nachrichten* and *Termin-Änderungen und Absagen* (both on by default). "Test-Benachrichtigung senden" sends one to this device only.
+- **What notifies (decided):** every chat message (incl. item discussions) and the info lines for changed / cancelled / re-scheduled events. Not: absences, answers, Band-Version or design changes. Your own messages never notify you.
+- **Content (decided):** title "<Sender> · <Band>", text = the message (max. ~180 characters; shared items as "📎 Termin" etc.). Event changes: "Termin abgesagt" + the info line. Tapping opens the message (`chat?message=`) or the event.
+- **How:** each device stores its Web Push subscription in `_BandApp/push/<memberId>/<deviceId>.json`. The app of whoever writes the message asks the token helper (`POST /push`, with its HiDrive login) to deliver to all *other* members' devices; the worker encrypts per device (RFC 8291) and signs with VAPID (RFC 8292). Push services only see encrypted data. Devices reported as gone (404/410) are switched off automatically.
+- **Open app:** if the app is visible on a device, no notification is shown there (except on Apple devices, where every push must show one).
+- **Requirements:** Android – Chrome, installed or not. iPhone/iPad – iOS 16.4+, app installed on the home screen and opened from there. Not in the demo.
+- **Setup:** VAPID keys + `BAND_ACCOUNT` in the worker (token-helper/README.md).
+
 ### 4.5 Loading history
 - Opens with the current month (and the previous one if few messages), older months load when scrolling up ("Ältere Nachrichten laden …").
 

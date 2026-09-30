@@ -2,6 +2,7 @@ import { Outlet, ScrollRestoration, type RouteObject } from 'react-router-dom';
 import type { FeatureRegistration } from '@/core/features/registry';
 import { MorePage } from '@/features/more/MorePage';
 import { MiniPlayer } from '@/features/songs/MiniPlayer';
+import { NotificationNavigator } from '@/features/notifications/NotificationNavigator';
 import { SearchButton } from '@/features/search/SearchButton';
 import { SearchOverlay } from '@/features/search/SearchOverlay';
 import { SearchPage } from '@/features/search/SearchPage';
@@ -24,6 +25,7 @@ export function buildRoutes(features: FeatureRegistration[]): RouteObject[] {
             </AppShell>
           </TopBarExtraContext.Provider>
           <SearchOverlay />
+          <NotificationNavigator />
         </SearchProvider>
       ),
       children: [

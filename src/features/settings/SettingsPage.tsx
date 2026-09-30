@@ -1,6 +1,7 @@
 import { CalendarSync, Cloud, LogOut, Music, Palette, RefreshCw, Tags, UserRoundPen, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { NotificationSettings } from '@/features/notifications/NotificationSettings';
 import { readTextSize, writeTextSize, type TextSize } from '@/core/theme/textSize';
 import { useNavigate } from 'react-router-dom';
 import { formatRelativeDay, formatTime } from '@/core/i18n/format';
@@ -78,6 +79,8 @@ export function SettingsPage() {
       )}
 
       <SongScanSection />
+
+      <NotificationSettings />
 
       <Section title={t('calendar:title')}>
         <SettingRow label={t('calendar:subscription.title')} hint={t('calendar:subscription.privacy')}>

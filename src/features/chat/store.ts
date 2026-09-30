@@ -27,6 +27,8 @@ interface Options {
   memberId: () => string;
   cacheKey: string | null;
   now?: () => Date;
+  /** after a message of this member was saved – e.g. to send push notifications (F6 §4.5) */
+  onSaved?: (message: ChatMessage) => void;
 }
 
 const prevMonth = (ym: string) => {
@@ -218,6 +220,7 @@ export class ChatStore {
     if (!this.months.includes(ym)) this.months = [...this.months, ym].sort();
     this.set({ versions: { ...this.state.versions, [this.fileName(msg)]: entry.version } });
     if (msg.type === 'text') this.markRead(now);
+    this.options.onSaved?.(msg);
     return msg;
   }
 

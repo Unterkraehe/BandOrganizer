@@ -560,3 +560,12 @@ describe('Calendar subscription (M9 in demo mode)', () => {
     expect(await screen.findByRole('button', { name: 'Abo-Link erstellen' })).toBeInTheDocument();
   });
 });
+
+describe('Notifications settings (v0.13)', () => {
+  it('explains that the demo has no notifications', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/settings');
+    expect(await screen.findByRole('heading', { name: 'Benachrichtigungen' })).toBeInTheDocument();
+    expect(screen.getByText(/Demo-Modus gibt es keine Benachrichtigungen/)).toBeInTheDocument();
+  });
+});

@@ -42,6 +42,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         // The OAuth callback must always come from the network.
         navigateFallbackDenylist: [/callback\.html/],
+        // push notifications: handlers live in public/push-sw.js (F6 §4.5)
+        importScripts: ['push-sw.js'],
       },
     }),
   ],
