@@ -41,6 +41,7 @@ export interface DetailsChange {
   key: string | null;
   bpm: number | null;
   tuning: string | null;
+  artist?: string | null;
   tagIds: string[];
 }
 
@@ -199,7 +200,7 @@ export class LibraryStore {
 
   /** Edit form (F4 §4.4). Fails with ConflictError if someone changed the same fields meanwhile. */
   async updateDetails(songId: string, change: DetailsChange, original: DetailsChange) {
-    const fields: (keyof DetailsChange)[] = ['displayTitle', 'key', 'bpm', 'tuning'];
+    const fields: (keyof DetailsChange)[] = ['displayTitle', 'key', 'bpm', 'tuning', 'artist'];
     // Only fields the user actually changed are written; others keep their latest value.
     const changed: Partial<DetailsChange> = {};
     for (const field of fields) if (change[field] !== original[field]) Object.assign(changed, { [field]: change[field] });

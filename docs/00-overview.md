@@ -234,6 +234,7 @@ This list grows with the feature plans. Consistent wording is a rule (R-I18N-05)
 | 2026-09-24 | Files can be uploaded from the app into a configurable upload root (one folder per song), create-only (never overwrite/move/delete); typed lyrics saved as new `.txt` per edit | Add content without opening HiDrive; data safety kept |
 | 2026-09-26 | Styling with design tokens + CSS Modules instead of Tailwind | Tokens are the single source of truth; simpler to enforce R-UI-07 |
 | 2026-09-26 | Neutral default band color "Messing" until a band sets its own | No pre-branding for other bands (R-UI-10) |
+| 2026-09-29 | Printed setlist follows the band's existing paper layout (one block per page, Song/Interpret/Info, grey bars, DIREKT arrows); songs get an optional Interpret | Band is used to it on stage |
 | 2026-09-29 | Pinch zoom disabled (app feel, band request); compensated by a text size setting (100/115/130 %) | Accessibility review: the only remaining automated finding is intentional |
 | 2026-09-29 | Calendar subscription via HiDrive share link on `_BandApp/calendar/export/band.ics`; share links only allowed inside `_BandApp/` (guard) | F5 §6.5b; spike S4 decides whether the fallback is needed |
 | 2026-09-29 | Search index on the main thread (MiniSearch), no Web Worker / IndexedDB in v1 | Fast enough for band-sized data; less complexity |

@@ -3,7 +3,18 @@
 | | |
 |---|---|
 | **ID** | F7 |
-| **Status** | Implemented (v0.8.0) |
+| **Status** | Implemented (v0.8.0); print layout reworked in v0.12.1 |
+
+> **Print layout (v0.12.1)** – modelled on the band's own sheet "Playlist Beimerstetten":
+> - Every block on its own A4 page: header row with the block name (large) and "<Setlist name> - Stand: <last change, dd.mm.yy>".
+> - Table **Song | Interpret | Info / Bemerkung**; small continuous numbers at the left; a grey bar joins songs played as a group (between two announcements; single songs get no bar).
+> - Direct transitions: red U-turn arrow + "DIREKT" between the two rows.
+> - Interludes as red "--- Ansage ---" rows with their own Info column (`InterludeEntry.note`).
+> - Pause box after each block except the last, with its own text (`Block.pauseNote`, e.g. "Pausenmusik!!!") and the minutes.
+> - Songs got an optional **Interpret** (`SongMeta.artist`, song edit form). The Interpret column is on by default when any song in the setlist has one (switchable, like "Meine Notizen drucken"; own notes appear in the Info column).
+> - **Readability (v0.12.2):** song titles bold; row height and title size are computed per block so the rows fill the A4 page (few songs: up to 64 px rows / 32 px titles; many songs: down to 44 px / 24 px, still one page for ~22 rows). Longer blocks continue on the next page with the header repeated.
+> - **Arrows (v0.12.2):** SVG U-turn with dark outline, red gradient and a proper head, centred on the line between the two songs; small "DIREKT" label above it.
+> - Colors are kept when printing (`print-color-adjust: exact`). Fixed along the way: printing from a desktop placed the content into the hidden sidebar column.
 
 > **Implementation notes (v0.8.0)**
 > - Editor keeps a local draft with undo/redo (100 steps) and saves explicitly; leaving with unsaved changes asks first (router blocker).

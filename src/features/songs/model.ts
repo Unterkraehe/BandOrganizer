@@ -29,6 +29,8 @@ export interface SongMeta extends RecordBase {
   key: string | null;
   bpm: number | null;
   tuning: string | null;
+  /** original artist of a cover song ("Interpret" on the printed setlist) – optional, added in v0.12.1 */
+  artist?: string | null;
   lyrics: { fileId?: string; path: string } | null;
   /** earlier lyrics links, newest first (F10 §5.7 "Frühere Fassungen") */
   lyricsHistory?: { path: string; savedAt: string; savedBy: string }[];
@@ -92,6 +94,7 @@ export interface Song {
   key: string | null;
   bpm: number | null;
   tuning: string | null;
+  artist: string | null;
   tagIds: string[];
   archived: boolean;
   hidden: boolean;
@@ -309,10 +312,11 @@ export function buildSongs(
       key: meta?.key ?? null,
       bpm: meta?.bpm ?? null,
       tuning: meta?.tuning ?? null,
+      artist: meta?.artist ?? null,
       tagIds: meta?.tagIds ?? [],
       archived: meta?.archived ?? false,
       hidden: meta?.hidden ?? false,
-      searchText: [title, ...recordings.map((r) => `${r.fileName} ${r.label ?? ''} ${r.folder}`)].join(' '),
+      searchText: [title, meta?.artist ?? '', ...recordings.map((r) => `${r.fileName} ${r.label ?? ''} ${r.folder}`)].join(' '),
       addedAt,
       isNew: Number.isFinite(added) && now - added < NEW_DAYS * 86_400_000,
       missing: recordings.length > 0 && present.length === 0,

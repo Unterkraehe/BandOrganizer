@@ -280,6 +280,14 @@ function Editor({ initial, version: initialVersion }: { initial: Draft; version:
                             value={entry.durationMin ?? ''}
                             onChange={(e) => change(updateEntry(s, entry.id, { durationMin: e.target.value ? Number(e.target.value) : null }))}
                           />
+                          <input
+                            className={styles.inlineInput}
+                            aria-label={t('interludeNote')}
+                            placeholder={t('interludeNotePlaceholder')}
+                            value={entry.note ?? ''}
+                            maxLength={NOTE_MAX}
+                            onChange={(e) => change(updateEntry(s, entry.id, { note: e.target.value || null }))}
+                          />
                         </div>
                       )}
                       <Menu
@@ -328,10 +336,20 @@ function Editor({ initial, version: initialVersion }: { initial: Draft; version:
                 </Button>
               </div>
               {bi < s.blocks.length - 1 && (
-                <label className={styles.meta} style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
-                  {t('pauseLabel')}
-                  <input className={styles.inlineInput} style={{ width: 90 }} type="number" min={0} max={120} value={block.pauseAfterMin ?? ''} onChange={(e) => change(mapBlocks(s, (bs) => bs.map((b) => (b.id === block.id ? { ...b, pauseAfterMin: e.target.value ? Number(e.target.value) : null } : b))))} />
-                </label>
+                <div className={styles.pauseFields}>
+                  <label className={styles.meta} style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+                    {t('pauseLabel')}
+                    <input className={styles.inlineInput} style={{ width: 90 }} type="number" min={0} max={120} value={block.pauseAfterMin ?? ''} onChange={(e) => change(mapBlocks(s, (bs) => bs.map((b) => (b.id === block.id ? { ...b, pauseAfterMin: e.target.value ? Number(e.target.value) : null } : b))))} />
+                  </label>
+                  <input
+                    className={styles.inlineInput}
+                    aria-label={t('pauseNote')}
+                    placeholder={t('pauseNotePlaceholder')}
+                    value={block.pauseNote ?? ''}
+                    maxLength={NOTE_MAX}
+                    onChange={(e) => change(mapBlocks(s, (bs) => bs.map((b) => (b.id === block.id ? { ...b, pauseNote: e.target.value || null } : b))))}
+                  />
+                </div>
               )}
             </section>
           ))}

@@ -45,8 +45,8 @@
   "interlude": "Zwischenpunkt",
   "interludePlaceholder": "z. B. Ansage: Merch-Stand",
   "interludeMinutes": "Minuten",
-  "note": "Notiz",
-  "notePlaceholder": "z. B. Intro länger",
+  "note": "Info / Bemerkung",
+  "notePlaceholder": "z. B. KISS_Video, Intro länger",
   "myNote": "Meine Notiz",
   "myNotePlaceholder": "nur für dich",
   "myNoteHint": "Nur für dich sichtbar – auch beim Drucken.",
@@ -112,7 +112,16 @@
     "myNotes": "Meine Notizen drucken",
     "button": "Drucken / Als PDF speichern",
     "continued": "{{block}} (Fortsetzung)",
-    "back": "Zurück"
+    "back": "Zurück",
+    "stand": "Stand: {{date}}",
+    "song": "Song:",
+    "artist": "Interpret:",
+    "info": "Info / Bemerkung:",
+    "direkt": "DIREKT",
+    "pause": "Pause",
+    "pauseMin": "{{min}} Min.",
+    "showArtists": "Interpret-Spalte",
+    "hint": "Tipp: Im Druckdialog „Als PDF speichern“ wählen. Jeder Block beginnt auf einer neuen Seite."
   },
   "link": {
     "title": "Mit Termin verknüpfen",
@@ -141,5 +150,9 @@
   "loadError": "Die Setlists konnten nicht geladen werden.",
   "retry": "Erneut versuchen",
   "notFound": "Diese Setlist gibt es nicht (mehr).",
-  "toList": "Zu den Setlists"
+  "toList": "Zu den Setlists",
+  "interludeNote": "Info / Bemerkung",
+  "interludeNotePlaceholder": "Info / Bemerkung, z. B. Overload_Logo",
+  "pauseNote": "Text für die Pause",
+  "pauseNotePlaceholder": "Text für die Pause, z. B. Pausenmusik!!!"
 }

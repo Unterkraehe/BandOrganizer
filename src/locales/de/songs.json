@@ -112,7 +112,10 @@
     "conflict": "{{name}} hat diesen Song gerade geändert. Lade die Seite neu und versuch es noch einmal.",
     "conflictUnknown": "Jemand hat diesen Song gerade geändert. Lade die Seite neu und versuch es noch einmal.",
     "reload": "Neu laden",
-    "lastEdited": "Zuletzt bearbeitet von {{name}}"
+    "lastEdited": "Zuletzt bearbeitet von {{name}}",
+    "artist": "Interpret",
+    "artistHint": "Bei Cover-Songs die Original-Band – steht z. B. auf der gedruckten Setlist.",
+    "optional": "(optional)"
   },
   "tagsDialog": {
     "title": "Tags für „{{title}}“",

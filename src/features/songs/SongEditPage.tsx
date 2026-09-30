@@ -39,6 +39,7 @@ function SongEditForm({ song }: { song: Song }) {
     key: song.key,
     bpm: song.bpm,
     tuning: song.tuning,
+    artist: song.artist,
     tagIds: song.tagIds,
   };
   const [title, setTitle] = useState(song.title);
@@ -47,6 +48,7 @@ function SongEditForm({ song }: { song: Song }) {
   const [minor, setMinor] = useState(initialKey.minor);
   const [bpm, setBpm] = useState(song.bpm ? String(song.bpm) : '');
   const [tuning, setTuning] = useState(song.tuning ?? '');
+  const [artist, setArtist] = useState(song.artist ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tagOpen, setTagOpen] = useState(false);
@@ -82,6 +84,7 @@ function SongEditForm({ song }: { song: Song }) {
           key: keyNote ? `${keyNote}${minor ? 'm' : ''}` : null,
           bpm: bpmNumber,
           tuning: tuning.trim() || null,
+          artist: artist.trim() || null,
           tagIds: song.tagIds,
         },
         original,
@@ -103,6 +106,7 @@ function SongEditForm({ song }: { song: Song }) {
     <Page title={t('edit.title')}>
       <form className={styles.editForm} onSubmit={(event) => void save(event)} noValidate>
         <TextField label={t('edit.songTitle')} hint={t('edit.titleHint')} value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} required />
+        <TextField label={t('edit.artist')} optionalLabel={t('edit.optional')} hint={t('edit.artistHint')} value={artist} onChange={(e) => setArtist(e.target.value)} maxLength={80} />
 
         <fieldset className={styles.fieldset}>
           <legend>{t('edit.key')}</legend>

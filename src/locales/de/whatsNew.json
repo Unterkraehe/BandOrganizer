@@ -1,4 +1,13 @@
 {
+  "0.12.2": [
+    "Gedruckte Setlist besser lesbar aus der Entfernung: große, fette Songtitel, die Zeilen füllen die Seite – bei wenigen Songs größer, bei vielen so groß, dass der Block noch auf eine Seite passt.",
+    "Neue rote „DIREKT“-Pfeile: kräftiger, mit Kontur und klarer Pfeilspitze."
+  ],
+  "0.12.1": [
+    "Gedruckte Setlist im gewohnten Band-Format: jeder Block auf einer eigenen Seite, Spalten Song / Interpret / Info, graue Balken, rote „DIREKT“-Pfeile, rote Ansagen und ein Kasten für die Pause.",
+    "Songs haben jetzt ein Feld „Interpret“ (Song bearbeiten).",
+    "Zwischenpunkte (z. B. Ansage) haben eine Info-Spalte, und für jede Pause gibt es einen eigenen Text (z. B. „Pausenmusik!!!“)."
+  ],
   "0.12.0": [
     "Kalender abonnieren: alle Band-Termine automatisch im Kalender auf Handy oder Computer (Kalender → ⋯ → Kalender abonnieren).",
     "Textgröße einstellbar (Einstellungen → Darstellung) – für alle, die größere Schrift brauchen.",

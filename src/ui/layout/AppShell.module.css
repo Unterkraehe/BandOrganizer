@@ -302,3 +302,15 @@
     opacity: 1;
   }
 }
+
+/* Printing (setlist print): the hidden navigation must not leave its grid column behind –
+   otherwise the content lands in the narrow sidebar column when printing from a desktop. */
+@media print {
+  .shell {
+    display: block !important;
+    min-height: 0 !important;
+  }
+  .main {
+    padding: 0 !important;
+  }
+}

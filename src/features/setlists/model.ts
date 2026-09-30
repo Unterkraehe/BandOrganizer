@@ -17,6 +17,8 @@ export interface InterludeEntry {
   type: 'interlude';
   text: string;
   durationMin: number | null;
+  /** "Info / Bemerkung" column, e.g. which slide/video runs (v0.12.1) */
+  note?: string | null;
 }
 
 export type Entry = SongEntry | InterludeEntry;
@@ -26,6 +28,8 @@ export interface Block {
   name: string;
   /** pause after this block (not after the last) */
   pauseAfterMin: number | null;
+  /** text for the pause box on the printout, e.g. "Pausenmusik!!!" (v0.12.1) */
+  pauseNote?: string | null;
   entries: Entry[];
 }
 

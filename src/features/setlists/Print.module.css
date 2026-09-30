@@ -1,0 +1,232 @@
+/* Printed setlist (v0.12.1) – always black on white, colors are kept when printing. */
+
+.sheet {
+  --ink: #000;
+  --line: #000;
+  --red: #e30613;
+  display: grid;
+  gap: 48px;
+  color: var(--ink);
+  font-family: Arial, Helvetica, 'Inter Variable', sans-serif;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 40px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  break-inside: avoid;
+}
+
+.colNr {
+  width: 34px;
+}
+.colBar {
+  width: 24px;
+}
+.colArtist {
+  width: 19%;
+}
+.colInfo {
+  width: 23%;
+}
+
+.table th,
+.table td {
+  border: 1px solid var(--line);
+  padding: 6px 8px;
+  vertical-align: middle;
+  text-align: left;
+}
+
+/* Nr and bar share one visual column like on paper */
+.table td.nr {
+  border-right: none;
+  padding: 2px 4px;
+  font-size: 12px;
+  font-weight: 700;
+  vertical-align: bottom;
+}
+.table td.barCell {
+  border-left: none;
+  padding: 0;
+  position: relative;
+}
+
+/* rows fill the page (height set per block): readable from a distance on stage */
+.table tbody td {
+  height: var(--row, 48px);
+}
+
+/* long blocks that don't fit on one page repeat the header on the next */
+.table thead {
+  display: table-header-group;
+}
+
+.titleRow th {
+  padding: 8px 10px;
+}
+
+.blockName {
+  font-size: 36px;
+  font-weight: 800;
+}
+
+.subtitle {
+  float: right;
+  margin-top: 14px;
+  font-size: 11px;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.headRow th {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.song {
+  position: relative;
+  font-size: var(--title, 26px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  padding-left: 12px !important;
+}
+
+.title {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+/* room for the DIREKT arrow only where there is one */
+.song[data-direkt] .title {
+  padding-right: 70px;
+}
+
+.artist {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.info {
+  font-size: 15px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.mine {
+  color: #444;
+}
+
+.announce {
+  color: var(--red);
+  font-size: calc(var(--title, 26px) * 0.85);
+  font-weight: 700;
+  padding-left: 24px !important;
+}
+
+.announce small {
+  font-size: 12px;
+}
+
+/* the grey "rail" left of songs that are played as a group */
+.bar {
+  position: absolute;
+  left: 5px;
+  width: 13px;
+  top: -1px;
+  bottom: -1px;
+  background: linear-gradient(90deg, #6f6f6f 0%, #d9d9d9 35%, #ffffff 55%, #bdbdbd 80%, #5e5e5e 100%);
+  border-left: 1px solid #555;
+  border-right: 1px solid #555;
+}
+
+.bar[data-pos='start'] {
+  top: 6px;
+  border-top: 1px solid #555;
+  border-radius: 2px 2px 0 0;
+}
+
+.bar[data-pos='end'] {
+  bottom: 6px;
+  border-bottom: 1px solid #555;
+  border-radius: 0 0 2px 2px;
+}
+
+/* "DIREKT": red U-turn arrow centred on the line to the next song */
+.direkt {
+  position: absolute;
+  right: 6px;
+  bottom: 0;
+  transform: translateY(50%);
+  z-index: 1;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 0;
+}
+
+.arrow {
+  width: min(calc(var(--row, 48px) * 0.8), 48px);
+  height: min(calc(var(--row, 48px) * 0.8), 48px);
+  filter: drop-shadow(1px 1.5px 0.5px rgb(0 0 0 / 0.35));
+}
+
+.direktText {
+  position: absolute;
+  bottom: calc(100% - 4px);
+  padding: 0 4px;
+  border: 1.5px solid var(--red);
+  border-radius: 3px;
+  background: #fff;
+  color: var(--red);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.pauseBox {
+  justify-self: center;
+  min-width: 50%;
+  padding: 10px 16px;
+  border: 2px solid var(--line);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.pauseBox small {
+  font-size: 13px;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 12mm;
+  }
+  /* no empty trailing page from app containers with a minimum height */
+  :global(html),
+  :global(body),
+  :global(#root) {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  .sheet {
+    gap: 0;
+  }
+  /* every block starts on its own page, like the band's sheets */
+  .page + .page {
+    break-before: page;
+  }
+}
