@@ -54,6 +54,7 @@ All colors are CSS custom properties with a light and a dark value. Names are se
 | Token | Use | Light | Dark |
 |---|---|---|---|
 | `--bg` | App background | `#F6F6F7` | `#0E0E10` |
+| `--surface-raised` / `--border-raised` | Floating menus (⋯) – clearly lighter than cards in dark mode, white with strong shadow in light mode (v0.13.1) | `#FFFFFF` / `#C9C9CF` | `#36363D` / `#4A4A52` |
 | `--surface` | Cards, lists, sheets, bottom bar | `#FFFFFF` | `#202024` |
 | `--surface-2` | Raised/hover, inputs | `#EFEFF1` | `#2A2A2F` |
 | `--border` | Dividers, outlines | `#DEDEE2` | `#38383E` |

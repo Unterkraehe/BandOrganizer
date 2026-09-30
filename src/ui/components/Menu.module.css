@@ -21,18 +21,30 @@
   background: var(--surface-2);
 }
 
+/* Floating above everything (also the bottom bar), clearly separated from the page:
+   own raised background, visible border and a strong shadow (v0.13.1). */
 .menu {
-  position: absolute;
-  z-index: 40;
-  right: 0;
-  top: calc(100% + 4px);
-  min-width: 280px;
-  max-width: min(320px, calc(100vw - 32px));
+  position: fixed;
+  z-index: 70;
+  min-width: 260px;
+  max-width: min(320px, calc(100vw - 16px));
+  overflow-y: auto;
   padding: var(--space-1);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--text);
+  border: 1px solid var(--border-raised);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-float);
+  box-shadow:
+    0 14px 36px rgb(0 0 0 / 0.35),
+    0 3px 10px rgb(0 0 0 / 0.2);
+  animation: menu-in 120ms var(--ease);
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
 }
 
 .item {
@@ -45,25 +57,22 @@
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
+  color: inherit;
+  font-size: var(--fs-md);
   text-align: left;
   cursor: pointer;
 }
 
 .item:hover,
 .item:focus-visible {
-  background: var(--surface-2);
+  background: color-mix(in srgb, var(--text) 9%, transparent);
+  outline: none;
+}
+
+.item + .item {
+  border-top: 1px solid color-mix(in srgb, var(--border-raised) 55%, transparent);
 }
 
 .danger {
   color: var(--danger);
-}
-
-.up {
-  top: auto;
-  bottom: calc(100% + 4px);
-}
-
-.left {
-  right: auto;
-  left: 0;
 }
