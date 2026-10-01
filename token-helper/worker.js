@@ -8,8 +8,13 @@
  * already prepared notification to the band's devices; the worker encrypts it per device
  * (Web Push, RFC 8291/8292) and hands it to the push services of Google/Apple/Mozilla.
  *
- * Rules (R-CODE-10): no storage, no logging of tokens, codes or messages, requests only from
- * the app's own origin, no file access. Push requests need a valid HiDrive login of the band.
+ * Third job (v0.14): reminders before calendar events (F6 §4.7). The app uploads the band's
+ * upcoming reminders (PUT /reminders); a Cron Trigger every 5 minutes sends the due ones.
+ *
+ * Rules (R-CODE-10): no logging of tokens, codes or messages, requests only from the app's own
+ * origin, no file access. The only thing stored is the reminder list (KV, decided: titles and
+ * times of the next 8 weeks' events + the devices' push addresses), replaced by every upload.
+ * Push and reminder requests need a valid HiDrive login of the band.
  *
  * Environment variables (Cloudflare dashboard → Worker → Settings → Variables and Secrets):
  *   HIDRIVE_CLIENT_ID      (text)    – the client ID from the HiDrive registration
@@ -19,11 +24,17 @@
  *   VAPID_PRIVATE_KEY      (secret)
  *   VAPID_SUBJECT          (text)    – contact for the push services, e.g. "mailto:band@example.com"
  *   BAND_ACCOUNT           (text)    – HiDrive user name of the band account; only it may send pushes
+ *   REMINDERS              (KV namespace binding) – reminder list; plus a Cron Trigger every 5 minutes (README.md)
  */
 
 const HIDRIVE_TOKEN_URL = 'https://my.hidrive.com/oauth2/token';
 
 export default {
+  /** Cron Trigger (every 5 minutes): send the reminders that became due since the last run. */
+  async scheduled(controller, env, ctx) {
+    ctx.waitUntil(sendDueReminders(env, controller.scheduledTime));
+  },
+
   async fetch(request, env) {
     const url = new URL(request.url);
     const origin = request.headers.get('Origin') || '';
@@ -52,6 +63,10 @@ export default {
 
     if (url.pathname === '/push' && request.method === 'POST') {
       return handlePush(request, env, origin);
+    }
+
+    if (url.pathname === '/reminders' && request.method === 'PUT') {
+      return handleReminders(request, env, origin);
     }
 
     if (request.method !== 'POST' || (url.pathname !== '/token' && url.pathname !== '/refresh')) {
@@ -109,7 +124,7 @@ export default {
 function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Max-Age': '86400',
     'Cache-Control': 'no-store',
@@ -146,20 +161,8 @@ async function handlePush(request, env, origin) {
     return json({ error: 'push_not_configured' }, 501, origin);
   }
   // 1. Only members of the band: the caller must be logged in to the band's HiDrive account.
-  const auth = request.headers.get('Authorization') || '';
-  if (!/^Bearer \S+$/.test(auth)) return json({ error: 'unauthorized' }, 401, origin);
-  let me;
-  try {
-    const res = await fetch(`${HIDRIVE_API}/user/me?fields=alias`, { headers: { Authorization: auth } });
-    if (res.status === 401) return json({ error: 'unauthorized' }, 401, origin);
-    if (!res.ok) return json({ error: 'hidrive_error' }, 502, origin);
-    me = await res.json();
-  } catch {
-    return json({ error: 'hidrive_unreachable' }, 502, origin);
-  }
-  if (env.BAND_ACCOUNT && String(me.alias || '').toLowerCase() !== env.BAND_ACCOUNT.trim().toLowerCase()) {
-    return json({ error: 'forbidden' }, 403, origin);
-  }
+  const denied = await checkBandLogin(request, env, origin);
+  if (denied) return denied;
 
   // 2. Validate the request.
   let body;
@@ -176,36 +179,128 @@ async function handlePush(request, env, origin) {
 
   // 3. Encrypt and send to every device.
   const vapidKey = await importVapidKey(env);
-  const results = await Promise.all(
-    subscriptions.map(async (sub) => {
-      const endpoint = typeof sub?.endpoint === 'string' ? sub.endpoint : '';
-      try {
-        const target = new URL(endpoint);
-        if (target.protocol !== 'https:' || !PUSH_HOSTS.some((host) => host.test(target.hostname))) {
-          return { endpoint, status: 'invalid' };
-        }
-        if (typeof sub.keys?.p256dh !== 'string' || typeof sub.keys?.auth !== 'string') return { endpoint, status: 'invalid' };
-        const encrypted = await encryptPayload(sub.keys, new TextEncoder().encode(payload));
-        const jwt = await vapidJwt(target.origin, env.VAPID_SUBJECT, vapidKey);
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            Authorization: `vapid t=${jwt}, k=${env.VAPID_PUBLIC_KEY}`,
-            'Content-Encoding': 'aes128gcm',
-            'Content-Type': 'application/octet-stream',
-            TTL: '86400',
-            Urgency: 'high',
-          },
-          body: encrypted,
-        });
-        // 404/410: the device unsubscribed – the app removes the subscription
-        return { endpoint, status: res.status };
-      } catch {
-        return { endpoint, status: 'error' };
-      }
-    }),
-  );
+  const results = await Promise.all(subscriptions.map(async (sub) => ({ endpoint: endpointOf(sub), status: await deliver(sub, payload, env, vapidKey) })));
   return json({ results }, 200, origin);
+}
+
+/** null when the caller is logged in to the band's HiDrive account, otherwise the error response. */
+async function checkBandLogin(request, env, origin) {
+  const auth = request.headers.get('Authorization') || '';
+  if (!/^Bearer \S+$/.test(auth)) return json({ error: 'unauthorized' }, 401, origin);
+  let me;
+  try {
+    const res = await fetch(`${HIDRIVE_API}/user/me?fields=alias`, { headers: { Authorization: auth } });
+    if (res.status === 401) return json({ error: 'unauthorized' }, 401, origin);
+    if (!res.ok) return json({ error: 'hidrive_error' }, 502, origin);
+    me = await res.json();
+  } catch {
+    return json({ error: 'hidrive_unreachable' }, 502, origin);
+  }
+  if (env.BAND_ACCOUNT && String(me.alias || '').toLowerCase() !== env.BAND_ACCOUNT.trim().toLowerCase()) {
+    return json({ error: 'forbidden' }, 403, origin);
+  }
+  return null;
+}
+
+const endpointOf = (sub) => (typeof sub?.endpoint === 'string' ? sub.endpoint : '');
+
+/** Encrypts and sends one notification to one device. Returns the push service's status or 'invalid'/'error'. */
+async function deliver(sub, payload, env, vapidKey) {
+  const endpoint = endpointOf(sub);
+  try {
+    const target = new URL(endpoint);
+    if (target.protocol !== 'https:' || !PUSH_HOSTS.some((host) => host.test(target.hostname))) return 'invalid';
+    if (typeof sub.keys?.p256dh !== 'string' || typeof sub.keys?.auth !== 'string') return 'invalid';
+    const encrypted = await encryptPayload(sub.keys, new TextEncoder().encode(payload));
+    const jwt = await vapidJwt(target.origin, env.VAPID_SUBJECT, vapidKey);
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `vapid t=${jwt}, k=${env.VAPID_PUBLIC_KEY}`,
+        'Content-Encoding': 'aes128gcm',
+        'Content-Type': 'application/octet-stream',
+        TTL: '86400',
+        Urgency: 'high',
+      },
+      body: encrypted,
+    });
+    // 404/410: the device unsubscribed – the app removes the subscription
+    return res.status;
+  } catch {
+    return 'error';
+  }
+}
+
+/* ------------------------------------------------------------------------------------------ */
+/* Reminders before events (F6 §4.7)                                                          */
+/* ------------------------------------------------------------------------------------------ */
+
+const REMINDER_KEY = 'schedule';
+/** must match the Cron Trigger: each run sends what became due in the last interval */
+const CRON_INTERVAL_MS = 5 * 60 * 1000;
+const MAX_REMINDER_BYTES = 1024 * 1024;
+const MAX_MEMBERS = 30;
+const MAX_DEVICES_PER_MEMBER = 10;
+const MAX_JOBS_PER_MEMBER = 500;
+
+async function handleReminders(request, env, origin) {
+  if (!env.REMINDERS || !env.VAPID_PUBLIC_KEY || !env.VAPID_PRIVATE_KEY || !env.VAPID_SUBJECT) {
+    return json({ error: 'reminders_not_configured' }, 501, origin);
+  }
+  const denied = await checkBandLogin(request, env, origin);
+  if (denied) return denied;
+
+  const text = await request.text();
+  if (text.length > MAX_REMINDER_BYTES) return json({ error: 'invalid_request' }, 400, origin);
+  let body;
+  try {
+    body = JSON.parse(text);
+  } catch {
+    return json({ error: 'invalid_request' }, 400, origin);
+  }
+  const members = validReminders(body);
+  if (!members) return json({ error: 'invalid_request' }, 400, origin);
+  await env.REMINDERS.put(REMINDER_KEY, JSON.stringify({ members, updatedAt: Date.now() }));
+  return json({ ok: true }, 200, origin);
+}
+
+/** Returns the cleaned-up member map, or null if the upload is malformed. */
+function validReminders(body) {
+  const members = body && typeof body.members === 'object' && !Array.isArray(body.members) ? body.members : null;
+  if (!members || Object.keys(members).length > MAX_MEMBERS) return null;
+  const clean = {};
+  for (const [memberId, entry] of Object.entries(members)) {
+    const subscriptions = Array.isArray(entry?.subscriptions) ? entry.subscriptions : null;
+    const jobs = Array.isArray(entry?.jobs) ? entry.jobs : null;
+    if (!subscriptions || !jobs || subscriptions.length > MAX_DEVICES_PER_MEMBER || jobs.length > MAX_JOBS_PER_MEMBER) return null;
+    for (const job of jobs) {
+      if (!Number.isFinite(job?.at) || !job.payload || typeof job.payload !== 'object') return null;
+      if (JSON.stringify(job.payload).length > MAX_PAYLOAD) return null;
+    }
+    clean[memberId] = {
+      subscriptions: subscriptions.map((s) => ({ endpoint: endpointOf(s), keys: { p256dh: String(s?.keys?.p256dh ?? ''), auth: String(s?.keys?.auth ?? '') } })),
+      jobs: jobs.map((j) => ({ at: j.at, payload: j.payload })),
+    };
+  }
+  return clean;
+}
+
+/** Sends every reminder with `at` in (now - interval, now]. Returns the number of notifications sent. */
+async function sendDueReminders(env, now) {
+  if (!env.REMINDERS || !env.VAPID_PUBLIC_KEY || !env.VAPID_PRIVATE_KEY || !env.VAPID_SUBJECT) return 0;
+  const stored = await env.REMINDERS.get(REMINDER_KEY, 'json');
+  if (!stored?.members) return 0;
+  const vapidKey = await importVapidKey(env);
+  const sends = [];
+  for (const { subscriptions, jobs } of Object.values(stored.members)) {
+    for (const job of jobs) {
+      if (job.at <= now - CRON_INTERVAL_MS || job.at > now) continue;
+      const payload = JSON.stringify(job.payload);
+      for (const sub of subscriptions) sends.push(deliver(sub, payload, env, vapidKey));
+    }
+  }
+  const results = await Promise.all(sends);
+  return results.filter((status) => typeof status === 'number' && status < 300).length;
 }
 
 let cachedVapid = null;

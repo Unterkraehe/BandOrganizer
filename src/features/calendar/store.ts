@@ -43,6 +43,10 @@ export class CalendarStore {
     this.state = cached ? { status: 'ready', ...cached } : { status: 'loading', events: [], exceptions: {}, answers: {} };
   }
 
+  /** true once this session loaded the calendar from HiDrive (not only the cache) */
+  private fresh = false;
+  isFresh = () => this.fresh;
+
   getState = () => this.state;
   subscribe = (listener: () => void) => {
     this.listeners.add(listener);
@@ -66,6 +70,7 @@ export class CalendarStore {
         this.options.appRoot,
         live.filter((e) => e.value.recurrence).map((e) => e.value.id),
       );
+      this.fresh = true;
       this.set({ events, exceptions, status: 'ready' });
       await this.loadAnswers();
     } catch (error) {

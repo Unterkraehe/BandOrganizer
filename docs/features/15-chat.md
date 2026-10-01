@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **ID** | F6 |
-| **Status** | Implemented (v0.9.0); push notifications since v0.13.0 (§4.6) |
+| **Status** | Implemented (v0.9.0); push notifications since v0.13.0 (§4.6); reminders before events since v0.14.0 (§4.7) |
 
 > **v0.13.5:** opening the chat jumps to the "Neue Nachrichten" divider, or to the newest message when nothing is unread. The jump runs one animation frame after mounting, because React Router's `<ScrollRestoration>` (root route) resets the page to the top after the page's own layout effects.
 >
@@ -99,6 +99,15 @@ Created by the device that performs the action, stored like messages with `type:
 - **Open app:** if the app is visible on a device, no notification is shown there (except on Apple devices, where every push must show one).
 - **Requirements:** Android – Chrome, installed or not. iPhone/iPad – iOS 16.4+, app installed on the home screen and opened from there. Not in the demo.
 - **Setup:** VAPID keys + `BAND_ACCOUNT` in the worker (token-helper/README.md).
+
+### 4.7 Reminders before events (v0.14)
+
+- **Per member (decided):** each member chooses for themselves. Einstellungen → Benachrichtigungen → *Erinnerungen an Termine*: per type (Auftritte, Proben, Sonstige Termine) toggle chips 15 Min. · 30 Min. · 1 Std. · 2 Std. · 3 Std. · 1 Tag · 2 Tage · 1 Woche (several at once). Defaults: Auftritte 1 Tag + 3 Std., Proben 2 Std., Sonstige none. Absences never remind.
+- **Per event:** event detail → *Meine Erinnerung*: the same chips; changing them makes it "nur für diesen Termin" (a series counts as one event); "Standard für … verwenden" goes back (always shown, disabled when not needed – R-UI-11). Hidden for cancelled dates.
+- **Rules:** counts back from the meeting time if set, otherwise the start; all-day events from 9:00 on the first day. No reminder for cancelled dates, after answering "Nein", or while the member has an absence on that day. Former members get none. Per device the switch *Erinnerungen an Termine* (next to Chat / Termin-Änderungen) turns them off on that device.
+- **Content:** title "Auftritt: Stadtfest" (untitled events: just the type), text "Sa., 10. Okt. · 20:00 · Treffpunkt 18:30 · Marktplatz" – absolute date because the text is written in advance. Tapping opens the event.
+- **How (decision log 2026-10-01):** settings in `_BandApp/reminders/<memberId>.json` (only the member writes their own). Every member's app computes the reminders of **all** members for the next 8 weeks (`computeReminders`) and uploads them with the devices' push addresses to the token helper (`PUT /reminders`, band login required) – a few seconds after the calendar was loaded from HiDrive (never from the cache alone) and after changes, only if the result differs from the last upload. The worker keeps that one list in Cloudflare KV and a Cron Trigger every 5 minutes sends the reminders due in the last 5 minutes (so at most 5 minutes late). If nobody opens the app for 8 weeks, reminders stop until someone does.
+- **Setup:** KV namespace bound as `REMINDERS` + Cron Trigger `*/5 * * * *` (token-helper/README.md). Without it the app quietly skips the upload. Not in the demo (settings can be tried there, nothing is sent).
 
 ### 4.5 Loading history
 - Opens with the current month (and the previous one if few messages), older months load when scrolling up ("Ältere Nachrichten laden …").

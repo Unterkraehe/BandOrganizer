@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/core/theme/ThemeProvider';
 import { features as registeredFeatures } from '@/features';
 import { CalendarProvider } from '@/features/calendar/CalendarProvider';
 import { ChatProvider } from '@/features/chat/ChatProvider';
+import { ReminderProvider } from '@/features/notifications/ReminderProvider';
 import { SetlistModeProvider } from '@/features/setlists/SetlistModeProvider';
 import { SetlistProvider } from '@/features/setlists/SetlistProvider';
 import { LibraryProvider } from '@/features/songs/LibraryProvider';
@@ -59,13 +60,15 @@ function Gate({ initialPath }: { initialPath?: string }) {
         <LibraryProvider>
           <UploadsProvider>
             <CalendarProvider>
-              <SetlistProvider>
-                <SetlistModeProvider>
-                  <ChatProvider>
-                    <AppRouter initialPath={initialPath} />
-                  </ChatProvider>
-                </SetlistModeProvider>
-              </SetlistProvider>
+              <ReminderProvider>
+                <SetlistProvider>
+                  <SetlistModeProvider>
+                    <ChatProvider>
+                      <AppRouter initialPath={initialPath} />
+                    </ChatProvider>
+                  </SetlistModeProvider>
+                </SetlistProvider>
+              </ReminderProvider>
             </CalendarProvider>
           </UploadsProvider>
         </LibraryProvider>

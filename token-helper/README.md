@@ -43,3 +43,15 @@ The worker also delivers push notifications for the band chat and event changes.
 4. Check: `https://bandorganizer-auth.ostworkers.workers.dev/push/key` (opened from the app) returns the public key; in the app: Einstellungen → Benachrichtigungen → Einschalten → "Test-Benachrichtigung senden".
 
 Keep the keys: if `VAPID_PUBLIC_KEY` changes later, every member has to switch notifications off and on again.
+
+## Reminders before events (v0.14)
+
+The worker sends reminders before events (Einstellungen → Benachrichtigungen → Erinnerungen an Termine). The members' apps upload the next 8 weeks' reminders; a timer in the worker sends the due ones every 5 minutes. Needs the push setup above, plus once:
+
+1. Cloudflare dashboard → **Storage & Databases** → **KV** → **Create** → name `bandorganizer-reminders`.
+2. Worker → **Settings** → **Bindings** → **Add** → **KV namespace**: variable name `REMINDERS`, namespace `bandorganizer-reminders` → **Deploy**.
+3. Worker → **Settings** → **Trigger Events** → **Add** → **Cron Triggers** → `*/5 * * * *` (every 5 minutes; must stay 5 minutes – the worker sends what became due in the last 5 minutes).
+4. Paste the new `worker.js` → **Deploy**.
+5. Check: open the app (it uploads the list a few seconds after the calendar has loaded), then KV → `bandorganizer-reminders` → the entry `schedule` exists. For a quick test set a reminder "15 Min." on an event that starts in about 20–25 minutes.
+
+What is stored: titles, times and places of the band's events in the next 8 weeks and the push addresses of the members' devices – replaced completely with every upload. Free plan limits are far away (one read every 5 minutes, one write per change).

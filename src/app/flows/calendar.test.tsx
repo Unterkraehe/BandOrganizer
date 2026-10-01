@@ -67,3 +67,31 @@ describe('Calendar subscription (M9 in demo mode)', () => {
     expect(await screen.findByRole('button', { name: 'Abo-Link erstellen' })).toBeInTheDocument();
   });
 });
+
+describe('Reminders before events (v0.14)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('sets defaults per type in the settings and changes them for one event', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/settings');
+    const gigs = await screen.findByRole('group', { name: 'Erinnerung für Auftritte' });
+    expect(within(gigs).getByRole('button', { name: '1 Tag' })).toHaveAttribute('aria-pressed', 'true');
+    await user.click(within(gigs).getByRole('button', { name: '1 Tag' }));
+    expect(await screen.findByText(/– 3 Std\. vorher/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('link', { name: 'Kalender' }));
+    await user.click((await screen.findAllByRole('button', { name: 'Termin anlegen' }))[0]!);
+    await user.click(screen.getByRole('button', { name: 'Auftritt' }));
+    await user.type(screen.getByLabelText('Titel'), 'Stadtfest');
+    await user.click(screen.getByRole('button', { name: 'Speichern' }));
+
+    const mine = await screen.findByRole('group', { name: 'Meine Erinnerung' });
+    expect(screen.getByText(/3 Std\. vorher · Standard für Auftritte/)).toBeInTheDocument();
+    const reset = screen.getByRole('button', { name: 'Standard für Auftritte verwenden' });
+    expect(reset).toBeDisabled();
+    await user.click(within(mine).getByRole('button', { name: '30 Min.' }));
+    expect(await screen.findByText(/3 Std\. und 30 Min\. vorher · nur für diesen Termin/)).toBeInTheDocument();
+    await user.click(reset);
+    expect(await screen.findByText(/3 Std\. vorher · Standard für Auftritte/)).toBeInTheDocument();
+  });
+});

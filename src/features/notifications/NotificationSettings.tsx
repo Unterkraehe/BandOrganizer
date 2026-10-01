@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useNotify } from '@/app/notify/NotifyProvider';
 import { useSession } from '@/core/session/BandSession';
 import { Button, Section } from '@/ui';
+import { ReminderSettings } from './ReminderSettings';
 import { disablePush, enablePush, pushSupport, PushNotConfiguredError, savePrefs, sendPush, thisDevice, type PushDevice, type PushKind } from './push';
 import styles from './Notifications.module.css';
 
@@ -38,7 +39,7 @@ export function NotificationSettings() {
     setBusy(true);
     setMessage(null);
     try {
-      setDevice(await enablePush(storage, appRoot, memberId, device?.prefs ?? { chat: true, events: true }));
+      setDevice(await enablePush(storage, appRoot, memberId, device?.prefs ?? { chat: true, events: true, reminders: true }));
     } catch (error) {
       explain(error);
     } finally {
@@ -92,10 +93,10 @@ export function NotificationSettings() {
     content = (
       <>
         <p className={styles.on}>{t('enabled')}</p>
-        {(['chat', 'events'] as const).map((kind) => (
+        {(['chat', 'events', 'reminders'] as const).map((kind) => (
           <label key={kind} className={styles.check}>
             <input type="checkbox" checked={device.prefs[kind] !== false} onChange={(e) => toggle(kind, e.target.checked)} />
-            {t(kind)}
+            {t(`devicePrefs.${kind}`)}
           </label>
         ))}
         <div className={styles.row}>
@@ -123,6 +124,7 @@ export function NotificationSettings() {
           </p>
         )}
       </div>
+      <ReminderSettings />
     </Section>
   );
 }

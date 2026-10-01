@@ -291,7 +291,7 @@ Titles, types, locations, descriptions, dates ("Oktober", "Stadtfest", "Proberau
 
 ## 14. Out of Scope / Later
 
-- Reminders and push notifications ("Probe morgen", "Antwort fehlt")
+- ~~Reminders before events~~ – built in v0.14.0, see F6 §4.7. Still later: "Antwort fehlt" reminders
 - Two-way sync with Google/Apple/Outlook calendars
 - Gig fees / finances (see future plans)
 - Availability polls for finding a date ("Wann könnt ihr?")

@@ -168,3 +168,93 @@ describe('push notifications (F6 §4.5)', () => {
     expect(await res.json()).toEqual({ publicKey: pushEnv.VAPID_PUBLIC_KEY });
   });
 });
+
+describe('reminders before events (F6 §4.7)', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  async function reminderEnv() {
+    const pair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+    const jwk = await crypto.subtle.exportKey('jwk', pair.privateKey);
+    const raw = new Uint8Array(await crypto.subtle.exportKey('raw', pair.publicKey));
+    const kv = new Map<string, string>();
+    return {
+      kv,
+      env: {
+        ...env,
+        VAPID_PUBLIC_KEY: Buffer.from(raw).toString('base64url'),
+        VAPID_PRIVATE_KEY: jwk.d!,
+        VAPID_SUBJECT: 'mailto:band@example.com',
+        BAND_ACCOUNT: 'rockband',
+        REMINDERS: {
+          get: async (key: string, type?: string) => (kv.has(key) ? (type === 'json' ? JSON.parse(kv.get(key)!) : kv.get(key)) : null),
+          put: async (key: string, value: string) => void kv.set(key, value),
+        },
+      },
+    };
+  }
+
+  async function subscription(name: string) {
+    const nodeCrypto = await import('node:crypto');
+    const ecdh = nodeCrypto.createECDH('prime256v1');
+    ecdh.generateKeys();
+    return { endpoint: `https://fcm.googleapis.com/fcm/send/${name}`, keys: { p256dh: ecdh.getPublicKey().toString('base64url'), auth: nodeCrypto.randomBytes(16).toString('base64url') } };
+  }
+
+  const put = (body: unknown, token = 'good-token') =>
+    new Request('https://h.example/reminders', {
+      method: 'PUT',
+      headers: { Origin: ORIGIN, 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
+    });
+
+  const hidrive = (alias = 'rockband') =>
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) =>
+      String(input).includes('/user/me') ? new Response(JSON.stringify({ alias }), { status: 200 }) : new Response(null, { status: 201 }),
+    );
+
+  it('stores the uploaded list – only for the band account, only well-formed', async () => {
+    const { env: rEnv, kv } = await reminderEnv();
+    const sub = await subscription('lisa');
+    const upload = { members: { m_lisa: { subscriptions: [sub], jobs: [{ at: 1_000_000, payload: { title: 'Probe', body: 'Do · 19:00', url: 'calendar/e_1' } }] } } };
+
+    hidrive('someone-else');
+    expect((await worker.fetch(put(upload), rEnv)).status).toBe(403);
+    expect(kv.size).toBe(0);
+
+    vi.restoreAllMocks();
+    hidrive();
+    expect((await worker.fetch(put({ members: { m_lisa: { subscriptions: [sub], jobs: [{ at: 'soon' }] } } }), rEnv)).status).toBe(400);
+    const res = await worker.fetch(put(upload), rEnv);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe(ORIGIN);
+    expect(JSON.parse(kv.get('schedule')!).members).toEqual(upload.members);
+
+    const { REMINDERS: _kv, ...withoutKv } = rEnv;
+    void _kv;
+    expect((await worker.fetch(put(upload), withoutKv)).status).toBe(501);
+  });
+
+  it('the timer sends what became due in the last 5 minutes, only to real push services', async () => {
+    const { env: rEnv, kv } = await reminderEnv();
+    const lisa = await subscription('lisa');
+    const now = Date.parse('2026-10-10T18:00:00Z');
+    const job = (minutesAgo: number, title: string) => ({ at: now - minutesAgo * 60_000, payload: { title, body: '', url: 'calendar/e_1' } });
+    kv.set(
+      'schedule',
+      JSON.stringify({
+        members: {
+          m_lisa: { subscriptions: [lisa, { ...lisa, endpoint: 'https://internal.example.com/x' }], jobs: [job(6, 'too old'), job(4, 'due'), job(0, 'due now'), job(-1, 'next run')] },
+        },
+      }),
+    );
+    const calls: string[] = [];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      calls.push(String(input));
+      return new Response(null, { status: 201 });
+    });
+    const waits: Promise<unknown>[] = [];
+    await worker.scheduled({ scheduledTime: now }, rEnv, { waitUntil: (p: Promise<unknown>) => waits.push(p) });
+    expect(await Promise.all(waits)).toEqual([2]);
+    expect(calls).toEqual([lisa.endpoint, lisa.endpoint]);
+  });
+});

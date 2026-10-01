@@ -6,3 +6,11 @@ compatibility_date = "2026-09-01"
 [vars]
 ALLOWED_ORIGINS = "https://unterkraehe.github.io"
 # HIDRIVE_CLIENT_ID and HIDRIVE_CLIENT_SECRET are set in the dashboard, never in this file.
+
+# Reminders before events (README.md, "Reminders before events")
+[triggers]
+crons = ["*/5 * * * *"]
+
+# [[kv_namespaces]]
+# binding = "REMINDERS"
+# id = "<id of the KV namespace bandorganizer-reminders>"

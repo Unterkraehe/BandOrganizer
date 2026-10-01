@@ -40,7 +40,7 @@ Dependency direction: `features → core + ui (+ each other)`, `app → everythi
 - **IDs and records:** `newId('prefix')`; stored records extend `RecordBase` (`createdAt/By`, `updatedAt/By`, `deletedAt/By` → soft delete) and carry `schemaVersion` (`core/data/migrate.ts`).
 
 ### Provider order (outer → inner, `app/App.tsx`)
-ErrorBoundary → Theme → Notify → Session → *(gate by `status.kind`: `loading` → LoadingScreen, `signedOut` → WelcomeScreen, `error` → ConnectionErrorScreen, `needsSetup` → BandSetupScreen, `selectMember` → ProfileSelectScreen, `ready` → app)* → Library → Uploads → Calendar → Setlist → SetlistMode → Chat → router. Inside the router (`app/routes.tsx`): Search provider → top-bar extras (search button) → AppShell; search overlay and notification navigator are siblings of the shell.
+ErrorBoundary → Theme → Notify → Session → *(gate by `status.kind`: `loading` → LoadingScreen, `signedOut` → WelcomeScreen, `error` → ConnectionErrorScreen, `needsSetup` → BandSetupScreen, `selectMember` → ProfileSelectScreen, `ready` → app)* → Library → Uploads → Calendar → Reminder → Setlist → SetlistMode → Chat → router. Inside the router (`app/routes.tsx`): Search provider → top-bar extras (search button) → AppShell; search overlay and notification navigator are siblings of the shell.
 
 ## 3. Feature → where it lives
 
@@ -75,6 +75,7 @@ Full tree with explanations: overview §8. Who reads/writes it:
 | `setlists/<id>/` | `features/setlists/repository.ts`, `store.ts` | personal notes: one file per member |
 | `chat/messages|reactions|read/` | `features/chat/store.ts` | one file per message; polling, no server |
 | `push/<memberId>/<deviceId>.json` | `features/notifications/push.ts` | Web Push subscription of one device |
+| `reminders/<memberId>.json` | `features/notifications/reminders.ts`, `ReminderProvider.tsx` | a member's reminder settings; the computed list goes to the token helper's KV (`PUT /reminders`), not to HiDrive |
 
 Device-local (localStorage, keys `bandapp.*`): tokens, theme, text size, song list view/sort/suggestions toggle, calendar view, caches per band (`bandapp.chat.<band>.<member>`, `bandapp.calendar.<band>`, …), last upload folders, search history, setlist mode, drafts.
 
@@ -93,6 +94,7 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 | Floating UI | `Dialog`, `ConfirmDialog`, `Menu` render through a portal – never position overlays inside sticky/transformed parents |
 | Hide something when printing | `data-no-print` attribute |
 | Push notifications | Client: `features/notifications/push.ts` (subscribe, `sendPush`); service worker: `public/push-sw.js`; worker: `token-helper/worker.js` (`/push`) |
+| Timed notifications (reminders) | `features/notifications/reminders.ts` computes every member's jobs for 8 weeks (`computeReminders`), `ReminderProvider` uploads them (`PUT /reminders`, only after a fresh calendar load – `CalendarStore.isFresh()` – and only if the hash changed); the worker's `scheduled()` (Cron every 5 min) sends jobs due in the last 5 min. Texts are rendered in the app at upload time: absolute dates only, never "Morgen" |
 | Search contribution | Add documents in `features/search/SearchProvider.tsx` (+ result route); text matching via `core/search/normalize.ts` |
 | Swipe / touch rules | `ui/swipe.ts`, `ui/layout/useTouchGuards.ts`; tab screens set `html[data-swipe-tabs]` (`touch-action: pan-y`) |
 
@@ -139,6 +141,6 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 - A page that scrolls itself when it opens (chat) must do it after React Router's `<ScrollRestoration>` (`app/routes.tsx`), which resets to the top in a layout effect of the root route – i.e. in `requestAnimationFrame`, not in the page's own `useLayoutEffect`.
 - `usePlayer()` in a list screen = full re-render ~4×/s while music plays (see §5).
 
-## 8. Open items (as of v0.13.5)
+## 8. Open items (as of v0.14.0)
 
 Device tests still open: S1/S2 (ETag, file IDs after rename), S4 (share link works as subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with the keyboard on iPhone/Android, push notifications on real devices, `POST /file/copy`. Everything else planned is built; the band test phase decides 1.0.0 (`03-roadmap.md`).

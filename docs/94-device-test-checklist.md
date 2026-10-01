@@ -20,6 +20,7 @@
 - [ ] **Touch:** pinch zoom does nothing in the installed app; swiping switches between Start/Songs/Kalender/Chat/Mehr without being triggered by accident; **Back** after swiping goes through the screens instead of closing the app.
 - [ ] **Songs tab with ~300 songs**, also while music plays: opens at once, scrolling is smooth (R-UI-13).
 - [ ] **Push notifications:** set up the token helper (`token-helper/README.md`, push section); turn them on (Einstellungen → Benachrichtigungen) → "Test-Benachrichtigung senden" arrives; a chat message from a second phone arrives; a cancelled event arrives; tapping opens the message. iPhone: iOS 16.4+, app installed on the home screen.
+- [ ] **Event reminders:** token helper with KV + Cron Trigger (`token-helper/README.md`, reminders section). Set "15 Min." under "Meine Erinnerung" on an event starting in ~25 minutes, wait a few seconds in the app, close it → the reminder arrives (at most 5 minutes late), tapping opens the event. Then: answer "Nein" or cancel the event → no reminder. Check the entry `schedule` in KV holds only the next 8 weeks.
 - [ ] **Back after a long time:** leave the app in the background for an hour (or overnight), open it → new chat messages / events appear without a manual reload.
 
 ## C. Band test phase (1–2 weeks, decides 1.0.0)

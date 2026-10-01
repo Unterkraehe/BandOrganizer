@@ -8,14 +8,16 @@ import { config } from '@/config';
  * changes an event asks the token helper to deliver a notification to all OTHER members' devices.
  */
 
-export type PushKind = 'chat' | 'events';
+/** 'reminders' are sent by the token helper's timer, not through sendPush (reminders.ts) */
+export type PushKind = 'chat' | 'events' | 'reminders';
 
 export interface PushDevice {
   schemaVersion: 1;
   memberId: string;
   endpoint: string;
   keys: { p256dh: string; auth: string };
-  prefs: Record<PushKind, boolean>;
+  /** a missing key counts as on (devices registered before v0.14 have no 'reminders') */
+  prefs: Partial<Record<PushKind, boolean>>;
   device: string;
   active: boolean;
   createdAt: string;
@@ -90,7 +92,7 @@ export async function currentSubscription(): Promise<PushSubscription | null> {
 }
 
 /** Must be called from a tap (permission prompt). */
-export async function enablePush(storage: SafeStorage, appRoot: string, memberId: string, prefs: Record<PushKind, boolean>): Promise<PushDevice> {
+export async function enablePush(storage: SafeStorage, appRoot: string, memberId: string, prefs: PushDevice['prefs']): Promise<PushDevice> {
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') throw new Error('permission-denied');
   const reg = await navigator.serviceWorker.ready;

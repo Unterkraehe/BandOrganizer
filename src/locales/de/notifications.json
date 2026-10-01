@@ -3,14 +3,17 @@
   "event.changed": "Termin geändert",
   "event.cancelled": "Termin abgesagt",
   "event.uncancelled": "Termin wieder angesetzt",
-  "intro": "Bekomme eine Nachricht aufs Handy, wenn jemand im Band-Chat schreibt oder ein Termin geändert oder abgesagt wird – auch wenn die App geschlossen ist.",
+  "intro": "Bekomme eine Nachricht aufs Handy, wenn jemand im Band-Chat schreibt, ein Termin geändert oder abgesagt wird oder ein Termin bevorsteht – auch wenn die App geschlossen ist.",
   "thisDevice": "Auf diesem Gerät",
   "enable": "Einschalten",
   "disable": "Ausschalten",
   "enabled": "Benachrichtigungen sind auf diesem Gerät an.",
   "disabledText": "Auf diesem Gerät aus.",
-  "chat": "Chat-Nachrichten",
-  "events": "Termin-Änderungen und Absagen",
+  "devicePrefs": {
+    "chat": "Chat-Nachrichten",
+    "events": "Termin-Änderungen und Absagen",
+    "reminders": "Erinnerungen an Termine"
+  },
   "test": "Test-Benachrichtigung senden",
   "testTitle": "Test",
   "testBody": "So sehen Benachrichtigungen der Band-App aus.",
@@ -23,5 +26,32 @@
   "demo": "Im Demo-Modus gibt es keine Benachrichtigungen.",
   "failed": "Das hat nicht geklappt. Bitte versuch es noch einmal.",
   "permissionDenied": "Du hast Benachrichtigungen nicht erlaubt.",
-  "own": "Deine eigenen Nachrichten und Änderungen lösen bei dir keine Benachrichtigung aus."
+  "own": "Deine eigenen Nachrichten und Änderungen lösen bei dir keine Benachrichtigung aus.",
+  "reminders": {
+    "title": "Erinnerungen an Termine",
+    "intro": "Wie lange vorher möchtest du erinnert werden? Das gilt für dich auf allen Geräten, auf denen Benachrichtigungen an sind. Bei einzelnen Terminen kannst du es auf der Termin-Seite ändern.",
+    "rules": "Erinnert wird an den Treffpunkt, falls angegeben, sonst an den Beginn; bei ganztägigen Terminen an 9:00 Uhr. Keine Erinnerung bei abgesagten Terminen, bei „Nein“ und wenn du abwesend bist.",
+    "types": {
+      "gig": "Auftritte",
+      "rehearsal": "Proben",
+      "other": "Sonstige Termine"
+    },
+    "typeLabel": "Erinnerung für {{type}}",
+    "eventTitle": "Meine Erinnerung",
+    "default": "Standard für {{type}}",
+    "custom": "nur für diesen Termin",
+    "series": "gilt für alle Termine der Serie",
+    "useDefault": "Standard für {{type}} verwenden",
+    "none": "Keine Erinnerung",
+    "before": "{{list}} vorher",
+    "and": "und",
+    "minutes_one": "{{count}} Min.",
+    "minutes_other": "{{count}} Min.",
+    "hours_one": "{{count}} Std.",
+    "hours_other": "{{count}} Std.",
+    "days_one": "{{count}} Tag",
+    "days_other": "{{count}} Tage",
+    "week": "1 Woche",
+    "pushTitle": "{{type}}: {{title}}"
+  }
 }
