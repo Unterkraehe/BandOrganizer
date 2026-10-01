@@ -1,11 +1,12 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { onSystemEvent, type SystemEvent } from '@/core/events';
 import { MemoryStorageProvider, SafeStorage } from '@/core/storage';
 import { summarize, needsReview } from './answers';
 import { buildIcs } from './ics';
 import { withRrule } from './recurrence';
 import { CalendarStore, type EventInput } from './store';
-import { fromLocal, toLocal } from './time';
+import { addDays, fromLocal, todayLocal, toLocal } from './time';
 
 const APP = '/h/_BandApp';
 
@@ -149,5 +150,76 @@ describe('optimistic updates (v0.12.5)', () => {
     provider.writeText = () => Promise.reject(new Error('offline'));
     await expect(store.answer(occ, 'no', null)).rejects.toThrow('offline');
     expect(store.answersFor(occ).map((a) => a.status)).toEqual(['yes']); // rolled back
+  });
+});
+
+describe('seeing other members\' changes while the app is open (v0.14.3)', () => {
+  const day = (offset: number) => addDays(todayLocal(), offset);
+  const input = (date: string, recurring = false): EventInput => ({
+    type: 'rehearsal',
+    title: 'Probe',
+    allDay: false,
+    start: fromLocal(date, '19:00'),
+    end: fromLocal(date, '22:00'),
+    meetingTime: null,
+    location: null,
+    description: null,
+    recurrence: recurring ? withRrule({ freq: 'weekly', interval: 1 }, date) : null,
+    answersEnabled: true,
+    memberId: null,
+  });
+
+  async function twoMembers() {
+    const provider = new MemoryStorageProvider();
+    provider.seedFolder('/h');
+    const storage = new SafeStorage(provider, { appRoot: APP });
+    const lisa = new CalendarStore({ storage, appRoot: APP, memberId: () => 'm_lisa', cacheKey: null });
+    const tom = new CalendarStore({ storage, appRoot: APP, memberId: () => 'm_tom', cacheKey: null });
+    await lisa.load();
+    await tom.load();
+    return { storage, lisa, tom };
+  }
+
+  it('picks up new and changed events, reading only those files', async () => {
+    const { storage, lisa, tom } = await twoMembers();
+    await lisa.create(input(day(3)));
+    await lisa.create(input(day(5)));
+    await tom.refresh();
+    expect(tom.upcoming(10).map((o) => o.event.id)).toEqual(lisa.upcoming(10).map((o) => o.event.id));
+
+    const reads = vi.spyOn(storage, 'readJson');
+    await tom.refresh();
+    expect(reads).not.toHaveBeenCalled(); // nothing changed → nothing read
+
+    const first = lisa.upcoming(1)[0]!;
+    await lisa.answer(first, 'yes', null);
+    await lisa.update(first, { ...input(day(3)), title: 'Generalprobe' }, 'all');
+    await tom.refresh();
+    expect(tom.upcoming(1)[0]!.title).toBe('Generalprobe');
+    expect(reads.mock.calls.filter(([path]) => String(path).includes('/events/'))).toHaveLength(1);
+    expect(tom.getState().answers[first.event.id]).toEqual([expect.objectContaining({ memberId: 'm_lisa', status: 'yes' })]);
+  });
+
+  it('picks up a cancelled date of a series and keeps your own unsaved event', async () => {
+    const { lisa, tom } = await twoMembers();
+    await lisa.create(input(day(2), true));
+    await tom.refresh();
+    await lisa.cancel(lisa.upcoming(3)[1]!, 'this', true);
+
+    const saving = tom.create(input(day(4))); // Tom's own event, not saved yet
+    await tom.refresh();
+    expect(tom.upcoming(4).filter((o) => o.cancelled)).toHaveLength(1);
+    expect(tom.upcoming(10).some((o) => o.event.title === 'Probe' && !o.event.recurrence)).toBe(true);
+    await saving;
+  });
+
+  it('announces a new event in the chat (+ push), not an absence', async () => {
+    const { lisa } = await twoMembers();
+    const events: SystemEvent[] = [];
+    const off = onSystemEvent((e) => events.push(e));
+    await lisa.create(input(day(3)));
+    await lisa.create({ ...input(day(4)), type: 'absence', allDay: true, start: day(4), end: day(4), memberId: 'm_lisa' });
+    off();
+    expect(events).toEqual([expect.objectContaining({ key: 'event.created', params: expect.objectContaining({ actor: 'm_lisa', title: 'Probe' }) })]);
   });
 });

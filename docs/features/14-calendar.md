@@ -155,7 +155,10 @@ Risks and fallback:
 - Linking is also possible from the setlist side (F7).
 
 ### 6.7 Info lines in the chat
-Automatic, small info lines in the band chat (F6) **only for changed and cancelled** gigs, rehearsals and other events (date/time/location changed, event or single occurrence cancelled). Not for new events, absences or answers.
+Automatic, small info lines in the band chat (F6) for **new**, changed and cancelled gigs, rehearsals and other events (date/time/location changed, event or single occurrence cancelled; new since v0.14.3: "Lisa hat Probe am … eingetragen", a series by its first date). Not for absences or answers.
+
+### 6.8 Seeing other members' changes (v0.14.3)
+While the app is open, the calendar checks HiDrive every 60 s, every 20 s while the calendar or an event page is open, never in the background (`CalendarStore.refresh()`): one listing of `events/` (+ the exception folders of series), then only new or changed files are read (by file version), plus the answers of those events. When the chat brings another member's event info line, the calendar checks at once. A refresh never touches entries that changed locally while it was reading (your own save in flight). Answers of unchanged events are still only reloaded on start / return to the app.
 Examples: "Lisa hat die Probe am Do, 15. Okt. abgesagt", "Tom hat den Auftritt ‚Stadtfest' auf 19:30 verschoben".
 
 ## 7. Data Model & Storage

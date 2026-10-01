@@ -1,9 +1,10 @@
 {
   "title": "Benachrichtigungen",
+  "event.created": "Neuer Termin",
   "event.changed": "Termin geändert",
   "event.cancelled": "Termin abgesagt",
   "event.uncancelled": "Termin wieder angesetzt",
-  "intro": "Bekomme eine Nachricht aufs Handy, wenn jemand im Band-Chat schreibt, ein Termin geändert oder abgesagt wird oder ein Termin bevorsteht – auch wenn die App geschlossen ist.",
+  "intro": "Bekomme eine Nachricht aufs Handy, wenn jemand im Band-Chat schreibt, ein Termin eingetragen, geändert oder abgesagt wird oder ein Termin bevorsteht – auch wenn die App geschlossen ist.",
   "thisDevice": "Auf diesem Gerät",
   "enable": "Einschalten",
   "disable": "Ausschalten",
@@ -11,7 +12,7 @@
   "disabledText": "Auf diesem Gerät aus.",
   "devicePrefs": {
     "chat": "Chat-Nachrichten",
-    "events": "Termin-Änderungen und Absagen",
+    "events": "Neue Termine, Änderungen und Absagen",
     "reminders": "Erinnerungen an Termine"
   },
   "test": "Test-Benachrichtigung senden",

@@ -7,7 +7,7 @@ import { formatDate } from '@/core/i18n/format';
 import { useSession } from '@/core/session/BandSession';
 import { Button, Chip, EmptyState, IconButton, Menu, Page, SegmentedControl } from '@/ui';
 import { useIsWide } from '@/ui/useMediaQuery';
-import { useCalendar } from './CalendarProvider';
+import { useCalendar, useWatchCalendar } from './CalendarProvider';
 import { EventCard } from './EventCard';
 import { occurrenceTitle, TYPE_ICON_COLOR } from './format';
 import { buildIcs, deliverIcs } from './ics';
@@ -26,6 +26,7 @@ export function CalendarPage() {
   const notify = useNotify();
   const wide = useIsWide();
   const { store, state } = useCalendar();
+  useWatchCalendar();
   const { band } = useSession();
   const [view, setViewState] = useState<View>(() => (localStorage.getItem(VIEW_KEY) as View | null) ?? (wide ? 'month' : 'list'));
   const [types, setTypes] = useState<Set<EventType>>(new Set(EVENT_TYPES));

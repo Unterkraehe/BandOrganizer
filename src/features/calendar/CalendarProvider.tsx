@@ -14,6 +14,7 @@ interface SubscriptionState {
 }
 
 const CalendarContext = createContext<CalendarStore | null>(null);
+const REFRESH_TICK_MS = 20_000;
 const SubscriptionContext = createContext<SubscriptionState | null>(null);
 
 export function CalendarProvider({ children }: { children: ReactNode }) {
@@ -35,8 +36,16 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
     const onVisible = () => document.visibilityState === 'visible' && void store.load();
     document.addEventListener('visibilitychange', onVisible);
     const off = onAppResume(() => void store.load());
+    // other members' changes while the app is open (v0.14.3): every 20 s on a calendar screen,
+    // every 60 s elsewhere, never in the background; only new/changed files are read
+    let tick = 0;
+    const timer = window.setInterval(() => {
+      tick++;
+      if (document.visibilityState === 'visible' && (store.isWatched() || tick % 3 === 0)) void store.refresh();
+    }, REFRESH_TICK_MS);
     return () => {
       off();
+      window.clearInterval(timer);
       document.removeEventListener('visibilitychange', onVisible);
     };
   }, [store]);
@@ -79,6 +88,13 @@ export function useCalendar() {
   if (!store) throw new Error('useCalendar must be used inside CalendarProvider');
   const state = useSyncExternalStore(store.subscribe, store.getState);
   return { store, state };
+}
+
+/** For calendar screens: check for other members' changes more often while mounted. */
+// eslint-disable-next-line react-refresh/only-export-components
+export function useWatchCalendar() {
+  const store = useContext(CalendarContext);
+  useEffect(() => store?.watch(), [store]);
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

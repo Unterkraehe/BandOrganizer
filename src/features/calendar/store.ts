@@ -5,7 +5,7 @@ import { nowIso, softDelete, touchRecord } from '@/core/data/record';
 import type { SafeStorage } from '@/core/storage';
 import { occurrenceId, type Answer, type AnswerStatus, type CalendarEvent, type EventException, type Occurrence } from './model';
 import { occurrencesOf, sortKey, withRrule } from './recurrence';
-import { listAnswers, listEvents, listExceptions, writeAnswer, writeEvent, writeException } from './repository';
+import { changedEvents, changedExceptions, listAnswers, listEvents, listExceptions, writeAnswer, writeEvent, writeException } from './repository';
 import { addDays, fromLocal, toLocal, todayLocal } from './time';
 
 /** Calendar state + actions (F5). Cached data first, then refreshed (R-UX-07). */
@@ -79,14 +79,67 @@ export class CalendarStore {
     }
   }
 
-  /** Answers for past week … next 180 days (F5 §7.4). */
-  async loadAnswers() {
+  private refreshing = false;
+  private watchers = 0;
+  /** A calendar screen is open: check more often (CalendarProvider). Returns the "closed" function. */
+  watch = () => {
+    this.watchers++;
+    return () => void this.watchers--;
+  };
+  isWatched = () => this.watchers > 0;
+
+  /**
+   * Picks up other members' changes while the app is open (v0.14.3): reads only new or changed
+   * event/exception files (+ answers of those events). Your own unsaved changes stay untouched.
+   */
+  async refresh() {
+    if (this.refreshing || !this.fresh) return; // before the first full load, load() does the work
+    this.refreshing = true;
+    try {
+      const { storage, appRoot } = this.options;
+      const known = new Map(this.state.events.map((e) => [e.value.id, e.version]));
+      const knownExceptions = this.state.exceptions;
+      const { changed, present } = await changedEvents(storage, appRoot, known);
+      const recurring = [...this.state.events.map((e) => e.value), ...changed.map((e) => e.value)].filter((e) => e.recurrence && !e.deletedAt).map((e) => e.id);
+      const exceptions = await changedExceptions(storage, appRoot, [...new Set(recurring)], knownExceptions);
+
+      // Apply to the CURRENT state, but only to entries nobody touched while we were reading:
+      // your own save that finished in the meantime is newer than what we listed.
+      const untouched = (e: Versioned<CalendarEvent>) => known.has(e.value.id) && known.get(e.value.id) === e.version;
+      const byId = new Map(changed.map((e) => [e.value.id, e]));
+      const ids = new Set(this.state.events.map((e) => e.value.id));
+      const added = changed.filter((e) => !ids.has(e.value.id));
+      const events = [
+        ...this.state.events
+          // a file that is gone (removed in HiDrive) disappears – unless it is your own, not yet saved
+          .filter((e) => present.has(e.value.id) || !untouched(e) || e.version === undefined)
+          .map((e) => (untouched(e) ? (byId.get(e.value.id) ?? e) : e)),
+        ...added,
+      ];
+      const changedExceptionIds = Object.keys(exceptions).filter(
+        (id) => exceptions[id] !== knownExceptions[id] && this.state.exceptions[id] === knownExceptions[id],
+      );
+      const differs = events.length !== this.state.events.length || events.some((e, i) => e !== this.state.events[i]);
+      if (!differs && !changedExceptionIds.length) return;
+      const patch: Partial<CalendarState> = { events };
+      if (changedExceptionIds.length) patch.exceptions = { ...this.state.exceptions, ...Object.fromEntries(changedExceptionIds.map((id) => [id, exceptions[id]!])) };
+      this.set(patch);
+      await this.loadAnswers(new Set([...byId.keys(), ...changedExceptionIds]));
+    } catch (error) {
+      console.warn('Calendar refresh failed', error);
+    } finally {
+      this.refreshing = false;
+    }
+  }
+
+  /** Answers for past week … next 180 days (F5 §7.4); with `only`: just those events (merged in). */
+  async loadAnswers(only?: Set<string>) {
     const from = addDays(todayLocal(), -7);
     const to = addDays(todayLocal(), ANSWER_WINDOW_DAYS);
     const answers: Record<string, Answer[]> = {};
     const byEvent = new Map<string, Occurrence[]>();
     for (const o of this.occurrences(from, to)) {
-      if (!o.event.answersEnabled) continue;
+      if (!o.event.answersEnabled || (only && !only.has(o.event.id))) continue;
       byEvent.set(o.event.id, [...(byEvent.get(o.event.id) ?? []), o]);
     }
     for (const [eventId, occs] of byEvent) {
@@ -96,7 +149,9 @@ export class CalendarStore {
         answers[id] = [...(answers[id] ?? []), answer];
       }
     }
-    this.set({ answers });
+    if (!only) return this.set({ answers });
+    const kept = Object.fromEntries(Object.entries(this.state.answers).filter(([id]) => !only.has(id.split(':')[0]!)));
+    this.set({ answers: { ...kept, ...answers } });
   }
 
   event(id: string) {
@@ -166,6 +221,9 @@ export class CalendarStore {
     try {
       const saved = await writeEvent(this.options.storage, this.options.appRoot, event, undefined, true);
       this.set({ events: this.state.events.map((e) => (e === optimistic ? saved : e)) });
+      // new events are announced in the chat (+ push) like changes (v0.14.3); a series by its first date
+      const first = occurrencesOf(event, [], '0000-01-01', '9999-12-31')[0];
+      if (first) this.announce('event.created', first);
       return event;
     } catch (error) {
       this.set({ events: this.state.events.filter((e) => e !== optimistic) });
@@ -213,8 +271,8 @@ export class CalendarStore {
     }
   }
 
-  /** Info line in the chat for changed/cancelled events (F5 §6.7, F6 §4.2). */
-  private announce(key: 'event.changed' | 'event.cancelled' | 'event.uncancelled', occ: Occurrence) {
+  /** Info line in the chat for new/changed/cancelled events (F5 §6.7, F6 §4.2). */
+  private announce(key: 'event.created' | 'event.changed' | 'event.cancelled' | 'event.uncancelled', occ: Occurrence) {
     if (occ.type === 'absence') return; // absences: no chat lines (decided)
     emitSystemEvent({
       key,

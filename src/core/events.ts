@@ -5,7 +5,7 @@
 export type ItemRef = { type: 'song' | 'event' | 'setlist'; id: string; occurrence?: string };
 
 export interface SystemEvent {
-  key: 'event.cancelled' | 'event.uncancelled' | 'event.changed' | 'song.bandVersion' | 'band.branding';
+  key: 'event.created' | 'event.cancelled' | 'event.uncancelled' | 'event.changed' | 'song.bandVersion' | 'band.branding';
   params: Record<string, string>;
   context?: ItemRef;
 }

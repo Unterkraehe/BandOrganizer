@@ -13,7 +13,7 @@
 > - Polling: every 10 s while the chat page is open, 60 s elsewhere, immediately when the app returns to the foreground; only the newest two month folders are listed. Edited messages are detected by the file version in the listing.
 > - Messages are shown optimistically ("wird gesendet …") and removed again if saving fails.
 > - Read status is written at most every 2 s; the "Neue Nachrichten" divider position is taken before anything is marked as read.
-> - Info lines come from a small app-wide event bus (`src/core/events.ts`): calendar (changed date/time/location, cancelled, re-scheduled), Band-Version changes and band design changes. Absences and answers never create lines.
+> - Info lines come from a small app-wide event bus (`src/core/events.ts`): calendar (new since v0.14.3, changed date/time/location, cancelled, re-scheduled), Band-Version changes and band design changes. Absences and answers never create lines.
 > - Reactions: one file per member and message (`reactions/<messageId>/<memberId>.json`, `emoji: null` = removed).
 > - Item discussions ("Diskussion") on song, event and setlist detail; they appear in the band chat with a context chip.
 | **Depends on** | F1, F2, F3 |
@@ -93,7 +93,7 @@ Created by the device that performs the action, stored like messages with `type:
 ### 4.6 Push notifications (v0.13)
 
 - **Opt-in per device** in Einstellungen → Benachrichtigungen ("Einschalten" → the phone's permission prompt). Two switches: *Chat-Nachrichten* and *Termin-Änderungen und Absagen* (both on by default). "Test-Benachrichtigung senden" sends one to this device only.
-- **What notifies (decided):** every chat message (incl. item discussions) and the info lines for changed / cancelled / re-scheduled events. Not: absences, answers, Band-Version or design changes. Your own messages never notify you.
+- **What notifies (decided):** every chat message (incl. item discussions) and the info lines for new (v0.14.3) / changed / cancelled / re-scheduled events – device switch "Neue Termine, Änderungen und Absagen". Not: absences, answers, Band-Version or design changes. Your own messages never notify you.
 - **Content (decided):** title "<Sender> · <Band>", text = the message (max. ~180 characters; shared items as "📎 Termin" etc.). Event changes: "Termin abgesagt" + the info line. Tapping opens the message (`chat?message=`) or the event.
 - **How:** each device stores its Web Push subscription in `_BandApp/push/<memberId>/<deviceId>.json`. The app of whoever writes the message asks the token helper (`POST /push`, with its HiDrive login) to deliver to all *other* members' devices; the worker encrypts per device (RFC 8291) and signs with VAPID (RFC 8292). Push services only see encrypted data. Devices reported as gone (404/410) are switched off automatically.
 - **Open app:** if the app is visible on a device, no notification is shown there (except on Apple devices, where every push must show one). The test notification (tag `test`) is always shown – it is sent from the open app (v0.14.1).

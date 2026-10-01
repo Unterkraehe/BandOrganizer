@@ -3,6 +3,7 @@ import { onSystemEvent } from '@/core/events';
 import { onAppResume } from '@/core/resume';
 import { useSession } from '@/core/session/BandSession';
 import { useTranslation } from 'react-i18next';
+import { useCalendar } from '@/features/calendar/CalendarProvider';
 import { sendPush } from '@/features/notifications/push';
 import { pushPayloadFor } from '@/features/notifications/payload';
 import type { ChatMessage } from './model';
@@ -58,6 +59,20 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       document.removeEventListener('visibilitychange', onVisible);
     };
   }, [store, fast]);
+
+  // Someone else's event info line arrived: their calendar change is on HiDrive – fetch it now
+  // instead of waiting for the calendar's own check (v0.14.3)
+  const { store: calendar } = useCalendar();
+  const seen = useRef<Set<string> | null>(null);
+  const messages = useSyncExternalStore(store.subscribe, () => store.getState().messages);
+  useEffect(() => {
+    const ids = new Set(messages.map((m) => m.id));
+    const before = seen.current;
+    seen.current = ids;
+    if (!before) return; // first state: nothing is "new"
+    const news = messages.some((m) => !before.has(m.id) && m.type === 'system' && m.systemKey?.startsWith('event.') && m.createdBy !== member.current);
+    if (news) void calendar.refresh();
+  }, [messages, calendar]);
 
   return <Ctx.Provider value={{ store, setFast }}>{children}</Ctx.Provider>;
 }

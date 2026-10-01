@@ -1,4 +1,8 @@
 {
+  "0.14.3": [
+    "Neue Termine erscheinen bei allen schneller: Der Kalender schaut bei geöffneter App regelmäßig nach Änderungen der anderen (auf der Kalender-Seite alle 20 Sekunden).",
+    "Neue Termine werden jetzt im Band-Chat angekündigt („… hat Probe am … eingetragen“) und lösen eine Benachrichtigung aus (Schalter „Neue Termine, Änderungen und Absagen“)."
+  ],
   "0.14.2": [
     "„Aktualisieren“ funktioniert jetzt zuverlässig: Nach dem Tippen steht „Wird aktualisiert …“ und die App lädt spätestens nach wenigen Sekunden neu – auch wenn die neue Version schon in einem anderen Fenster aktiviert wurde."
   ],

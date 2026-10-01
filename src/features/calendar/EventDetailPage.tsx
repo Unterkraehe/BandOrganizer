@@ -7,7 +7,7 @@ import { formatDateWithYear, formatTime } from '@/core/i18n/format';
 import { useSession } from '@/core/session/BandSession';
 import { Avatar, Button, ConfirmDialog, EmptyState, Page, TextField } from '@/ui';
 import { AnswerButtons } from './AnswerButtons';
-import { useCalendar } from './CalendarProvider';
+import { useCalendar, useWatchCalendar } from './CalendarProvider';
 import { describeRecurrence, occurrenceTitle, occurrenceWhen, TYPE_ICON_COLOR, TYPE_ICONS } from './format';
 import { buildIcs, deliverIcs } from './ics';
 import { ScopeDialog } from './ScopeDialog';
@@ -26,6 +26,7 @@ export function EventDetailPage() {
   const navigate = useNavigate();
   const notify = useNotify();
   const { store, state } = useCalendar();
+  useWatchCalendar();
   const { members, currentMember, band } = useSession();
   void state; // re-render on store changes
   const occ = eventId ? store.occurrence(eventId, occurrence ?? 'single') : undefined;

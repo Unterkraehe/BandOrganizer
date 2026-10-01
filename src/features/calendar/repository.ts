@@ -43,6 +43,41 @@ export async function listEvents(storage: SafeStorage, appRoot: string): Promise
   return readAll<CalendarEvent>(storage, entries);
 }
 
+/**
+ * Cheap check for changes (v0.14.3): one listing of the events folder, then only files that are
+ * new or have a different version than `known` (id → version) are read.
+ */
+export async function changedEvents(
+  storage: SafeStorage,
+  appRoot: string,
+  known: Map<string, string | undefined>,
+): Promise<{ changed: Versioned<CalendarEvent>[]; present: Set<string> }> {
+  const entries = (await listOrEmpty(storage, joinPath(root(appRoot), 'events'))).filter((e) => e.name.endsWith('.json'));
+  const idOf = (name: string) => name.slice(0, -'.json'.length);
+  const present = new Set(entries.map((e) => idOf(e.name)));
+  const stale = entries.filter((e) => !known.has(idOf(e.name)) || known.get(idOf(e.name)) !== e.version);
+  return { changed: await readAll<CalendarEvent>(storage, stale), present };
+}
+
+/** Like listExceptions, but keeps the known list of an event (same object) when nothing in it changed. */
+export async function changedExceptions(
+  storage: SafeStorage,
+  appRoot: string,
+  eventIds: string[],
+  known: Record<string, Versioned<EventException>[]>,
+): Promise<Record<string, Versioned<EventException>[]>> {
+  const result: Record<string, Versioned<EventException>[]> = {};
+  const folders = new Set((await listOrEmpty(storage, joinPath(root(appRoot), 'exceptions'))).filter((e) => e.type === 'folder').map((e) => e.name));
+  for (const id of eventIds.filter((id) => folders.has(id))) {
+    const entries = (await listOrEmpty(storage, joinPath(root(appRoot), 'exceptions', id))).filter((e) => e.name.endsWith('.json'));
+    const before = known[id] ?? [];
+    const versions = new Set(before.map((x) => x.version));
+    const same = entries.length === before.length && entries.every((e) => e.version !== undefined && versions.has(e.version));
+    result[id] = same ? before : await readAll<EventException>(storage, entries);
+  }
+  return result;
+}
+
 export async function listExceptions(storage: SafeStorage, appRoot: string, eventIds: string[]): Promise<Record<string, Versioned<EventException>[]>> {
   const result: Record<string, Versioned<EventException>[]> = {};
   const folders = new Set((await listOrEmpty(storage, joinPath(root(appRoot), 'exceptions'))).filter((e) => e.type === 'folder').map((e) => e.name));

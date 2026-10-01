@@ -32,6 +32,7 @@ describe('Chat (M7 in demo mode)', () => {
 
     await user.click(screen.getByRole('link', { name: 'Chat' }));
     expect(await screen.findByText(/Lisa hat Stadtfest am .* abgesagt/)).toBeInTheDocument();
+    expect(screen.getByText(/Lisa hat Stadtfest am .* eingetragen/)).toBeInTheDocument(); // new events are announced (v0.14.3)
     expect(screen.getAllByText(/Stadtfest/).length).toBeGreaterThan(1); // context chip
 
     // another member sees the messages as unread

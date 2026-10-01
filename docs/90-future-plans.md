@@ -35,7 +35,7 @@
 
 ## 3. Ideas Backlog (not yet decided)
 
-- Push notifications: ✅ chat messages and event changes since v0.13.0 (F6 §4.6). Still open: reminders before events, notification for **new** events, per-chat mute
+- Push notifications: ✅ chat messages and event changes since v0.13.0 (F6 §4.6). reminders before events ✅ v0.14.0, new events ✅ v0.14.3. Still open: per-chat mute
 - Attendance (Zu-/Absagen) per gig/rehearsal – ✅ done in F5 (v0.7.0)
 - Practice mode: play a setlist as playlist, speed control, A–B loop – ✅ done (setlist mode v0.8.0, practice view v0.6.0)
 - Photo gallery for live photos on HiDrive

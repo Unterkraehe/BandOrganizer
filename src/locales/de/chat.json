@@ -56,6 +56,7 @@
     "hide": "Diskussion ausblenden"
   },
   "system": {
+    "event.created": "{{name}} hat {{event}} am {{date}} eingetragen",
     "event.cancelled": "{{name}} hat {{event}} am {{date}} abgesagt",
     "event.uncancelled": "{{name}} hat {{event}} am {{date}} wieder angesetzt",
     "event.changed": "{{name}} hat {{event}} am {{date}} geändert",
