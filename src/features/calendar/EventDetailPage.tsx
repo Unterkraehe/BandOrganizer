@@ -1,11 +1,11 @@
-import { Ban, CalendarPlus, MapPin, Pencil, Repeat, RotateCcw, Trash2 } from 'lucide-react';
+import { Ban, CalendarPlus, MapPin, MessageSquarePlus, Pencil, Repeat, RotateCcw, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useNotify } from '@/app/notify/NotifyProvider';
 import { formatDateWithYear, formatTime } from '@/core/i18n/format';
 import { useSession } from '@/core/session/BandSession';
-import { Avatar, Button, ConfirmDialog, EmptyState, Page, TextField } from '@/ui';
+import { Avatar, Button, ConfirmDialog, EmptyState, IconButton, Menu, Page, TextField, type MenuItem } from '@/ui';
 import { AnswerButtons } from './AnswerButtons';
 import { useCalendar, useWatchCalendar } from './CalendarProvider';
 import { describeRecurrence, occurrenceTitle, occurrenceWhen, TYPE_ICON_COLOR, TYPE_ICONS } from './format';
@@ -32,6 +32,7 @@ export function EventDetailPage() {
   const occ = eventId ? store.occurrence(eventId, occurrence ?? 'single') : undefined;
   const dataFor = useOccurrenceData(occ ? [occ] : []);
   const [comment, setComment] = useState<string | null>(null);
+  const [commenting, setCommenting] = useState(false);
   const [scopeFor, setScopeFor] = useState<'cancel' | null>(null);
   const [confirm, setConfirm] = useState<'delete' | 'cancel' | null>(null);
 
@@ -66,8 +67,32 @@ export function EventDetailPage() {
 
   const mapUrl = occ.location ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([occ.location.name, occ.location.address].filter(Boolean).join(', '))}` : null;
 
+  // like the song and setlist pages (R-UX-09): ✎ in the top bar, the rarer actions in ⋯
+  const editPath = `/calendar/${occ.event.id}${occurrence ? `/${occurrence}` : ''}/edit`;
+  const menu: MenuItem[] = [
+    { label: t('detail.addToCalendar'), icon: <CalendarPlus size={18} />, onSelect: exportOne },
+    ...(mayEdit
+      ? [
+          {
+            label: occ.cancelled ? t('detail.uncancel') : t('detail.cancel'),
+            icon: occ.cancelled ? <RotateCcw size={18} /> : <Ban size={18} />,
+            onSelect: () => (occ.event.recurrence ? setScopeFor('cancel') : occ.cancelled ? doCancel('all') : setConfirm('cancel')),
+          },
+          { label: t('detail.delete'), icon: <Trash2 size={18} />, danger: true, onSelect: () => setConfirm('delete') },
+        ]
+      : []),
+  ];
+
   return (
-    <Page title={title}>
+    <Page
+      title={title}
+      actions={
+        <>
+          {mayEdit && <IconButton label={t('detail.edit')} icon={<Pencil size={20} />} onClick={() => navigate(editPath)} />}
+          <Menu label={t('detail.menu', { title })} items={menu} />
+        </>
+      }
+    >
       <div className={styles.detailHead}>
         <span className={styles.typeLine} style={{ color: TYPE_ICON_COLOR[occ.type] }}>
           <Icon size={18} aria-hidden="true" />
@@ -122,30 +147,39 @@ export function EventDetailPage() {
               <p className={styles.conflict} style={{ minHeight: '1.5em' }}>
                 {data.review ? t('answer.review') : '\u00a0'}
               </p>
-              <div className={styles.commentRow}>
-                <TextField
-                  label={t('answer.comment')}
-                  placeholder={t('answer.commentPlaceholder')}
-                  value={comment ?? data.mine?.comment ?? ''}
-                  onChange={(e) => setComment(e.target.value)}
-                  maxLength={200}
-                />
-                <Button
-                  disabled={!data.mine || comment === null}
-                  onClick={() =>
-                    data.mine &&
-                    void store
-                      .answer(occ, data.mine.status, comment)
-                      .then(() => {
-                        setComment(null);
-                        notify({ message: t('answer.saved') });
-                      })
-                      .catch(fail)
-                  }
-                >
-                  {t('answer.saveComment')}
-                </Button>
-              </div>
+              {/* the comment is optional: one quiet button until you want it (or already have one) – R-UX-09 */}
+              {commenting || data.mine?.comment ? (
+                <div className={styles.commentRow}>
+                  <TextField
+                    label={t('answer.comment')}
+                    placeholder={t('answer.commentPlaceholder')}
+                    value={comment ?? data.mine?.comment ?? ''}
+                    onChange={(e) => setComment(e.target.value)}
+                    maxLength={200}
+                  />
+                  <Button
+                    disabled={!data.mine || comment === null}
+                    onClick={() =>
+                      data.mine &&
+                      void store
+                        .answer(occ, data.mine.status, comment)
+                        .then(() => {
+                          setComment(null);
+                          notify({ message: t('answer.saved') });
+                        })
+                        .catch(fail)
+                    }
+                  >
+                    {t('answer.saveComment')}
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  <Button variant="ghost" icon={<MessageSquarePlus size={18} />} onClick={() => setCommenting(true)}>
+                    {t('answer.addComment')}
+                  </Button>
+                </div>
+              )}
             </>
           )}
           <div className={styles.groups}>
@@ -180,29 +214,6 @@ export function EventDetailPage() {
       {!isAbsence && <EventSetlist occ={occ} title={title} />}
       {!isAbsence && <Discussion context={{ type: 'event', id: occ.event.id, occurrence: occ.key }} />}
 
-      <div className={styles.actions}>
-        {mayEdit && (
-          <Button icon={<Pencil size={18} />} onClick={() => navigate(`/calendar/${occ.event.id}${occurrence ? `/${occurrence}` : ''}/edit`)}>
-            {t('detail.edit')}
-          </Button>
-        )}
-        <Button icon={<CalendarPlus size={18} />} onClick={exportOne}>
-          {t('detail.addToCalendar')}
-        </Button>
-        {mayEdit && (
-          <Button
-            icon={occ.cancelled ? <RotateCcw size={18} /> : <Ban size={18} />}
-            onClick={() => (occ.event.recurrence ? setScopeFor('cancel') : occ.cancelled ? doCancel('all') : setConfirm('cancel'))}
-          >
-            {occ.cancelled ? t('detail.uncancel') : t('detail.cancel')}
-          </Button>
-        )}
-        {mayEdit && (
-          <Button variant="danger" icon={<Trash2 size={18} />} onClick={() => setConfirm('delete')}>
-            {t('detail.delete')}
-          </Button>
-        )}
-      </div>
       {!mayEdit && <p className={styles.hint}>{t('detail.own')}</p>}
       <p className={styles.hint}>
         {t('detail.createdBy', { name: name(occ.event.createdBy) })}

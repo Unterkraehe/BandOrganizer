@@ -1,4 +1,8 @@
 {
+  "0.18.1": [
+    "Aufgeräumte Termin-Seite: Bearbeiten (✎) und das ⋯-Menü (Zum Kalender hinzufügen, Absagen, Löschen) stehen jetzt oben wie bei Songs und Setlists. Ein Kommentar zur Antwort geht über „Kommentar hinzufügen“, die Erinnerung über „Ändern“.",
+    "Einstellungen: Die Erinnerungen an Termine sind jetzt je eine Zeile pro Termin-Art – „Ändern“ öffnet die Auswahl."
+  ],
   "0.18.0": [
     "Setlists überall gleich: Die Setlist am Termin ist jetzt eine Karte – antippen öffnet dieselbe Setlist-Seite wie unter „Setlists“, mit ← geht es zurück zum Termin. Direkt am Termin: „Setlist abspielen“ und „Setlist bearbeiten“.",
     "Aufgeräumte Setlist-Seite: „Abspielen“ und „Bühnenansicht“ vorne, Bearbeiten oben (✎), Drucken, Duplizieren und Termin verknüpfen im ⋯-Menü. Nach dem Speichern im Editor kommst du dorthin zurück, wo du warst."

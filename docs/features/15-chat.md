@@ -103,6 +103,7 @@ Created by the device that performs the action, stored like messages with `type:
 ### 4.7 Reminders before events (v0.14)
 
 - **Per member (decided):** each member chooses for themselves. Einstellungen → Benachrichtigungen → *Erinnerungen an Termine*: per type (Auftritte, Proben, Sonstige Termine) toggle chips 15 Min. · 30 Min. · 1 Std. · 2 Std. · 3 Std. · 1 Tag · 2 Tage · 1 Woche (several at once). Defaults: Auftritte 1 Tag + 3 Std., Proben 2 Std., Sonstige none. Absences never remind.
+- **v0.18.1:** in the settings one line per type ("Auftritte – 1 Tag und 3 Std. vorher · Ändern"), on the event one line "Meine Erinnerung"; the chips open in a dialog (rarely changed, R-UX-09).
 - **Per event:** event detail → *Meine Erinnerung*: the same chips; changing them makes it "nur für diesen Termin" (a series counts as one event); "Standard für … verwenden" goes back (always shown, disabled when not needed – R-UI-11). Hidden for cancelled dates.
 - **Rules:** counts back from the meeting time if set, otherwise the start; all-day events from 9:00 on the first day. No reminder for cancelled dates, after answering "Nein", or while the member has an absence on that day. Former members get none. Per device the switch *Erinnerungen an Termine* (next to Chat / Termin-Änderungen) turns them off on that device.
 - **Content:** title "Auftritt: Stadtfest" (untitled events: just the type), text "Sa., 10. Okt. · 20:00 · Treffpunkt 18:30 · Marktplatz" – absolute date because the text is written in advance. Tapping opens the event.

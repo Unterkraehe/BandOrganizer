@@ -112,7 +112,7 @@ Songs (/songs)                  list / folders, search, tags; ⋯ per row
     Song bearbeiten (/edit) · Songtext (/lyrics) · Zusammenführen (/merge)
   Neuer Song (/songs/new)
 Kalender (/calendar)            list / month (phone: day panel)
-  Termin (/calendar/:id[/:date])  *from start, chat info lines, notifications, setlist*
+  Termin (/calendar/:id[/:date])  *from start, chat info lines, notifications, setlist*; answers; ✎; ⋯ Kalender / Absagen / Löschen
     Bearbeiten (/edit)
   Neuer Termin (/calendar/new) · Kalender abonnieren (/calendar/subscribe)
 Chat (/chat)                    *?message= from search / notifications*
@@ -130,7 +130,7 @@ Mini player (all screens)       → Player (hidden only while the player is open
 Old addresses                   /songs/:id/practice → /player?song=:id&view=practice; /songs?setlist=:id → plays nothing, opens the player queue
 ```
 
-Planned (see roadmap "Navigation & clarity"): step 5 review of all screens.
+All five steps of "Navigation & clarity" are done (roadmap §4b). New screens follow R-UX-09 and are added here.
 
 ## 5. Setlist Mode (cross-feature)
 

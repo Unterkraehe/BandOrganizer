@@ -206,7 +206,7 @@ function SuggestionFoldersRow() {
       .catch(() => notify({ message: t('failed') }));
   };
   return (
-    <div style={{ paddingTop: 'var(--space-3)' }}>
+    <div style={{ padding: 'var(--space-3) var(--space-4) var(--space-4)' }}>
       <TextField
         label={t('settings.suggestionFolders')}
         hint={t('settings.suggestionFoldersHint')}

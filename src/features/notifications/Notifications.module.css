@@ -1,6 +1,16 @@
 .box {
   display: grid;
   gap: var(--space-3);
+  /* inside a settings Section card: same inner spacing as its rows */
+  padding: var(--space-4);
+}
+
+/* the reminder defaults: a second block in the same settings card, separated like its rows */
+.group {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-top: 1px solid var(--border);
 }
 
 .row {
@@ -46,21 +56,15 @@
   gap: var(--space-2);
 }
 
-.reminderType {
-  display: grid;
-  gap: var(--space-2);
-}
-
-.reminderLabel {
-  font-weight: 600;
-}
-
-.eventTitle {
+.reminderLine {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: var(--fs-lg);
-  color: var(--text-muted);
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.reminderText {
+  flex: 1;
+  min-width: 0;
+  display: grid;
 }

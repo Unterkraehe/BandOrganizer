@@ -27,7 +27,8 @@ describe('Chat (M7 in demo mode)', () => {
     await user.type(screen.getByRole('textbox', { name: 'Nachricht dazu …' }), 'Soundcheck um 17 Uhr?');
     await user.click(screen.getAllByRole('button', { name: 'Senden' }).at(-1)!);
     expect(await screen.findByText('Soundcheck um 17 Uhr?')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Absagen' }));
+    await user.click(screen.getByRole('button', { name: /^Weitere Aktionen für/ }));
+    await user.click(screen.getByRole('menuitem', { name: 'Absagen' }));
     await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Absagen' }));
 
     await user.click(screen.getByRole('link', { name: 'Chat' }));

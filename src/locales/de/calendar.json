@@ -57,7 +57,8 @@
       "open": "Noch offen"
     },
     "yourAnswer": "Deine Antwort",
-    "saved": "Antwort gespeichert"
+    "saved": "Antwort gespeichert",
+    "addComment": "Kommentar hinzufügen"
   },
   "conflict": "{{name}} ist abwesend",
   "detail": {
@@ -77,7 +78,8 @@
     "deleteConfirm": "Nur für versehentlich angelegte Termine. Wenn er nicht stattfindet, besser „Absagen“ – dann sehen alle, was sich geändert hat.",
     "cancelConfirmTitle": "Termin absagen?",
     "cancelConfirm": "Der Termin bleibt sichtbar, aber durchgestrichen.",
-    "own": "Nur du kannst deine Abwesenheit ändern."
+    "own": "Nur du kannst deine Abwesenheit ändern.",
+    "menu": "Weitere Aktionen für {{title}}"
   },
   "scope": {
     "title": "Welche Termine?",

@@ -28,6 +28,7 @@
 - [ ] **Player (v0.16.0):** play a song, tap the mini player → the player grows out of it; Songtext / Üben / (Setlist) tabs; ⌄ and the back gesture close it and you are where you were; lock screen keeps playing; screen stays on while the player is open. "Setlist abspielen" on an event → plays, Setlist tab open, ⏭ moves on; the Songs tab still shows the normal list.
 - [ ] **Song page (v0.17.0):** long titles wrap and are fully readable; "Abspielen" toggles, the mini player appears; "Üben" opens the player on Üben; all four tabs readable on the smallest phone in the band.
 - [ ] **Setlists (v0.18.0):** on an event: "Neue Setlist für diesen Termin" → add songs → Speichern → the setlist page; ← → the event; tap the setlist card → the same page; "Setlist bearbeiten" → Abbrechen → the event.
+- [ ] **Event page (v0.18.1):** answer with one tap; "Kommentar hinzufügen" opens the field; ⋯ → Absagen / Löschen; "Meine Erinnerung · Ändern" opens the choices.
 - [ ] **Back after a long time:** leave the app in the background for an hour (or overnight), open it → new chat messages / events appear without a manual reload.
 
 ## C. Band test phase (1–2 weeks, decides 1.0.0)

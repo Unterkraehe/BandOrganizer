@@ -1,6 +1,6 @@
 # Implementation Roadmap
 
-> **Status:** M0–M9 built · v0.18.0 = release candidate: the band test phase decides when it becomes **1.0.0** · open tests: S1/S2 (file IDs, ETag), S4 (share link as calendar subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with keyboard on iPhone/Android, push notifications and event reminders on real devices (needs KV + Cron Trigger in the token helper), HiDrive copy (`POST /file/copy`)
+> **Status:** M0–M9 built · v0.18.1 = release candidate: the band test phase decides when it becomes **1.0.0** · open tests: S1/S2 (file IDs, ETag), S4 (share link as calendar subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with keyboard on iPhone/Android, push notifications and event reminders on real devices (needs KV + Cron Trigger in the token helper), HiDrive copy (`POST /file/copy`)
 > Order and scope of the build, from an empty repository to v1.0. Each milestone ends with a **deployed version the band can use and test**.
 
 ## 1. Principles
@@ -217,6 +217,7 @@ Done when: the band uses the app for a full rehearsal-and-gig cycle without fall
 | 0.16.0 | Navigation & clarity step 2: full-screen player out of the mini player (replaces practice view), setlists play in the player queue |
 | 0.17.0 | Navigation & clarity step 3: calm song page (title below the bar, Abspielen + Üben, tabs Songtext / Notizen / Versionen / Infos) |
 | 0.18.0 | Navigation & clarity step 4: setlist page like the song page, setlist card on the event, editor returns after saving |
+| 0.18.1 | Navigation & clarity step 5: calm event page (✎ ⋯, comment and reminder on request), reminder settings compact |
 
 Details per change: feature files (status blocks) and the "Was ist neu" texts in `src/locales/de/whatsNew.json`.
 
@@ -230,7 +231,9 @@ Band feedback: navigation is confusing (no way back, mini player opens the song 
 | 2 | One full-screen player growing out of the mini player (replaces the practice view); setlist playback as the player's queue instead of `/songs?setlist=` | ✅ v0.16.0 |
 | 3 | Calmer song page: info page with one "Abspielen", tabs Songtext / Notizen / Versionen / Infos, rare actions in ⋯ | ✅ v0.17.0 |
 | 4 | Setlists unified: one setlist page from every entry point, event page with compact setlist card, actions in ⋯ | ✅ v0.18.0 |
-| 5 | Review of all remaining screens against R-UX-09 | open |
+| 5 | Review of all remaining screens against R-UX-09 | ✅ v0.18.1 |
+
+**Step 5 review (2026-10-01, all screens at 360 px, controls counted):** start, calendar list/month, event form, subscription, chat, Mehr, setlists, members, member, band settings, tags, profile, new song, search – fine. Fixed: **event page** 25 → 15 controls (✎ + ⋯ in the top bar instead of four buttons at the bottom – like song and setlist pages; comment field behind "Kommentar hinzufügen" unless you already have one; "Meine Erinnerung" as one line, choices in a dialog); **settings** 35 → 14 controls (reminder defaults one line per type, choices in a dialog); missing inner padding in "Benachrichtigungen" and the suggestion-folders field. Left as is: the calendar's type filters scroll sideways on phones (intentional row), the "Neu in Version" box (dismissible).
 
 ## 5. Definition of Done (every milestone)
 

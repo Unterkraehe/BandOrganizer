@@ -23,7 +23,9 @@ describe('Calendar (M5 in demo mode)', () => {
     await user.click(screen.getByRole('button', { name: 'Ich bin dabei' }));
     expect(await screen.findByText('Zugesagt (1)')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Absagen' }));
+    // rarer actions are in ⋯ (v0.18.1)
+    await user.click(screen.getByRole('button', { name: /^Weitere Aktionen für/ }));
+    await user.click(screen.getByRole('menuitem', { name: 'Absagen' }));
     await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Nur diesen Termin' }));
     expect(await screen.findByText('Fällt aus')).toBeInTheDocument();
 
@@ -76,10 +78,14 @@ describe('Reminders before events (v0.14)', () => {
   it('sets defaults per type in the settings and changes them for one event', async () => {
     const user = userEvent.setup();
     await enterDemo(user, '/settings');
-    const gigs = await screen.findByRole('group', { name: 'Erinnerung für Auftritte' });
+    // one line per type; the choices open in a dialog (v0.18.1)
+    expect(await screen.findByText('1 Tag und 3 Std. vorher')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Ändern: Auftritte' }));
+    const gigs = within(screen.getByRole('dialog')).getByRole('group', { name: 'Erinnerung für Auftritte' });
     expect(within(gigs).getByRole('button', { name: '1 Tag' })).toHaveAttribute('aria-pressed', 'true');
     await user.click(within(gigs).getByRole('button', { name: '1 Tag' }));
-    expect(await screen.findByText(/– 3 Std\. vorher/)).toBeInTheDocument();
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Schließen' }));
+    expect(await screen.findByText('3 Std. vorher')).toBeInTheDocument();
 
     await user.click(screen.getByRole('link', { name: 'Kalender' }));
     await user.click((await screen.findAllByRole('button', { name: 'Termin anlegen' }))[0]!);
@@ -87,13 +93,15 @@ describe('Reminders before events (v0.14)', () => {
     await user.type(screen.getByLabelText('Titel'), 'Stadtfest');
     await user.click(screen.getByRole('button', { name: 'Speichern' }));
 
-    const mine = await screen.findByRole('group', { name: 'Meine Erinnerung' });
-    expect(screen.getByText(/3 Std\. vorher · Standard für Auftritte/)).toBeInTheDocument();
-    const reset = screen.getByRole('button', { name: 'Standard für Auftritte verwenden' });
+    expect(await screen.findByText(/3 Std\. vorher · Standard für Auftritte/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Ändern: Meine Erinnerung' }));
+    const dialog = screen.getByRole('dialog', { name: 'Meine Erinnerung' });
+    const reset = within(dialog).getByRole('button', { name: 'Standard für Auftritte verwenden' });
     expect(reset).toBeDisabled();
-    await user.click(within(mine).getByRole('button', { name: '30 Min.' }));
-    expect(await screen.findByText(/3 Std\. und 30 Min\. vorher · nur für diesen Termin/)).toBeInTheDocument();
+    await user.click(within(within(dialog).getByRole('group', { name: 'Meine Erinnerung' })).getByRole('button', { name: '30 Min.' }));
+    expect(await within(dialog).findByText(/3 Std\. und 30 Min\. vorher · nur für diesen Termin/)).toBeInTheDocument();
     await user.click(reset);
+    await user.click(within(dialog).getByRole('button', { name: 'Schließen' }));
     expect(await screen.findByText(/3 Std\. vorher · Standard für Auftritte/)).toBeInTheDocument();
   });
 });
@@ -125,5 +133,30 @@ describe('Month view on a phone (v0.14.4)', () => {
     const otherLabel = formatDate(`${other}T12:00:00Z`);
     await user.click(screen.getByRole('button', { name: otherLabel }));
     expect(within(await screen.findByRole('dialog', { name: otherLabel })).getByText('Keine Termine an diesem Tag.')).toBeInTheDocument();
+  });
+});
+
+describe('Calm event page (v0.18.1, R-UX-09)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('✎ and ⋯ in the top bar, comment and reminder on request', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/calendar/new?type=gig');
+    await user.type(await screen.findByLabelText('Titel'), 'Stadtfest');
+    await user.click(screen.getByRole('button', { name: 'Speichern' }));
+    await screen.findByRole('heading', { level: 1, name: 'Stadtfest' });
+
+    expect(screen.queryByRole('button', { name: 'Löschen' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: /Kommentar/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '1 Tag' })).not.toBeInTheDocument(); // reminder chips only in their dialog
+
+    await user.click(screen.getByRole('button', { name: 'Kommentar hinzufügen' }));
+    expect(screen.getByRole('textbox', { name: /Kommentar/ })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Weitere Aktionen für Stadtfest' }));
+    expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual(['Zum Kalender hinzufügen', 'Absagen', 'Löschen']);
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'Bearbeiten' }));
+    expect(await screen.findByRole('button', { name: 'Abbrechen' })).toBeInTheDocument();
   });
 });
