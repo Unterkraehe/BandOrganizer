@@ -20,7 +20,7 @@ export const calendarFeature: FeatureRegistration = {
     { path: '/calendar/subscribe', element: createElement(SubscriptionPage) },
     { path: '/calendar/:eventId', element: createElement(EventDetailPage) },
     { path: '/calendar/:eventId/edit', element: createElement(EventFormPage) },
-    { path: '/calendar/:eventId/:occurrence', element: createElement(EventDetailPage) },
+    { path: '/calendar/:eventId/:occurrence', element: createElement(EventDetailPage), parent: '/calendar' },
     { path: '/calendar/:eventId/:occurrence/edit', element: createElement(EventFormPage) },
   ],
 };

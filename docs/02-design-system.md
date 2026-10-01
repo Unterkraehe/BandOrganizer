@@ -185,6 +185,7 @@ Built once in `src/ui/`, documented with examples in both themes:
 ## 9. Motion
 
 - Short and functional: 150–200 ms ease-out for UI transitions, sheets slide in, lists don't animate on every update.
+- **Motion explains where things are (R-UX-09, v0.15.0):** a deeper screen slides in from the right, going back (← back, back gesture, up to a parent) slides in from the left, switching tabs fades, a swipe between tabs slides in the swipe direction (`--dur-screen` 220 ms, `AppShell` `data-nav`). Panels and the player come from the bottom. Screens are animated with `left` on a relatively positioned box, never `transform` (it would re-anchor fixed elements such as the chat input).
 - `prefers-reduced-motion`: animations reduced to fades or none.
 - No motion while audio-critical actions happen (e.g. no layout jumps under the finger in the stage view).
 

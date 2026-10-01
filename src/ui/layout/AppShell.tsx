@@ -1,7 +1,7 @@
 import { MoreHorizontal } from 'lucide-react';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, matchPath, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Link, matchPath, NavLink, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import type { FeatureRegistration } from '@/core/features/registry';
 import { useSession } from '@/core/session/BandSession';
 import { BandMark } from '../components/BandMark';
@@ -57,6 +57,7 @@ export function AppShell({ features, bottomSlot, children }: AppShellProps) {
     swipeEnabled,
   );
   const swipe = (location.state as { swipe?: 'left' | 'right' } | null)?.swipe;
+  const navDirection = useNavDirection(pathname, tabs, swipe);
 
   return (
     <div className={styles.shell}>
@@ -93,13 +94,35 @@ export function AppShell({ features, bottomSlot, children }: AppShellProps) {
             </button>
           </div>
         )}
-        <div key={pathname} className={styles.screen} data-swipe={swipe}>
+        <div key={pathname} className={styles.screen} data-nav={navDirection}>
           {children}
         </div>
       </main>
       <div className={styles.bottomSlot} data-no-print>{bottomSlot}</div>
     </div>
   );
+}
+
+type NavDirection = 'push' | 'back' | 'tab' | undefined;
+
+/**
+ * Which way the new screen came (R-UX-09 "motion explains where things are", design system §9):
+ * deeper → push (slides in from the right), back / up → back (from the left), tab to tab → fade;
+ * a swipe between tabs slides in the swipe direction.
+ */
+function useNavDirection(pathname: string, tabs: string[], swipe: 'left' | 'right' | undefined): NavDirection {
+  const navigationType = useNavigationType();
+  const previous = useRef(pathname);
+  const direction = useRef<NavDirection>(undefined);
+  if (previous.current !== pathname) {
+    const from = previous.current;
+    previous.current = pathname;
+    if (swipe) direction.current = swipe === 'left' ? 'push' : 'back';
+    else if (tabs.includes(pathname) && tabs.includes(from)) direction.current = 'tab';
+    else if (navigationType === 'POP' || from.startsWith(`${pathname}/`) || tabs.includes(pathname)) direction.current = 'back';
+    else direction.current = 'push';
+  }
+  return direction.current;
 }
 
 function NavBadge({ use }: { use: () => number }) {

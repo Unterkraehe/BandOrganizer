@@ -2,7 +2,7 @@ import { Loader2, NotebookText, Pause, Play, RotateCcw, RotateCw, X, Minus, Plus
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePlayer } from '@/core/audio/PlayerProvider';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { formatDuration } from '@/core/i18n/format';
 import { useSession } from '@/core/session/BandSession';
 import { IconButton, SeekBar } from '@/ui';
@@ -18,6 +18,7 @@ import { PracticeControls } from './PracticeControls';
 import { practiceSummary } from './summary';
 import { SetlistModeBar } from '@/features/setlists/SetlistModeBar';
 import styles from './Practice.module.css';
+import { useBack } from '@/ui/layout/navigation';
 
 const SIZE_KEY = 'bandapp.practice.size';
 
@@ -25,12 +26,12 @@ const SIZE_KEY = 'bandapp.practice.size';
 export function PracticePage() {
   const { t } = useTranslation('songs');
   const { songId } = useParams();
-  const navigate = useNavigate();
+  const { goBack } = useBack();
   const { songs } = useLibrary();
   const song = songs.find((s) => s.id === songId) ?? songs.find((s) => s.mergedSongIds.includes(songId ?? ''));
   useWakeLock();
   if (!song) return null;
-  return <Practice song={song} onClose={() => navigate(-1)} t={t} />;
+  return <Practice song={song} onClose={() => goBack()} t={t} />;
 }
 
 function Practice({ song, onClose, t }: { song: Song; onClose: () => void; t: ReturnType<typeof useTranslation>['t'] }) {

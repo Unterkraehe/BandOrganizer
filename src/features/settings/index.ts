@@ -16,6 +16,6 @@ export const settingsFeature: FeatureRegistration = {
   element: createElement(SettingsPage),
   routes: [
     { path: '/settings/band', element: createElement(BandSettingsPage) },
-    { path: '/profile', element: createElement(ProfilePage) },
+    { path: '/profile', element: createElement(ProfilePage), parent: '/settings' },
   ],
 };

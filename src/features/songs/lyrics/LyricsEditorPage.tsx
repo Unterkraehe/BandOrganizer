@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { useNotify } from '@/app/notify/NotifyProvider';
 import { decodeText } from '@/core/lyrics/renderers';
 import { dirname } from '@/core/storage';
@@ -10,6 +10,7 @@ import { FolderField } from '../uploads/FolderPicker';
 import { useUploadActions } from '../uploads/useUploadActions';
 import { useUploadContext } from '../uploads/useUploadContext';
 import styles from './Lyrics.module.css';
+import { useBack } from '@/ui/layout/navigation';
 
 const draftKey = (songId: string) => `bandapp.lyricsDraft.${songId}`;
 
@@ -17,7 +18,7 @@ const draftKey = (songId: string) => `bandapp.lyricsDraft.${songId}`;
 export function LyricsEditorPage() {
   const { t } = useTranslation('songs');
   const { songId } = useParams();
-  const navigate = useNavigate();
+  const { goBack } = useBack();
   const location = useLocation();
   const notify = useNotify();
   const { songs, store } = useLibrary();
@@ -64,7 +65,7 @@ export function LyricsEditorPage() {
       .saveTypedLyrics(song.id, song.title, text, folder)
       .then(() => notify({ message: t('lyrics.saved') }))
       .catch(() => notify({ message: t('failed') }));
-    navigate(-1);
+    goBack();
   };
 
   return (
@@ -83,7 +84,7 @@ export function LyricsEditorPage() {
             size="lg"
             onClick={() => {
               localStorage.removeItem(draftKey(song.id));
-              navigate(-1);
+              goBack();
             }}
           >
             {t('common:actions.cancel')}

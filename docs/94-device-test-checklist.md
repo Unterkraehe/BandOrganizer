@@ -24,6 +24,7 @@
 - [ ] **"Aktualisieren":** after a deploy, the toast appears; tapping shows "Wird aktualisiert …" and the app reloads within a few seconds with the new version ("Was ist neu" shows it). Also with the app open twice (installed app + browser tab): tap in one, then in the other → it still reloads.
 - [ ] **New events reach everyone:** two phones with the app open, one on the calendar; the other enters a rehearsal → it appears within ~20 s (calendar screen) / ~60 s (elsewhere), a chat line "… eingetragen" appears, and phones with the app closed get a notification "Neuer Termin".
 - [ ] **Month view on the phone:** Kalender → Monat → tap a day with an event → a panel from the bottom shows it (answer buttons work, tapping the card opens the event); an empty day says "Keine Termine an diesem Tag."; a day with many events scrolls inside the panel.
+- [ ] **← back and motion (v0.15.0):** every sub-screen has ← top left; open a song from the list → it slides in from the right, ← → the list slides in from the left at the old scroll position; open an event from a notification → ← leads to the calendar (not out of the app); tabs fade. iPhone and Android, also with "Bewegung reduzieren" (no animation).
 - [ ] **Back after a long time:** leave the app in the background for an hour (or overnight), open it → new chat messages / events appear without a manual reload.
 
 ## C. Band test phase (1–2 weeks, decides 1.0.0)

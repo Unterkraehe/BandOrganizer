@@ -1,4 +1,8 @@
+import { ArrowLeft } from 'lucide-react';
 import { useContext, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { IconButton } from '../components/Button';
+import { useBack } from './navigation';
 import { TopBarExtraContext } from './TopBarExtra';
 import styles from './Page.module.css';
 
@@ -9,16 +13,21 @@ interface PageProps {
   actions?: ReactNode;
   /** wider content column, e.g. two-column editors */
   wide?: boolean;
+  /** false: no ← back even on a sub-screen (e.g. a form with its own Abbrechen) */
+  back?: boolean;
   children: ReactNode;
 }
 
 /** Standard screen frame: sticky top bar with the screen title (F3 §4.4) + content column. */
-export function Page({ title, hideTitle, actions, wide, children }: PageProps) {
+export function Page({ title, hideTitle, actions, wide, back = true, children }: PageProps) {
+  const { t } = useTranslation();
   const extra = useContext(TopBarExtraContext);
+  const nav = useBack();
   return (
     <div className={styles.page}>
       <header className={styles.topBar} data-hidden-title={hideTitle || undefined} data-no-print>
         <div className={styles.topBarInner}>
+          {back && nav.show && <IconButton className={styles.back} label={t('actions.back')} icon={<ArrowLeft size={22} />} onClick={nav.goBack} />}
           <h1 className={hideTitle ? 'visually-hidden' : styles.title}>{title}</h1>
           {(actions || extra) && (
             <div className={styles.actions}>

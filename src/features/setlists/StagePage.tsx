@@ -1,13 +1,14 @@
 import { Minus, Plus, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { IconButton } from '@/ui';
 import { songEntries } from './model';
 import { SetlistSheet } from './SetlistSheet';
 import { useSetlists } from './SetlistProvider';
 import { useSetlistInfo } from './useSetlistInfo';
 import styles from './Setlists.module.css';
+import { useBack } from '@/ui/layout/navigation';
 
 const SIZE_KEY = 'bandapp.stage.size';
 
@@ -15,7 +16,7 @@ const SIZE_KEY = 'bandapp.stage.size';
 export function StagePage() {
   const { t } = useTranslation('setlists');
   const { setlistId } = useParams();
-  const navigate = useNavigate();
+  const { goBack } = useBack();
   const { store, setlists, state } = useSetlists();
   const { songById } = useSetlistInfo();
   const setlist = setlists.find((s) => s.id === setlistId);
@@ -43,7 +44,7 @@ export function StagePage() {
   const entries = setlist ? songEntries(setlist) : [];
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') return navigate(-1);
+      if (e.key === 'Escape') return goBack();
       const dir = e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ' ? 1 : e.key === 'ArrowUp' || e.key === 'ArrowLeft' ? -1 : 0;
       if (!dir || !entries.length) return;
       e.preventDefault();
@@ -70,7 +71,7 @@ export function StagePage() {
         <span className={styles.stageTitle}>{setlist?.name}</span>
         <IconButton label={t('stage.smaller')} icon={<Minus size={20} />} onClick={() => changeSize(-0.2)} />
         <IconButton label={t('stage.bigger')} icon={<Plus size={20} />} onClick={() => changeSize(0.2)} />
-        <IconButton label={t('stage.close')} icon={<X size={22} />} onClick={() => navigate(-1)} />
+        <IconButton label={t('stage.close')} icon={<X size={22} />} onClick={() => goBack()} />
       </div>
       <div className={styles.stageBody}>
         {setlist && (

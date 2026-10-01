@@ -133,6 +133,15 @@ Show cached data immediately and refresh in the background. Actions update the U
 **R-UX-08 — Audio keeps playing.**
 Song playback continues while navigating through the app (persistent mini player).
 
+**R-UX-09 — Integrated, obvious, simple (every new feature and screen).**
+A feature is only done when a band member who has never seen it finds it and finishes the task without explanation. Checklist (also for changes to existing screens):
+1. **One home, reachable in context.** Every thing (song, event, setlist, player …) has exactly one screen. It is linked from wherever users need it, and every entry point opens **that same screen** – no second, slightly different version.
+2. **Always a way back.** Every screen that is not a bottom-bar tab has ← back in the top bar (`Page` adds it automatically): it returns to where the user came from, or to the parent screen after a link from outside (notification, search, chat).
+3. **One primary action per screen**, at most about three visible secondary actions; everything else goes into the ⋯ menu. No two buttons that do almost the same.
+4. **Motion explains where things are**: a detail screen slides in from the right and back out to the right, panels and the player come from the bottom (the player grows out of the mini player), tabs cross-fade. Short (≤ 250 ms), never blocking, off with `prefers-reduced-motion` (design system §9).
+5. **No hidden modes.** Nothing changes what another tab shows (e.g. a setlist must not turn the Songs tab into something else); state that follows the user (playing setlist) lives in the player / mini player.
+6. **Documented in the navigation map** (`features/12-main-menu.md` §4.5): where it lives, how to get there, where back leads.
+
 ## 5. Architecture & Code (R-CODE)
 
 **R-CODE-01 — Storage only via `StorageProvider`.**

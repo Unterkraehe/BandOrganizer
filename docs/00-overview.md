@@ -1,7 +1,7 @@
 # Overload App – Project Overview
 
 > **App name:** Overload App (may change later – the name is only set in config/translations, see R-I18N-07)
-> **Status:** Implementation – v0.14.5: release candidate for 1.0 – all planned features are built; the band test phase decides when it becomes 1.0.0. Working on the code? Start with [`92-code-map.md`](92-code-map.md).
+> **Status:** Implementation – v0.15.0: release candidate for 1.0 – all planned features are built; the band test phase decides when it becomes 1.0.0. Working on the code? Start with [`92-code-map.md`](92-code-map.md).
 > **Last updated:** 2026-09-24
 
 This file is the entry point for the whole project. Read it first, then `01-general-rules.md` and `02-design-system.md`, then the feature file you are working on. The build order is defined in `03-roadmap.md`.
@@ -230,6 +230,7 @@ This list grows with the feature plans. Consistent wording is a rule (R-I18N-05)
 | 2026-09-26 | Neutral default band color "Messing" until a band sets its own | No pre-branding for other bands (R-UI-10) |
 | 2026-09-30 | Work on the code starts from a hand-written code map (`92-code-map.md`) plus a generated index (`93-code-index.md`); maintenance scripts (`npm run check / map / serve / pack`); app flow tests split per feature (`src/app/flows/`) | Faster, safer changes: find the right file at once, run only the relevant tests, one command for CI-equivalent checks, reproducible deliveries |
 | 2026-09-30 | Push notifications for chat messages and event changes via the token helper (`POST /push`, Web Push + VAPID, stateless); subscriptions stored in `_BandApp/push/` | Phones freeze background web apps – only push works reliably; no new server needed |
+| 2026-10-01 | Rule R-UX-09 (integrated, obvious, simple) + navigation map; overhaul in 5 released steps: ← back everywhere + screen motion, one full-screen player (replaces song-page player and practice view), calmer song page, unified setlists, review. Setlists stay under "Mehr" | Band members found the navigation confusing (no way back, look-alike screens, setlist mode hijacking the Songs tab) |
 | 2026-10-01 | Rule R-UI-14: phones never scroll sideways (360 px, down to 320 px); intentional sideways rows carry `data-scroll-x`; checked by `scripts/qa/overflow-check.py` | The practice controls scrolled sideways on phones for songs with several versions |
 | 2026-10-01 | New events get a chat info line + push like changes ("… hat … eingetragen"); the open app checks the calendar for other members' changes every 60 s (20 s on calendar screens), reading only changed files | In a band test, members with the app open didn't see a new event until they reopened the app |
 | 2026-10-01 | Reminders before events (F6 §4.7): each member sets their own (defaults per event type + per event, `_BandApp/reminders/<memberId>.json`). The token helper gets a Cron Trigger (every 5 min) and **one KV entry** with the next 8 weeks' reminders (event titles, times, places, push addresses), uploaded by the members' apps | Phones can't schedule notifications for a web app; a timer needs the data somewhere outside HiDrive. The band accepted titles/times on Cloudflare; a stored HiDrive login on the worker was rejected as riskier |

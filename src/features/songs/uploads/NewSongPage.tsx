@@ -11,6 +11,7 @@ import { useCheckedFile } from './useCheckedFile';
 import { useUploadActions } from './useUploadActions';
 import { useUploadContext } from './useUploadContext';
 import styles from '../SongDetail.module.css';
+import { useBack } from '@/ui/layout/navigation';
 
 type LyricsMode = 'none' | 'file' | 'type';
 
@@ -18,6 +19,7 @@ type LyricsMode = 'none' | 'file' | 'type';
 export function NewSongPage() {
   const { t } = useTranslation('uploads');
   const navigate = useNavigate();
+  const { goBack } = useBack();
   const notify = useNotify();
   const { store, songs } = useLibrary();
   const { pickerProps, defaultFolder } = useUploadContext();
@@ -172,7 +174,7 @@ export function NewSongPage() {
           <Button type="submit" variant="primary" size="lg" disabled={busy || !title.trim() || bpmInvalid || (lyricsMode === 'file' && !lyricsFile.file)}>
             {t('create_song')}
           </Button>
-          <Button variant="ghost" size="lg" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="lg" onClick={() => goBack()}>
             {t('common:actions.cancel')}
           </Button>
         </div>

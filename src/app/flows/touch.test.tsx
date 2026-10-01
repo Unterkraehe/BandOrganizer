@@ -53,3 +53,44 @@ describe('Touch behaviour (phone)', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Setlists' })).toBeInTheDocument();
   });
 });
+
+describe('← back on every sub-screen (v0.15.0, R-UX-09)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('opened from outside (deep link): back walks up to the parent screens; tabs have no back', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/settings/band');
+    await screen.findByRole('heading', { level: 1, name: 'Band bearbeiten' });
+    await user.click(screen.getByRole('button', { name: 'Zurück' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Einstellungen' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Zurück' })).not.toBeInTheDocument();
+  });
+
+  it('song → song list', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/songs');
+    await user.click(await screen.findByRole('link', { name: /Rust and Thunder/ }));
+    await screen.findByRole('heading', { level: 1, name: 'Rust and Thunder' });
+    await user.click(screen.getByRole('button', { name: 'Zurück' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Songs' })).toBeInTheDocument();
+  });
+});
+
+describe('Screen motion shows the direction (v0.15.0, R-UX-09)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('deeper = push, back = back, tab = fade', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/songs');
+    const direction = () => document.querySelector('[data-nav]')?.getAttribute('data-nav');
+    await user.click(await screen.findByRole('link', { name: /Rust and Thunder/ }));
+    await screen.findByRole('heading', { level: 1, name: 'Rust and Thunder' });
+    expect(direction()).toBe('push');
+    await user.click(screen.getByRole('button', { name: 'Zurück' }));
+    await screen.findByRole('heading', { level: 1, name: 'Songs' });
+    expect(direction()).toBe('back');
+    await user.click(screen.getByRole('link', { name: 'Kalender' }));
+    await screen.findByRole('heading', { level: 1, name: 'Kalender' });
+    expect(direction()).toBe('tab');
+  });
+});

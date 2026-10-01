@@ -97,11 +97,12 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 | Push notifications | Client: `features/notifications/push.ts` (subscribe, `sendPush`); service worker: `public/push-sw.js`; worker: `token-helper/worker.js` (`/push`) |
 | Timed notifications (reminders) | `features/notifications/reminders.ts` computes every member's jobs for 8 weeks (`computeReminders`), `ReminderProvider` uploads them (`PUT /reminders`, only after a fresh calendar load – `CalendarStore.isFresh()` – and only if the hash changed); the worker's `scheduled()` (Cron every 5 min) sends jobs due in the last 5 min. Texts are rendered in the app at upload time: absolute dates only, never "Morgen" |
 | Search contribution | Add documents in `features/search/SearchProvider.tsx` (+ result route); text matching via `core/search/normalize.ts` |
+| ← back / screen motion | `Page` shows ← automatically on every non-tab screen (`ui/layout/navigation.ts`: `useBack()` = previous screen in the app history, else `parentOf()`; tab roots + route parents come from the feature registry via `NavigationContext` in `app/routes.tsx`; a route may set `parent`). Forms and full-screen views close with `useBack().goBack()`, never `navigate(-1)` (leaves the app after a link from outside). Motion direction (`push`/`back`/`tab`) is set by `AppShell` (`data-nav`) |
 | Swipe / touch rules | `ui/swipe.ts`, `ui/layout/useTouchGuards.ts`; tab screens set `html[data-swipe-tabs]` (`touch-action: pan-y`) |
 
 ## 6. Recipes
 
-**New screen in an existing feature:** page component → route in the feature's `index.ts` (`routes`) → texts in `locales/de/<ns>.json` → test in `src/app/flows/<feature>.test.tsx` → update the feature file in `docs/features/`.
+**New screen in an existing feature:** check R-UX-09 first (one home, reachable in context, one primary action) → page component in `Page` (← back comes automatically) → route in the feature's `index.ts` (`routes`, `parent` if "path minus last part" is wrong) → navigation map (`features/12-main-menu.md` §4.5) → texts in `locales/de/<ns>.json` → test in `src/app/flows/<feature>.test.tsx` → update the feature file in `docs/features/`.
 
 **New feature:** `src/features/<name>/` with `index.ts` (`FeatureRegistration`), list it in `features/index.ts`, text namespace + `core/i18n/index.ts`, a Provider in `app/App.tsx` if it has a store, search documents, feature file + overview index + roadmap, `whatsNew.json`.
 
@@ -143,6 +144,6 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 - `usePwaUpdate()` registers the service worker – call it only in `UpdateToast`; elsewhere use `checkForUpdate()` / `applyUpdate()` (`core/pwa/usePwa.ts`).
 - `usePlayer()` in a list screen = full re-render ~4×/s while music plays (see §5).
 
-## 8. Open items (as of v0.14.5)
+## 8. Open items (as of v0.15.0)
 
 Device tests still open: S1/S2 (ETag, file IDs after rename), S4 (share link works as subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with the keyboard on iPhone/Android, push notifications on real devices, `POST /file/copy`. Everything else planned is built; the band test phase decides 1.0.0 (`03-roadmap.md`).

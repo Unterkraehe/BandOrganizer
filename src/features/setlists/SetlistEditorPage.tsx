@@ -15,6 +15,7 @@ import { newBlock } from './store';
 import { useSetlists } from './SetlistProvider';
 import { useSetlistInfo } from './useSetlistInfo';
 import styles from './Setlists.module.css';
+import { useBack } from '@/ui/layout/navigation';
 
 /* ---------------- draft with undo/redo (F7 §4.3) ---------------- */
 
@@ -98,6 +99,7 @@ export function SetlistEditorPage() {
 function Editor({ initial, version: initialVersion }: { initial: Draft; version: string | undefined }) {
   const { t } = useTranslation('setlists');
   const navigate = useNavigate();
+  const { goBack } = useBack();
   const notify = useNotify();
   const wide = useIsWide();
   const { store } = useSetlists();
@@ -368,7 +370,7 @@ function Editor({ initial, version: initialVersion }: { initial: Draft; version:
             <span style={{ display: 'flex', gap: 'var(--space-1)' }}>
               <IconButton label={t('editor.undo')} icon={<Undo2 size={18} />} disabled={!history.past.length} onClick={() => dispatch({ type: 'undo' })} />
               <IconButton label={t('editor.redo')} icon={<Redo2 size={18} />} disabled={!history.future.length} onClick={() => dispatch({ type: 'redo' })} />
-              <Button variant="ghost" onClick={() => navigate(-1)}>
+              <Button variant="ghost" onClick={() => goBack()}>
                 {t('common:actions.cancel')}
               </Button>
               <Button variant="primary" disabled={!dirty || saving || !s.name.trim()} onClick={() => void save()}>

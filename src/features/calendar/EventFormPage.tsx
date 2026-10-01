@@ -14,6 +14,7 @@ import { ScopeDialog } from './ScopeDialog';
 import type { EditScope, EventInput } from './store';
 import { addDays, fromLocal, toLocal, todayLocal, weekday } from './time';
 import styles from './Calendar.module.css';
+import { useBack } from '@/ui/layout/navigation';
 
 type RepeatMode = 'never' | 'weekly' | 'biweekly' | 'monthly' | 'monthlyDay' | 'custom';
 
@@ -82,6 +83,7 @@ export function EventFormPage() {
 function EventForm({ type, occ, date: presetDate }: { type: EventType; occ?: Occurrence; date: string | null }) {
   const { t } = useTranslation('calendar');
   const navigate = useNavigate();
+  const { goBack } = useBack();
   const notify = useNotify();
   const { store, state } = useCalendar();
   const { currentMember, members } = useSession();
@@ -190,7 +192,7 @@ function EventForm({ type, occ, date: presetDate }: { type: EventType; occ?: Occ
     const failed = (e: unknown) => notify({ message: e instanceof ConflictError ? t('form.conflict') : t('form.failed') });
     if (occ) {
       store.update(occ, input, scope).catch(failed);
-      navigate(-1);
+      goBack();
     } else {
       const id = newId('e');
       store.create(input, id).catch(failed);
@@ -332,7 +334,7 @@ function EventForm({ type, occ, date: presetDate }: { type: EventType; occ?: Occ
           <Button type="submit" variant="primary" size="lg">
             {t('form.save')}
           </Button>
-          <Button variant="ghost" size="lg" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="lg" onClick={() => goBack()}>
             {t('common:actions.cancel')}
           </Button>
         </div>

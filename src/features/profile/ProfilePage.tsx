@@ -1,14 +1,14 @@
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/core/session/BandSession';
 import { Page } from '@/ui';
 import { ProfileForm } from './ProfileForm';
+import { useBack } from '@/ui/layout/navigation';
 
 /** Edit own profile (F2 §4.3). */
 export function ProfilePage() {
   const { t } = useTranslation('profile');
   const { currentMember, members, updateProfile } = useSession();
-  const navigate = useNavigate();
+  const { goBack } = useBack();
   if (!currentMember) return null;
   return (
     <Page title={t('form.editTitle')}>
@@ -19,9 +19,9 @@ export function ProfilePage() {
         submitLabel={t('form.submitEdit')}
         onSubmit={async (input) => {
           await updateProfile(input);
-          navigate(-1);
+          goBack();
         }}
-        onCancel={() => navigate(-1)}
+        onCancel={() => goBack()}
       />
     </Page>
   );

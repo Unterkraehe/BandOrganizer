@@ -1,6 +1,6 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useNotify } from '@/app/notify/NotifyProvider';
 import { useSession } from '@/core/session/BandSession';
 import { ConflictError } from '@/core/storage';
@@ -10,6 +10,7 @@ import type { DetailsChange } from './library';
 import { cleanTitle, KEYS, TUNING_SUGGESTIONS, type Song } from './model';
 import { TagDialog } from './TagDialog';
 import styles from './SongDetail.module.css';
+import { useBack } from '@/ui/layout/navigation';
 
 /** "Song bearbeiten" (F4 §4.4). All fields except the title are optional. */
 export function SongEditPage() {
@@ -29,7 +30,7 @@ function splitKey(key: string | null): { note: string; minor: boolean } {
 
 function SongEditForm({ song }: { song: Song }) {
   const { t } = useTranslation('songs');
-  const navigate = useNavigate();
+  const { goBack } = useBack();
   const notify = useNotify();
   const { store, tags } = useLibrary();
   const { members } = useSession();
@@ -90,7 +91,7 @@ function SongEditForm({ song }: { song: Song }) {
         original,
       );
       notify({ message: t('edit.saved') });
-      navigate(-1);
+      goBack();
     } catch (e) {
       setBusy(false);
       if (e instanceof ConflictError) {
@@ -171,7 +172,7 @@ function SongEditForm({ song }: { song: Song }) {
           <Button type="submit" variant="primary" size="lg" disabled={busy || !title.trim() || bpmInvalid}>
             {t('edit.save')}
           </Button>
-          <Button variant="ghost" size="lg" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="lg" onClick={() => goBack()}>
             {t('common:actions.cancel')}
           </Button>
         </div>

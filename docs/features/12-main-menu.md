@@ -97,9 +97,38 @@ Simple list of the remaining navigation items (Setlists, Mitglieder, Einstellung
 
 ### 4.4 Top bar
 
-- Left: screen title (on sub-screens: back arrow + title).
+- Left: screen title; on every screen that is not a bottom-bar tab (or "Mehr" item on phones): **← back** + title (v0.15.0, `Page` + `useBack`). Back = the previous screen in the app's history; after a link from outside (notification, reload, shared link) = the parent screen (path without its last part, e.g. `/songs/x/edit` → `/songs/x` → `/songs`).
 - Right: search icon, profile avatar.
 - On the start screen the title is the app name "Overload App" (from `app.name`, R-I18N-07).
+
+### 4.5 Navigation map (R-UX-09)
+
+Tabs (phone bottom bar: Start · Songs · Kalender · Chat · Mehr; "Mehr" holds Setlists, Mitglieder, Einstellungen). Indented = opened from the line above, ← back leads there. *Italic* = also reachable from elsewhere.
+
+```
+Start (/)                       widgets: chat → Chat; next events → Termin (event cards: "Setlist üben" → Setlist-Modus)
+Songs (/songs)                  list / folders, search, tags; ⋯ per row
+  Song (/songs/:id)             *from search, chat cards, setlists, mini player*
+    Song bearbeiten (/edit) · Songtext (/lyrics) · Zusammenführen (/merge)
+    Übungsansicht (/practice)   full-screen overlay, ✕ closes
+  Neuer Song (/songs/new)
+  Songs in Setlist-Modus (/songs?setlist=…)   *from setlist, event, chat card* – to be replaced by the player queue (plan step 2)
+Kalender (/calendar)            list / month (phone: day panel)
+  Termin (/calendar/:id[/:date])  *from start, chat info lines, notifications, setlist*
+    Bearbeiten (/edit)
+  Neuer Termin (/calendar/new) · Kalender abonnieren (/calendar/subscribe)
+Chat (/chat)                    *?message= from search / notifications*
+Mehr (/more)
+  Setlists (/setlists)
+    Setlist (/setlists/:id)     *from event, chat card, song "In Setlists"*
+      Bearbeiten (/edit) · Bühnenansicht (/stage, full screen, ✕) · Drucken (/print)
+  Mitglieder (/members) → Mitglied (/members/:id)
+  Einstellungen (/settings) → Band (/settings/band) · Tags (/settings/tags) · Profil (/profile)
+Suche (/search, top bar 🔍)     results open the item's own screen
+Mini player (all screens)       → song (plan step 2: → full-screen player)
+```
+
+Planned (see roadmap "Navigation & clarity"): step 2 one full-screen player instead of song-page player + practice view, setlist playback in the player; step 3 calmer song page; step 4 setlists unified; step 5 review of all screens.
 
 ## 5. Setlist Mode (cross-feature)
 

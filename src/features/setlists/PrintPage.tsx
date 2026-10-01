@@ -1,13 +1,14 @@
 import { ArrowLeft, Printer } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Button } from '@/ui';
 import { songEntries } from './model';
 import { PrintSheet } from './PrintSheet';
 import { useSetlists } from './SetlistProvider';
 import { useSetlistInfo } from './useSetlistInfo';
 import styles from './Setlists.module.css';
+import { useBack } from '@/ui/layout/navigation';
 
 const MY_NOTES_KEY = 'bandapp.print.myNotes';
 const ARTISTS_KEY = 'bandapp.print.artists';
@@ -19,7 +20,7 @@ const standFormat = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2
 export function PrintPage() {
   const { t } = useTranslation('setlists');
   const { setlistId } = useParams();
-  const navigate = useNavigate();
+  const { goBack } = useBack();
   const { store, setlists, state } = useSetlists();
   const { songById } = useSetlistInfo();
   const setlist = setlists.find((s) => s.id === setlistId);
@@ -60,7 +61,7 @@ export function PrintPage() {
   return (
     <div className={styles.printWrap}>
       <div className={styles.printControls}>
-        <Button variant="ghost" icon={<ArrowLeft size={18} />} onClick={() => navigate(-1)}>
+        <Button variant="ghost" icon={<ArrowLeft size={18} />} onClick={() => goBack()}>
           {t('print.back')}
         </Button>
         <label style={{ display: 'inline-flex', gap: 'var(--space-2)', alignItems: 'center' }}>

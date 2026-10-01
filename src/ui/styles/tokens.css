@@ -55,6 +55,8 @@
   /* Motion */
   --dur-fast: 150ms;
   --dur: 200ms;
+  /* screen changes (push / back / tab) */
+  --dur-screen: 220ms;
   --ease: cubic-bezier(0.2, 0, 0, 1);
 }
 

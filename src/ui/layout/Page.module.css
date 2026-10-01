@@ -30,6 +30,12 @@
   background: transparent;
 }
 
+.back {
+  flex: none;
+  /* optically aligned with the content edge below */
+  margin-left: calc(-1 * var(--space-2));
+}
+
 .title {
   flex: 1;
   min-width: 0;

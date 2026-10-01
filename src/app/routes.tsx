@@ -8,25 +8,33 @@ import { SearchOverlay } from '@/features/search/SearchOverlay';
 import { SearchPage } from '@/features/search/SearchPage';
 import { SearchProvider } from '@/features/search/SearchProvider';
 import { AppShell } from '@/ui/layout/AppShell';
+import { NavigationContext, type NavigationInfo } from '@/ui/layout/navigation';
 import { TopBarExtraContext } from '@/ui/layout/TopBarExtra';
 import { NotFoundPage } from './NotFoundPage';
 
 /** Routes are generated from the feature registry (F3 §6.1, §6.3). */
 export function buildRoutes(features: FeatureRegistration[]): RouteObject[] {
+  // Tab roots have no ← back; every other screen does (F3 §4.4, R-UX-09)
+  const navigation: NavigationInfo = {
+    roots: [...features.map((f) => f.path), '/more'],
+    routes: [...features.flatMap((f) => f.routes ?? []).map(({ path, parent }) => ({ path, parent })), { path: '/search' }],
+  };
   return [
     {
       element: (
-        <SearchProvider>
-          <TopBarExtraContext.Provider value={<SearchButton />}>
-            <AppShell features={features} bottomSlot={<MiniPlayer />}>
-              <Outlet />
-              {/* New screens start at the top; going back restores the list position (F3 §6.3) */}
-              <ScrollRestoration />
-            </AppShell>
-          </TopBarExtraContext.Provider>
-          <SearchOverlay />
-          <NotificationNavigator />
-        </SearchProvider>
+        <NavigationContext.Provider value={navigation}>
+          <SearchProvider>
+            <TopBarExtraContext.Provider value={<SearchButton />}>
+              <AppShell features={features} bottomSlot={<MiniPlayer />}>
+                <Outlet />
+                {/* New screens start at the top; going back restores the list position (F3 §6.3) */}
+                <ScrollRestoration />
+              </AppShell>
+            </TopBarExtraContext.Provider>
+            <SearchOverlay />
+            <NotificationNavigator />
+          </SearchProvider>
+        </NavigationContext.Provider>
       ),
       children: [
         ...features.flatMap((feature) => [

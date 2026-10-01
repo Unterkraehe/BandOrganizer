@@ -1,4 +1,6 @@
-"""Layout shifts (CLS) on every main screen, incl. shifts right after taps. Target: ≈ 0 everywhere (R-UI-11)."""
+"""Layout shifts (CLS) on every main screen, incl. shifts right after taps. Target: ≈ 0 everywhere (R-UI-11).
+The deliberate slide of a whole new screen (R-UX-09, `AppShell` `data-nav`) is listed separately and not counted:
+only shifts whose sole source is the screen box itself; anything moving inside a screen still counts."""
 import json
 from common import log, session
 
@@ -17,8 +19,10 @@ with session(query='?demo-songs=40', scheme='light') as s:
         pg.evaluate("window.__ls.length=0")
         click(); pg.wait_for_timeout(2200)
         ls=pg.evaluate("window.__ls")
+        slide=[x for x in ls if x['s'] and all('_screen_' in src for src in x['s'])]
+        ls=[x for x in ls if x not in slide]
         tot=round(sum(x['v'] for x in ls),4)
-        log(f'{name:28s} CLS={tot}', json.dumps(ls[:3]) if tot>0.001 else '')
+        log(f'{name:28s} CLS={tot}', json.dumps(ls[:3]) if tot>0.001 else '', f'(screen slide {round(sum(x["v"] for x in slide),4)})' if slide else '')
     nav=lambda n: (lambda: pg.locator('nav').get_by_role('link', name=n).first.click())
     for n in ['Start','Songs','Kalender','Chat','Mehr','Start','Songs']:
         visit('tab '+n, nav(n))

@@ -19,8 +19,11 @@ export interface FeatureRegistration {
   element: ReactNode;
   /** Hook returning a count for a badge in the navigation (e.g. unread chat messages) */
   useBadge?: () => number;
-  /** Additional routes of this feature (details, sub-screens) */
-  routes?: { path: string; element: ReactNode }[];
+  /**
+   * Additional routes of this feature (details, sub-screens). `parent` = where ← back leads after a link
+   * from outside (default: the path without its last part, F3 §4.4).
+   */
+  routes?: { path: string; element: ReactNode; parent?: string }[];
 }
 
 export function sortFeatures(features: FeatureRegistration[]): FeatureRegistration[] {

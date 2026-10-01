@@ -1,4 +1,8 @@
 {
+  "0.15.0": [
+    "Zurück-Pfeil: Jede Unterseite (Song, Termin, Setlist, Bearbeiten …) hat oben links jetzt einen ← Zurück-Pfeil – er bringt dich dorthin, wo du herkamst, oder eine Ebene höher, wenn du über einen Link gekommen bist.",
+    "Bewegung zeigt den Weg: Neue Seiten gleiten von rechts herein, beim Zurückgehen von links; zwischen den Reitern unten wird weich übergeblendet."
+  ],
   "0.14.5": [
     "Übungsansicht auf dem Handy: Bei Songs mit mehreren Versionen passen die Regler wieder auf den Bildschirm – kein seitliches Scrollen mehr. Lange Dateinamen werden mit „…“ gekürzt."
   ],

@@ -1,7 +1,6 @@
 import { ImageUp, Trash2 } from 'lucide-react';
 import { useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { sanitizeFolderName } from '@/core/band/band';
 import { LogoFileError, type LogoVariant } from '@/core/band/logo';
 import { DEFAULT_BAND_COLOR } from '@/core/color/bandTheme';
@@ -9,11 +8,12 @@ import { useSession } from '@/core/session/BandSession';
 import { basename, dirname, joinPath, ConflictError } from '@/core/storage';
 import { BandColorPicker, Button, Page, Section, TextField } from '@/ui';
 import styles from './Settings.module.css';
+import { useBack } from '@/ui/layout/navigation';
 
 /** Band name, color, upload folder and logo (design system §8, F10 §4). Visible to all members. */
 export function BandSettingsPage() {
   const { t } = useTranslation('band');
-  const navigate = useNavigate();
+  const { goBack } = useBack();
   const { band, updateBandSettings } = useSession();
   const [name, setName] = useState(band?.bandName ?? '');
   const [color, setColor] = useState(band?.branding.color ?? DEFAULT_BAND_COLOR);
@@ -36,7 +36,7 @@ export function BandSettingsPage() {
         branding: { ...band.branding, color },
         uploads: { ...band.uploads, root },
       });
-      navigate(-1);
+      goBack();
     } catch (error) {
       setMessage(error instanceof ConflictError ? t('settings.conflict') : t('settings.failed'));
       setBusy(false);
@@ -64,7 +64,7 @@ export function BandSettingsPage() {
           <Button type="submit" variant="primary" disabled={busy}>
             {t('settings.save')}
           </Button>
-          <Button variant="ghost" onClick={() => navigate(-1)} disabled={busy}>
+          <Button variant="ghost" onClick={() => goBack()} disabled={busy}>
             {t('common:actions.cancel')}
           </Button>
         </div>

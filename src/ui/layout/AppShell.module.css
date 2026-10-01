@@ -289,12 +289,48 @@
   }
 }
 
-/* Screen change by swipe: a short fade (opacity only – a transform would re-anchor fixed elements such as the chat input) */
-.screen[data-swipe] {
-  animation: screen-in 160ms var(--ease);
+/* Screen changes (R-UX-09, design system §9): a deeper screen slides in from the right, going back from the
+   left, tabs fade. Animated with `left` on a relatively positioned box, not `transform`: a transform would
+   re-anchor fixed elements inside the screen (chat input, full-screen views) for the duration. */
+.screen[data-nav] {
+  position: relative;
 }
 
-@keyframes screen-in {
+.screen[data-nav='push'] {
+  animation: screen-push var(--dur-screen) var(--ease);
+}
+
+.screen[data-nav='back'] {
+  animation: screen-back var(--dur-screen) var(--ease);
+}
+
+.screen[data-nav='tab'] {
+  animation: screen-fade var(--dur-screen) var(--ease);
+}
+
+@keyframes screen-push {
+  from {
+    left: 40px;
+    opacity: 0;
+  }
+  to {
+    left: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes screen-back {
+  from {
+    left: -40px;
+    opacity: 0;
+  }
+  to {
+    left: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes screen-fade {
   from {
     opacity: 0;
   }
