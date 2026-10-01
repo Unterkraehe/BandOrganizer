@@ -84,6 +84,58 @@
   outline: none;
 }
 
+.playRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+@media (min-width: 768px) {
+  .playRow {
+    grid-template-columns: repeat(2, max-content);
+  }
+}
+
+/* two large buttons side by side on a narrow phone: less side padding so "Bühnenansicht" fits at 320 px (R-UI-14) */
+@media (max-width: 479px) {
+  .playRow > button {
+    padding-inline: var(--space-3);
+  }
+}
+
+/* very narrow phones (320 px): the labels alone, without icons */
+@media (max-width: 359px) {
+  .playRow > button > [aria-hidden='true'] {
+    display: none;
+  }
+}
+
+/* the linked setlist on an event: one tappable card that opens the setlist page */
+.setlistCard {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  text-decoration: none;
+  color: inherit;
+}
+
+.setlistCardTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+  min-width: 0;
+}
+
+.setlistCardTitle > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

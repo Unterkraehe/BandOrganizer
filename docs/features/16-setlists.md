@@ -92,7 +92,8 @@ Setlist "Stadtfest 2026"                     (linked to: Auftritt Sa, 10. Okt.)
 Read view (default for everyone):
 - Header: name, linked event(s), total duration, song count
 - Blocks with numbered songs, interludes, arrows, notes (public + my personal ones)
-- Actions: **"Setlist abspielen"** (until v0.15 "Setlist üben"; plays in the player, F3 §5), **"Bühnenansicht"**, **"Drucken"**, "Bearbeiten", "Duplizieren", "Mit Termin verknüpfen"
+- **v0.18.0 (R-UX-09):** the setlist page is the one setlist screen for every entry point (list, event card, chat card, player queue). Layout like the song page: ← · ✎ · ⋯ in the top bar, title large below, one action pair **"Abspielen"** + **"Bühnenansicht"**; ⋯ = Drucken, Duplizieren, Mit Termin verknüpfen. The editor closes after "Speichern" like every form (back where you came from); a new or duplicated setlist shows its page instead. Row menu in the list also has "Bearbeiten".
+- Actions (original design): **"Setlist abspielen"** (until v0.15 "Setlist üben"; plays in the player, F3 §5), **"Bühnenansicht"**, **"Drucken"**, "Bearbeiten", "Duplizieren", "Mit Termin verknüpfen"
 - My personal notes can be edited inline here without entering edit mode (small ✎ next to each song).
 
 ### 4.3 Setlist-Editor (`/setlists/:id/edit`)

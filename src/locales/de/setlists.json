@@ -34,7 +34,9 @@
     "delete": "Löschen",
     "deleted": "Setlist gelöscht",
     "menu": "Aktionen für {{name}}",
-    "open": "Setlist öffnen"
+    "open": "Setlist öffnen",
+    "editSetlist": "Setlist bearbeiten",
+    "play": "Abspielen"
   },
   "linkedTo": "Termine",
   "noEvent": "Mit keinem Termin verknüpft",
@@ -131,7 +133,8 @@
     "choose": "Setlist verknüpfen",
     "newForEvent": "Neue Setlist für diesen Termin",
     "change": "Andere Setlist",
-    "removed": "Verknüpfung entfernt"
+    "removed": "Verknüpfung entfernt",
+    "menu": "Weitere Aktionen zur Setlist dieses Termins"
   },
   "mode": {
     "banner": "Setlist: {{name}}",

@@ -26,7 +26,7 @@ export function NewSetlistDialog({ onClose, defaultName, defaultKind, onCreated 
       store.create(name.trim() || t('newDefaultName'), kind, undefined, null, id).catch(() => notify({ message: t('editor.failed') }));
       void Promise.resolve(onCreated?.(id)).catch(() => undefined);
       onClose();
-      navigate(`/setlists/${id}/edit`);
+      navigate(`/setlists/${id}/edit`, { state: { created: true } });
       return;
     }
     setBusy(true);
@@ -34,7 +34,7 @@ export function NewSetlistDialog({ onClose, defaultName, defaultKind, onCreated 
       const created = await store.duplicate(source, name.trim() || t('copyOf', { name: setlists.find((s) => s.id === source)?.name ?? '' }));
       await onCreated?.(created.id);
       onClose();
-      navigate(`/setlists/${created.id}/edit`);
+      navigate(`/setlists/${created.id}/edit`, { state: { created: true } });
     } catch {
       setBusy(false);
       notify({ message: t('editor.failed') });

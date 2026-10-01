@@ -22,6 +22,20 @@
   }
 }
 
+/* two large buttons side by side on a narrow phone: less side padding so "Bühnenansicht" fits at 320 px (R-UI-14) */
+@media (max-width: 479px) {
+  .playRow > button {
+    padding-inline: var(--space-3);
+  }
+}
+
+/* very narrow phones (320 px): the labels alone, without icons */
+@media (max-width: 359px) {
+  .playRow > button > [aria-hidden='true'] {
+    display: none;
+  }
+}
+
 .message {
   text-align: center;
   color: var(--warning);

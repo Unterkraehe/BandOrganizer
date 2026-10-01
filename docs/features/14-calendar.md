@@ -77,7 +77,7 @@ One shared band calendar for gigs, rehearsals, absences and other dates — with
   - My answer: three large buttons **"Ich bin dabei"** / **"Vielleicht"** / **"Ich kann nicht"**, optional short comment ("komme 30 Min. später", "kläre das bis Freitag")
   - Lists: Zugesagt · Vielleicht · Abgesagt · Abwesend (from absences, automatic) · Noch offen – with avatars
 - **Conflict hint** if members are absent: "Tom ist abwesend (Urlaub 12.–19. Okt.)"
-- Setlist: name, song count, duration, "Setlist üben", "Setlist öffnen"; if none: "Setlist verknüpfen"
+- Setlist (v0.18.0): one tappable card (name, songs, duration → the setlist page, ← returns to the event), "Setlist abspielen", "Setlist bearbeiten" (not just "Bearbeiten" – the event has its own), ⋯ = Andere Setlist / Verknüpfung entfernen; if none: "Setlist verknüpfen", "Neue Setlist für diesen Termin" (after saving the new setlist shows its page, ← leads back to the event)
 - Actions: "Bearbeiten", "Zum Kalender hinzufügen" (.ics, §6.5), "Absagen" (cancel event, §6.3), "Löschen"
 - Footer: "Erstellt von Lisa · zuletzt geändert von Tom am …"
 

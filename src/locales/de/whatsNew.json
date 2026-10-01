@@ -1,4 +1,8 @@
 {
+  "0.18.0": [
+    "Setlists überall gleich: Die Setlist am Termin ist jetzt eine Karte – antippen öffnet dieselbe Setlist-Seite wie unter „Setlists“, mit ← geht es zurück zum Termin. Direkt am Termin: „Setlist abspielen“ und „Setlist bearbeiten“.",
+    "Aufgeräumte Setlist-Seite: „Abspielen“ und „Bühnenansicht“ vorne, Bearbeiten oben (✎), Drucken, Duplizieren und Termin verknüpfen im ⋯-Menü. Nach dem Speichern im Editor kommst du dorthin zurück, wo du warst."
+  ],
   "0.17.0": [
     "Aufgeräumte Song-Seite: Oben steht der ganze Titel, darunter nur „Abspielen“ und „Üben“. Alles Weitere findest du in den Reitern Songtext, Notizen, Versionen und Infos – Hören und Üben passiert im Player.",
     "Notizen: „Für alle“ und „Nur für mich“ liegen jetzt zusammen im Reiter Notizen. Ohne Songtext gibt es einen Knopf „Songtext hinzufügen“ mit allen drei Wegen."

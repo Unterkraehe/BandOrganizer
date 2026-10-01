@@ -91,6 +91,7 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 | Other members' changes while the app is open | Polling while visible, reading only changed files by `FileEntry.version`: chat (`ChatStore.poll`), calendar (`CalendarStore.refresh` + `useWatchCalendar()` on calendar screens for 20 s instead of 60 s). Apply results only to entries that didn't change locally during the read (see `refresh`) |
 | One feature tells another about a change | System event bus `core/events.ts` (`emitSystemEvent` / `onSystemEvent`); the chat turns events into info lines and pushes |
 | Play a setlist | `useStartSetlist()(setlistId)` (`setlists/SetlistModeProvider.tsx`) from the tap: plays the first playable song (iOS unlock) and opens `/player?view=queue`. Never navigate to `/songs?setlist=` (old address, only redirects) |
+| Open a setlist editor for a new setlist | `navigate(`/setlists/${id}/edit`, { state: { created: true } })` – after saving it shows the setlist page (replace); otherwise the editor goes back (`useBack`) |
 | Open the player | `navigate('/player')` (+ `?song=<id>&view=practice` from a song); it is an overlay (`overlays` in `app/routes.tsx` → no screen slide), closes with `useBack` after its 200 ms closing animation |
 | Player state in lists | `usePlaySong()` (track + status) or `usePlayerSelect(selector)` – **never** `usePlayer()` outside player UI (position changes ~4×/s) |
 | Long lists (> 60 rows) | `ui/VirtualList` with fixed-height rows (R-UI-13) |
@@ -148,6 +149,6 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 - `usePwaUpdate()` registers the service worker – call it only in `UpdateToast`; elsewhere use `checkForUpdate()` / `applyUpdate()` (`core/pwa/usePwa.ts`).
 - `usePlayer()` in a list screen = full re-render ~4×/s while music plays (see §5).
 
-## 8. Open items (as of v0.17.0)
+## 8. Open items (as of v0.18.0)
 
 Device tests still open: S1/S2 (ETag, file IDs after rename), S4 (share link works as subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with the keyboard on iPhone/Android, push notifications on real devices, `POST /file/copy`. Everything else planned is built; the band test phase decides 1.0.0 (`03-roadmap.md`).

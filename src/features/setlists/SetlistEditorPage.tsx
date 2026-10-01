@@ -1,7 +1,7 @@
 import { ArrowDown, ChevronDown, ChevronUp, GripVertical, MessageSquarePlus, Plus, Redo2, Trash2, Undo2 } from 'lucide-react';
 import { useEffect, useReducer, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useBlocker, useNavigate, useParams } from 'react-router-dom';
+import { useBlocker, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useNotify } from '@/app/notify/NotifyProvider';
 import { newId } from '@/core/data/ids';
 import { formatDuration, formatMinutes } from '@/core/i18n/format';
@@ -100,6 +100,7 @@ function Editor({ initial, version: initialVersion }: { initial: Draft; version:
   const { t } = useTranslation('setlists');
   const navigate = useNavigate();
   const { goBack } = useBack();
+  const location = useLocation();
   const notify = useNotify();
   const wide = useIsWide();
   const { store } = useSetlists();
@@ -147,6 +148,9 @@ function Editor({ initial, version: initialVersion }: { initial: Draft; version:
       dispatch({ type: 'reset', draft: next });
       setSaved(next);
       notify({ message: t('editor.saved') });
+      // like every form: done → back where you came from; a new setlist shows its page (R-UX-06, v0.18.0)
+      if ((location.state as { created?: boolean } | null)?.created) navigate(`/setlists/${s.id}`, { replace: true });
+      else goBack();
     } catch (error) {
       if (error instanceof ConflictError) {
         await store.load();

@@ -1,11 +1,11 @@
-import { ListMusic, Plus, Unlink } from 'lucide-react';
+import { ChevronRight, ListMusic, Pencil, Play, Plus, Repeat, Unlink } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { useNotify } from '@/app/notify/NotifyProvider';
 import { useCalendar } from '@/features/calendar/CalendarProvider';
 import type { Occurrence } from '@/features/calendar/model';
-import { Button, Dialog } from '@/ui';
+import { Button, Dialog, Menu } from '@/ui';
 import { NewSetlistDialog } from './NewSetlistDialog';
 import { useStartSetlist } from './SetlistModeProvider';
 import { useSetlists } from './SetlistProvider';
@@ -32,29 +32,31 @@ export function EventSetlist({ occ, title }: { occ: Occurrence; title: string })
       <h2 className={styles.groupTitle}>{t('title')}</h2>
       {setlist ? (
         <>
-          <p>
-            <Link to={`/setlists/${setlist.id}`} style={{ fontWeight: 600 }}>
-              {setlist.name}
-            </Link>{' '}
-            <span className={styles.meta}>
-              · {t('songs', { count: label(setlist).songs })} · {label(setlist).minutes}
+          {/* the same setlist page as from "Setlists" – one home (R-UX-09); ← back returns to the event */}
+          <Link to={`/setlists/${setlist.id}`} className={styles.setlistCard}>
+            <span className={styles.setlistCardTitle}>
+              <ListMusic size={18} aria-hidden="true" />
+              <span>{setlist.name}</span>
+              <ChevronRight size={18} aria-hidden="true" style={{ marginLeft: 'auto', flex: 'none' }} />
             </span>
-          </p>
+            <span className={styles.meta}>
+              {t('songs', { count: label(setlist).songs })} · {label(setlist).minutes}
+            </span>
+          </Link>
           <div className={styles.actions}>
-            <Button
-              variant="primary"
-              icon={<ListMusic size={18} />}
-              onClick={() => startSetlist(setlist.id)}
-            >
+            <Button variant="primary" icon={<Play size={18} />} onClick={() => startSetlist(setlist.id)}>
               {t('actions.practice')}
             </Button>
-            <Button onClick={() => navigate(`/setlists/${setlist.id}`)}>{t('actions.open')}</Button>
-            <Button variant="ghost" onClick={() => setChoosing(true)}>
-              {t('link.change')}
+            <Button icon={<Pencil size={18} />} onClick={() => navigate(`/setlists/${setlist.id}/edit`)}>
+              {t('actions.editSetlist')}
             </Button>
-            <Button variant="ghost" icon={<Unlink size={18} />} onClick={() => void link(null).then(() => notify({ message: t('link.removed') }))}>
-              {t('link.remove')}
-            </Button>
+            <Menu
+              label={t('link.menu')}
+              items={[
+                { label: t('link.change'), icon: <Repeat size={18} />, onSelect: () => setChoosing(true) },
+                { label: t('link.remove'), icon: <Unlink size={18} />, onSelect: () => void link(null).then(() => notify({ message: t('link.removed') })) },
+              ]}
+            />
           </div>
         </>
       ) : (

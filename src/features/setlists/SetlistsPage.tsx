@@ -68,6 +68,7 @@ export function SetlistsPage() {
               label: t('actions.practice'),
               onSelect: () => startSetlist(s.id),
             },
+            { label: t('actions.edit'), onSelect: () => navigate(`/setlists/${s.id}/edit`) },
             { label: t('actions.stage'), onSelect: () => navigate(`/setlists/${s.id}/stage`) },
             { label: t('actions.print'), onSelect: () => navigate(`/setlists/${s.id}/print`) },
             {
@@ -75,7 +76,7 @@ export function SetlistsPage() {
               onSelect: () =>
                 void store
                   .duplicate(s.id, t('copyOf', { name: s.name }))
-                  .then((c) => navigate(`/setlists/${c.id}/edit`))
+                  .then((c) => navigate(`/setlists/${c.id}/edit`, { state: { created: true } }))
                   .catch(() => notify({ message: t('editor.failed') })),
             },
             {

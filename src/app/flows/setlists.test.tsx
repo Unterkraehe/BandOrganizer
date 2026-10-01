@@ -45,7 +45,7 @@ describe('Setlists (M6 in demo mode)', () => {
     await user.click(screen.getByRole('button', { name: 'Bühnenansicht schließen' }));
 
     // playing the setlist opens the player on its queue (v0.16.0) – the Songs tab stays the song list
-    await user.click(await screen.findByRole('button', { name: 'Setlist abspielen' }));
+    await user.click(await screen.findByRole('button', { name: 'Abspielen' }));
     const player = await screen.findByRole('dialog', { name: 'Player: Open Road' });
     expect(within(player).getByRole('radio', { name: 'Setlist' })).toBeChecked();
     expect(within(player).getByRole('link', { name: 'Setlist: Stadtfest' })).toBeInTheDocument();
@@ -57,5 +57,43 @@ describe('Setlists (M6 in demo mode)', () => {
     expect(await screen.findByRole('region', { name: 'Läuft gerade' })).toHaveTextContent('2 / 2');
     await user.click(within(screen.getByRole('navigation', { name: 'Hauptmenü' })).getByRole('link', { name: 'Songs' }));
     expect(await screen.findByText('6 Songs')).toBeInTheDocument();
+  });
+});
+
+describe('One setlist page from every entry point (v0.18.0)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('event → new setlist → save shows it → back to the event → card opens the same page; edit returns too', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/calendar/new?type=gig');
+    await user.type(await screen.findByLabelText('Titel'), 'Stadtfest');
+    await user.click(screen.getByRole('button', { name: 'Speichern' }));
+    await screen.findByRole('heading', { level: 1, name: 'Stadtfest' });
+
+    await user.click(screen.getByRole('button', { name: 'Neue Setlist für diesen Termin' }));
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Neue Setlist' }));
+    await user.click(await screen.findByRole('button', { name: 'Songs hinzufügen' }));
+    const picker = screen.getByRole('dialog', { name: 'Songs hinzufügen' });
+    await user.click(within(picker).getByRole('checkbox', { name: 'Open Road auswählen' }));
+    await user.click(within(picker).getByRole('button', { name: 'Hinzufügen (1)' }));
+    await user.click(within(picker).getByRole('button', { name: 'Schließen' }));
+    await user.click(screen.getByRole('button', { name: 'Speichern' }));
+
+    // saved → the new setlist's page (one action pair, the rest in ⋯)
+    expect(await screen.findByRole('button', { name: 'Bühnenansicht' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Abspielen' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Drucken' })).not.toBeInTheDocument();
+    const name = screen.getByRole('heading', { level: 1 }).textContent!;
+
+    await user.click(screen.getByRole('button', { name: 'Zurück' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Stadtfest' })).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: new RegExp(name) }));
+    expect(await screen.findByRole('heading', { level: 1, name })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Bühnenansicht' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Zurück' }));
+
+    await user.click(await screen.findByRole('button', { name: 'Setlist bearbeiten' })); // not just "Bearbeiten" – the event has one too
+    await user.click(await screen.findByRole('button', { name: 'Abbrechen' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Stadtfest' })).toBeInTheDocument();
   });
 });

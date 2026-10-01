@@ -118,7 +118,7 @@ Kalender (/calendar)            list / month (phone: day panel)
 Chat (/chat)                    *?message= from search / notifications*
 Mehr (/more)
   Setlists (/setlists)
-    Setlist (/setlists/:id)     *from event, chat card, song "In Setlists"*
+    Setlist (/setlists/:id)     *from event (card), chat card, song "Infos", player queue*; Abspielen · Bühnenansicht; ✎ → editor; ⋯ Drucken / Duplizieren / Termin
       Bearbeiten (/edit) · Bühnenansicht (/stage, full screen, ✕) · Drucken (/print)
   Mitglieder (/members) → Mitglied (/members/:id)
   Einstellungen (/settings) → Band (/settings/band) · Tags (/settings/tags) · Profil (/profile)
@@ -130,7 +130,7 @@ Mini player (all screens)       → Player (hidden only while the player is open
 Old addresses                   /songs/:id/practice → /player?song=:id&view=practice; /songs?setlist=:id → plays nothing, opens the player queue
 ```
 
-Planned (see roadmap "Navigation & clarity"): step 4 setlists unified; step 5 review of all screens.
+Planned (see roadmap "Navigation & clarity"): step 5 review of all screens.
 
 ## 5. Setlist Mode (cross-feature)
 
