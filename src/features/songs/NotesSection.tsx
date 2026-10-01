@@ -1,12 +1,14 @@
-import { Pin, Play } from 'lucide-react';
+import { CircleStop, Mic, Pin, Play, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { usePlayer } from '@/core/audio/PlayerProvider';
+import { usePlayer, usePlayerEngine } from '@/core/audio/PlayerProvider';
+import { recordingSupported, useRecorder } from '@/core/audio/recorder';
 import { useNotify } from '@/app/notify/NotifyProvider';
 import { formatAgo, formatDuration } from '@/core/i18n/format';
 import { useSession } from '@/core/session/BandSession';
 import { Avatar, Button, Menu, TextArea } from '@/ui';
-import { NOTE_MAX_LENGTH, recordingName, type Recording, type Song } from './model';
+import { AudioNote } from './AudioNote';
+import { NOTE_AUDIO_MAX_SEC, NOTE_MAX_LENGTH, recordingName, type Recording, type Song } from './model';
 import type { NoteEntry, NoteScope } from './repository';
 import type { useSongNotes } from './useSongNotes';
 import styles from './SongDetail.module.css';
@@ -57,13 +59,20 @@ function sortNotes(entries: NoteEntry[]) {
 function NoteForm({ song, recording, scope, onSave }: { song: Song; recording: Recording | null; scope: NoteScope; onSave: ReturnType<typeof useSongNotes>['add'] }) {
   const { t } = useTranslation('songs');
   const { state } = usePlayer();
+  const engine = usePlayerEngine();
+  // voice note: the song pauses while you speak (the microphone would pick it up)
+  const recorder = useRecorder(NOTE_AUDIO_MAX_SEC, () => engine.getState().status === 'playing' && engine.pause());
+  const rec = recorder.state;
   const [text, setText] = useState('');
   const [position, setPosition] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const loaded = Boolean(recording) && state.track?.songId === song.id && state.track.id === recording?.id;
 
+  const audio = rec.kind === 'done' ? { blob: rec.blob, durationSec: rec.durationSec, mime: rec.mime } : null;
+  const canSave = Boolean(text.trim() || audio) && rec.kind !== 'recording' && rec.kind !== 'starting';
+
   const save = async () => {
-    if (!text.trim()) return;
+    if (!canSave) return;
     if (text.trim().length > NOTE_MAX_LENGTH) {
       setError(t('notes.tooLong'));
       return;
@@ -74,8 +83,9 @@ function NoteForm({ song, recording, scope, onSave }: { song: Song; recording: R
     const sentPosition = position;
     setText('');
     setPosition(null);
+    recorder.reset();
     try {
-      await onSave(scope, sentText, sentPosition, sentPosition !== null ? (recording?.id ?? null) : null);
+      await onSave(scope, sentText, sentPosition, sentPosition !== null ? (recording?.id ?? null) : null, audio);
     } catch {
       setText(sentText);
       setPosition(sentPosition);
@@ -88,14 +98,42 @@ function NoteForm({ song, recording, scope, onSave }: { song: Song; recording: R
       <TextArea
         label={scope === 'public' ? t('notes.placeholderPublic') : t('notes.placeholderPrivate')}
         hideLabel
-        placeholder={scope === 'public' ? t('notes.placeholderPublic') : t('notes.placeholderPrivate')}
+        placeholder={audio ? t('notes.audio.optionalText') : scope === 'public' ? t('notes.placeholderPublic') : t('notes.placeholderPrivate')}
         value={text}
         onChange={(event) => setText(event.target.value)}
         maxLength={NOTE_MAX_LENGTH}
         rows={2}
         error={error ?? undefined}
       />
+      {/* voice note: record → listen → save with the note (or discard) */}
+      {rec.kind === 'recording' && (
+        <div className={styles.recording} role="status">
+          <span className={styles.recDot} aria-hidden="true" />
+          {t('notes.audio.recording', { time: formatDuration(rec.seconds), max: formatDuration(NOTE_AUDIO_MAX_SEC) })}
+          <Button icon={<CircleStop size={18} />} onClick={recorder.stop}>
+            {t('notes.audio.stop')}
+          </Button>
+        </div>
+      )}
+      {rec.kind === 'done' && (
+        <div className={styles.recording}>
+          <audio controls src={rec.url} className={styles.preview} aria-label={t('notes.audio.preview')} />
+          <Button variant="ghost" icon={<Trash2 size={16} />} onClick={recorder.discard}>
+            {t('notes.audio.discard')}
+          </Button>
+        </div>
+      )}
+      {rec.kind === 'error' && (
+        <p className={styles.recError} role="alert">
+          {t(`notes.audio.${rec.reason}`)}
+        </p>
+      )}
       <div className={styles.noteFormActions}>
+        {recordingSupported() && (rec.kind === 'idle' || rec.kind === 'error' || rec.kind === 'starting') && (
+          <Button variant="ghost" icon={<Mic size={18} />} onClick={() => void recorder.start()} disabled={rec.kind === 'starting'}>
+            {t('notes.audio.record')}
+          </Button>
+        )}
         {loaded && (
           <label className={styles.checkbox}>
             <input
@@ -106,7 +144,7 @@ function NoteForm({ song, recording, scope, onSave }: { song: Song; recording: R
             {t('notes.usePosition', { time: formatDuration(position ?? state.position) })}
           </label>
         )}
-        <Button variant="primary" onClick={() => void save()} disabled={!text.trim()}>
+        <Button variant="primary" onClick={() => void save()} disabled={!canSave}>
           {t('notes.save')}
         </Button>
       </div>
@@ -179,7 +217,7 @@ function NoteItem({ entry, song, recording, notes, onJump }: { entry: NoteEntry;
             </Button>
             <Button
               variant="primary"
-              disabled={!text.trim()}
+              disabled={!text.trim() && !note.audio}
               onClick={() =>
                 void notes
                   .change(entry, 'edit', text)
@@ -192,8 +230,9 @@ function NoteItem({ entry, song, recording, notes, onJump }: { entry: NoteEntry;
           </div>
         </div>
       ) : (
-        <p className={styles.noteText}>{note.text}</p>
+        note.text && <p className={styles.noteText}>{note.text}</p>
       )}
+      {note.audio && <AudioNote entry={entry} />}
     </li>
   );
 }

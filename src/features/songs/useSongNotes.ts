@@ -7,9 +7,16 @@ import {
   createNote,
   listNotes,
   saveNote,
+  type NewNoteAudio,
   type NoteEntry,
   type NoteScope,
 } from "./repository";
+
+/**
+ * Voice notes recorded on this device, by note id: playable at once, before (and while) the upload
+ * runs (optimistic, R-UX-07). Read by AudioNote before it loads the file from HiDrive.
+ */
+export const localNoteAudio = new Map<string, Blob>();
 
 /** Notes of a song incl. merged songs (F4 §6.4, §6.8). Loaded when the song is opened. */
 export function useSongNotes(song: Song | undefined) {
@@ -56,9 +63,11 @@ export function useSongNotes(song: Song | undefined) {
       text: string,
       positionSec: number | null,
       recordingId: string | null,
+      audio: NewNoteAudio | null = null,
     ) => {
       if (!song) return;
       const id = newId("n");
+      if (audio) localNoteAudio.set(id, audio.blob);
       const now = new Date().toISOString();
       const pending: NoteEntry = {
         songId: song.id,
@@ -71,6 +80,7 @@ export function useSongNotes(song: Song | undefined) {
           positionSec,
           recordingId: positionSec !== null ? recordingId : null,
           pinned: false,
+          audio: audio ? { file: "", durationSec: Math.round(audio.durationSec), mime: audio.mime } : null,
           createdAt: now,
           createdBy: memberId,
           updatedAt: now,
@@ -88,12 +98,13 @@ export function useSongNotes(song: Song | undefined) {
             song.id,
             scope,
             memberId,
-            { text, positionSec, recordingId },
+            { text, positionSec, recordingId, audio },
             id,
           ),
         );
       } catch (error) {
         setEntries((list) => list.filter((e) => e.note.id !== id));
+        localNoteAudio.delete(id);
         throw error;
       }
     },

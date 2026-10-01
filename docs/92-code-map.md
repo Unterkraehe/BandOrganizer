@@ -68,7 +68,7 @@ Full tree with explanations: overview §8. Who reads/writes it:
 |---|---|---|
 | `app.json`, `branding/` | `core/band/band.ts`, `logo.ts` | `BandConfig`: name, color, logos, standard upload folder, `scan.excludedPaths`, `scan.suggestionFolders` |
 | `members/` | `features/members/repository.ts` | |
-| `tags/`, `songs/<id>/meta.json`, `songs/<id>/notes/…` | `features/songs/repository.ts`, `library.ts`, `useSongNotes.ts` | meta is created lazily; field-level update with conflict check |
+| `tags/`, `songs/<id>/meta.json`, `songs/<id>/notes/…` | `features/songs/repository.ts`, `library.ts`, `useSongNotes.ts` | meta is created lazily; field-level update with conflict check; voice notes = `<noteId>.m4a` next to the note JSON (`noteAudioPath`), recorded with `core/audio/recorder.ts`, played by `AudioNote.tsx` |
 | `songs/<id>/practice/<memberId>.json` | `features/songs/practice.ts` | tempo/pitch/loop per member and version |
 | `calendar/events|exceptions|answers/` | `features/calendar/repository.ts`, `store.ts` | a member only writes their own answer file |
 | `calendar/export/` | `features/calendar/subscription.ts` | `band.ics` + `subscription.json` (share link) |
@@ -149,6 +149,6 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 - `usePwaUpdate()` registers the service worker – call it only in `UpdateToast`; elsewhere use `checkForUpdate()` / `applyUpdate()` (`core/pwa/usePwa.ts`).
 - `usePlayer()` in a list screen = full re-render ~4×/s while music plays (see §5).
 
-## 8. Open items (as of v0.18.1)
+## 8. Open items (as of v0.19.0)
 
 Device tests still open: S1/S2 (ETag, file IDs after rename), S4 (share link works as subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with the keyboard on iPhone/Android, push notifications on real devices, `POST /file/copy`. Everything else planned is built; the band test phase decides 1.0.0 (`03-roadmap.md`).

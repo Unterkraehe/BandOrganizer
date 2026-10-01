@@ -16,6 +16,7 @@ python3 scripts/qa/<script>.py                          # exit code 0 = fine
 | `phone-interaction-check.py` | Swipe between tabs, answer buttons stay put, chat input pinned above bottom bar/mini player, dialog on top, zoom guards | all as described in the output |
 | `menu-overlay-check.py` | ⋯ menus fully on screen and on top (also last row in the archive), both themes | `on screen: True on top: True` |
 | `overflow-check.py [width]` | No screen or scroll area wider than a 360 px (or given) phone, with long texts injected; incl. song page and player (Üben, Songtext) with a version dropdown | `problems: 0` (R-UI-14) |
+| `voice-note-check.py` | Records a voice note with Chromium's fake microphone, listens, saves, plays it, plays it again after reopening the song; no sideways scrolling at 320 px | `RESULT: ok` |
 | `latency-check.py` | With 250 ms per storage call the UI still reacts at once (optimistic updates); no sideways scrolling | < 300 ms |
 | `axe-audit.py` | axe-core accessibility audit, phone dark + desktop light | only the intentional zoom finding |
 | `push-sw-check.py` | A push message reaches the service worker and shows the notification (needs Chromium's new headless mode) | notification title/body/tag/url as sent |

@@ -15,6 +15,7 @@ import { LyricsContentView } from '../lyrics/LyricsContentView';
 import { useLyrics } from '../lyrics/useLyrics';
 import { recordingName, type Recording, type Song } from '../model';
 import type { NoteEntry } from '../repository';
+import { AudioNote } from '../AudioNote';
 import { usePlaySong } from '../usePlaySong';
 import { useSongNotes } from '../useSongNotes';
 import { PracticeControls } from '../practice/PracticeControls';
@@ -303,7 +304,8 @@ function PlayerNotes({ entries, position, onJump }: { entries: NoteEntry[]; posi
                     ▶ {formatDuration(p)}
                   </button>
                 )}
-                <span className={styles.noteText}>{entry.note.text}</span>
+                {entry.note.text && <span className={styles.noteText}>{entry.note.text}</span>}
+                {entry.note.audio && <AudioNote entry={entry} />}
                 {entry.scope === 'public' && author && <span className={styles.noteMeta}>{author.displayName}</span>}
               </li>
             );

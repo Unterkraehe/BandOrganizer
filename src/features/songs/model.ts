@@ -51,13 +51,33 @@ export interface Tag extends RecordBase {
 
 /** `songs/<songId>/notes/(public|private/<memberId>)/<noteId>.json` (F4 §7.2) */
 export interface SongNote extends RecordBase {
+  /** may be empty when the note is a voice note */
   text: string;
   positionSec: number | null;
   recordingId: string | null;
   pinned: boolean;
+  /** voice note (v0.19.0): a file next to the note's JSON */
+  audio?: NoteAudio | null;
+}
+
+/** A recorded voice note: `<noteId>.<ext>` in the same folder as the note (F4 §6.4a). */
+export interface NoteAudio {
+  file: string;
+  durationSec: number;
+  mime: string;
 }
 
 export const NOTE_MAX_LENGTH = 2000;
+/** Longest voice note (seconds) – about 1–3 MB */
+export const NOTE_AUDIO_MAX_SEC = 180;
+
+/** File extension for a recorded voice note's MIME type. */
+export function noteAudioExtension(mime: string): string {
+  if (mime.includes('mp4') || mime.includes('aac')) return 'm4a';
+  if (mime.includes('webm')) return 'webm';
+  if (mime.includes('ogg')) return 'ogg';
+  return 'audio';
+}
 
 /* ------------------------------------------------------------------ */
 /* View model                                                          */

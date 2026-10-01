@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { enterDemo, type User } from '@/test/demo';
 
 describe('Songs (M2 in demo mode)', () => {
@@ -189,5 +189,68 @@ describe('Song page = about the song (v0.17.0)', () => {
     await user.click(screen.getByRole('button', { name: 'Üben' }));
     const player = await screen.findByRole('dialog', { name: 'Player: Open Road' });
     expect(within(player).getByRole('radio', { name: 'Üben' })).toBeChecked();
+  });
+});
+
+describe('Voice notes (v0.19.0)', () => {
+  /** jsdom has no microphone: a recorder that "records" one chunk */
+  class FakeRecorder {
+    static isTypeSupported = (mime: string) => mime.startsWith('audio/mp4');
+    state = 'inactive';
+    mimeType: string;
+    ondataavailable: ((event: { data: Blob }) => void) | null = null;
+    onstop: (() => void) | null = null;
+    constructor(_stream: unknown, options?: { mimeType?: string }) {
+      this.mimeType = options?.mimeType ?? 'audio/mp4';
+    }
+    start() {
+      this.state = 'recording';
+    }
+    stop() {
+      this.state = 'inactive';
+      this.ondataavailable?.({ data: new Blob(['voice'], { type: this.mimeType }) });
+      this.onstop?.();
+    }
+  }
+  let getUserMedia: () => Promise<unknown>;
+  beforeEach(() => {
+    localStorage.clear();
+    vi.stubGlobal('MediaRecorder', FakeRecorder);
+    getUserMedia = async () => ({ getTracks: () => [{ stop() {} }] });
+    Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: () => getUserMedia() } });
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('records, previews and saves a voice note, which then plays', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/songs');
+    await screen.findByText('6 Songs');
+    await user.click(screen.getByRole('link', { name: /^Open Road/ }));
+    await user.click(await screen.findByRole('tab', { name: /Notizen/ }));
+
+    await user.click(screen.getByRole('button', { name: 'Sprachnotiz aufnehmen' }));
+    expect(await screen.findByText(/Aufnahme läuft · 0:00 \/ 3:00/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Aufnahme beenden' }));
+    expect(await screen.findByLabelText('Aufnahme anhören')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Text dazu (optional) …')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Notiz speichern' })); // no text needed
+
+    const play = await screen.findByRole('button', { name: 'Sprachnotiz abspielen' });
+    expect(screen.queryByLabelText('Aufnahme anhören')).not.toBeInTheDocument();
+    await user.click(play);
+    expect(await screen.findByRole('button', { name: 'Sprachnotiz anhalten' })).toBeInTheDocument();
+  });
+
+  it('explains a blocked microphone', async () => {
+    getUserMedia = async () => {
+      throw new DOMException('denied', 'NotAllowedError');
+    };
+    const user = userEvent.setup();
+    await enterDemo(user, '/songs');
+    await screen.findByText('6 Songs');
+    await user.click(screen.getByRole('link', { name: /^Open Road/ }));
+    await user.click(await screen.findByRole('tab', { name: /Notizen/ }));
+    await user.click(screen.getByRole('button', { name: 'Sprachnotiz aufnehmen' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/Mikrofon ist für die App blockiert/);
   });
 });

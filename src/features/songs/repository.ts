@@ -4,7 +4,7 @@ import { nowIso, restore, softDelete, touchRecord } from '@/core/data/record';
 import type { Versioned } from '@/core/band/band';
 import { AlreadyExistsError, ConflictError, joinPath, NotFoundError, type SafeStorage } from '@/core/storage';
 import { sameName } from '@/features/members/model';
-import { NOTE_MAX_LENGTH, SONG_SCHEMA_VERSION, type Song, type SongMeta, type SongNote, type Tag } from './model';
+import { NOTE_MAX_LENGTH, noteAudioExtension, SONG_SCHEMA_VERSION, type Song, type SongMeta, type SongNote, type Tag } from './model';
 
 /** Data access for songs, notes and tags (F4 §7). Only via SafeStorage (R-CODE-01). */
 
@@ -169,15 +169,29 @@ export async function listNotes(storage: SafeStorage, appRoot: string, songIds: 
 
 export class InvalidNoteError extends Error {
   constructor() {
-    super('Note text must be 1–2000 characters');
+    super('Note text must be 1–2000 characters (may be empty with a voice note)');
     this.name = 'InvalidNoteError';
   }
 }
 
-function validText(text: string) {
+function validText(text: string, hasAudio = false) {
   const trimmed = text.trim();
-  if (!trimmed || trimmed.length > NOTE_MAX_LENGTH) throw new InvalidNoteError();
+  if ((!trimmed && !hasAudio) || trimmed.length > NOTE_MAX_LENGTH) throw new InvalidNoteError();
   return trimmed;
+}
+
+/** A voice note to store with a new note. */
+export interface NewNoteAudio {
+  blob: Blob;
+  durationSec: number;
+  mime: string;
+}
+
+/** Where a note's voice recording lives (same folder as the note's JSON). */
+export function noteAudioPath(appRoot: string, entry: NoteEntry): string | null {
+  if (!entry.note.audio) return null;
+  const owner = entry.scope === 'private' ? entry.note.createdBy : '';
+  return joinPath(notesDir(appRoot, entry.songId, entry.scope, owner), entry.note.audio.file);
 }
 
 export async function createNote(
@@ -186,17 +200,27 @@ export async function createNote(
   songId: string,
   scope: NoteScope,
   memberId: string,
-  fields: { text: string; positionSec: number | null; recordingId: string | null },
+  fields: { text: string; positionSec: number | null; recordingId: string | null; audio?: NewNoteAudio | null },
   id = newId('n'),
 ): Promise<NoteEntry> {
   const now = nowIso();
+  const dir = notesDir(appRoot, songId, scope, memberId);
+  const text = validText(fields.text, Boolean(fields.audio));
+  // the recording first: a note never points to a file that isn't there (create-only, R-DATA-04)
+  let audio: SongNote['audio'] = null;
+  if (fields.audio) {
+    const file = `${id}.${noteAudioExtension(fields.audio.mime)}`;
+    await storage.createFile(joinPath(dir, file), fields.audio.blob);
+    audio = { file, durationSec: Math.round(fields.audio.durationSec), mime: fields.audio.mime };
+  }
   const note: SongNote = {
     id,
     schemaVersion: 1,
-    text: validText(fields.text),
+    text,
     positionSec: fields.positionSec,
     recordingId: fields.positionSec !== null ? fields.recordingId : null,
     pinned: false,
+    ...(audio ? { audio } : {}),
     createdAt: now,
     createdBy: memberId,
     updatedAt: now,
@@ -205,7 +229,7 @@ export async function createNote(
     deletedBy: null,
   };
   const entry = await storage.createFile(
-    joinPath(notesDir(appRoot, songId, scope, memberId), `${note.id}.json`),
+    joinPath(dir, `${note.id}.json`),
     JSON.stringify(note, null, 2) + '\n',
   );
   return { songId, scope, note, version: entry.version };
@@ -221,7 +245,7 @@ export async function saveNote(
 ): Promise<NoteEntry> {
   const owner = entry.scope === 'private' ? entry.note.createdBy : memberId;
   let note = entry.note;
-  if (change === 'edit') note = touchRecord(note, memberId, { text: validText(text ?? '') });
+  if (change === 'edit') note = touchRecord(note, memberId, { text: validText(text ?? '', Boolean(note.audio)) });
   if (change === 'pin' || change === 'unpin') note = touchRecord(note, memberId, { pinned: change === 'pin' });
   if (change === 'delete') note = softDelete(note, memberId);
   if (change === 'restore') note = restore(note, memberId);

@@ -29,6 +29,7 @@
 - [ ] **Song page (v0.17.0):** long titles wrap and are fully readable; "Abspielen" toggles, the mini player appears; "Üben" opens the player on Üben; all four tabs readable on the smallest phone in the band.
 - [ ] **Setlists (v0.18.0):** on an event: "Neue Setlist für diesen Termin" → add songs → Speichern → the setlist page; ← → the event; tap the setlist card → the same page; "Setlist bearbeiten" → Abbrechen → the event.
 - [ ] **Event page (v0.18.1):** answer with one tap; "Kommentar hinzufügen" opens the field; ⋯ → Absagen / Löschen; "Meine Erinnerung · Ändern" opens the choices.
+- [ ] **Voice notes (v0.19.0):** record a voice note on an iPhone and on an Android phone (the microphone prompt appears once), listen before saving, save; the other phone plays both (MP4/AAC from both – if an Android phone records WebM, note the browser version: older iPhones can't play it). A song that plays pauses while recording and while a voice note plays. Denying the microphone shows the explanation.
 - [ ] **Back after a long time:** leave the app in the background for an hour (or overnight), open it → new chat messages / events appear without a manual reload.
 
 ## C. Band test phase (1–2 weeks, decides 1.0.0)

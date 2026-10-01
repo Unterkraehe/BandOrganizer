@@ -245,6 +245,13 @@ From the file name: remove extension, leading track numbers ("01 - ", "03_"), re
 - **Edit/delete:** only the author, for both public and private notes. Delete = soft delete with undo (R-DATA-05, R-UX-04).
 - Conflict check on edit (R-DATA-07).
 
+### 6.4a Voice notes (v0.19.0)
+- **Record:** in the note form "Sprachnotiz aufnehmen" (only where the browser can record) → the browser asks for the microphone once → "Aufnahme läuft · 0:12 / 3:00" with "Aufnahme beenden" (stops by itself after **3 minutes**) → a preview to listen to and "Verwerfen" → "Notiz speichern". Text is optional with a recording ("Text dazu (optional) …"); the time marker works as for text notes. A playing song is paused while recording (the microphone would pick it up).
+- **Play:** a voice note shows a play button, "Sprachnotiz", the length and a progress bar – on the song page and in the player's notes. The song pauses while a voice note plays; only one voice note plays at a time. The file is loaded on the first tap (iPhones: playback is started inside the tap with a moment of silence, then switched to the file).
+- **Storage:** `<noteId>.m4a` (or `.webm` / `.ogg`) in the same folder as the note's JSON, written first (create-only); the note gets `audio: { file, durationSec, mime }` (schema stays 1, older app versions just show the text). Recorded as **MP4/AAC** where the browser can (Chrome, Safari) – plays everywhere; WebM/Opus only as fallback (older iPhones can't play it). About 0.5 MB per minute (64 kbit/s). `_BandApp/` is not scanned for songs, so voice notes never become songs.
+- Public or private like text notes; edit = the text only (a new recording = a new note); delete = soft delete with undo (the file is kept, R-DATA-05). Found in search as "Sprachnotiz".
+- Errors: microphone blocked → "Das Mikrofon ist für die App blockiert …"; no recording possible → "Auf diesem Gerät kann die App nicht aufnehmen."; file not loadable → "Die Sprachnotiz konnte nicht geladen werden."
+
 ### 6.5 Hiding files that aren't songs
 - **Different from archiving (§6.10):** hiding is for audio files that are *not songs at all* (soundcheck, test recording, voice memo). Archiving is for real songs that aren't in the current repertoire.
 - Any member can hide such a file ("Ist kein Song – ausblenden"). Everyone sees the change.

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { ConflictError, MemoryStorageProvider, SafeStorage } from '@/core/storage';
 import { LibraryStore } from './library';
 import { buildSongs, cleanTitle, recordingIdFor, songIdFor, sortSongs, versionSuggestions, type SongMeta } from './model';
-import { createNote, listNotes, saveNote } from './repository';
+import { createNote, InvalidNoteError, listNotes, noteAudioPath, saveNote } from './repository';
 
 const HOME = '/users/b';
 const APP = `${HOME}/_BandApp`;
@@ -159,6 +159,22 @@ describe('notes (F4 §6.4)', () => {
     expect(pinned.note.pinned).toBe(true);
     await saveNote(storage, APP, pinned, 'm_a', 'delete');
     expect(await listNotes(storage, APP, ['song_1'], 'm_b')).toHaveLength(0);
+  });
+  it('stores a voice note next to the note; text is optional only with a recording (v0.19.0)', async () => {
+    const provider = new MemoryStorageProvider();
+    provider.seedFolder(HOME);
+    const storage = new SafeStorage(provider, { appRoot: APP });
+    const blob = new Blob(['voice'], { type: 'audio/mp4' });
+    const voice = await createNote(storage, APP, 'song_1', 'private', 'm_a', { text: '', positionSec: null, recordingId: null, audio: { blob, durationSec: 12.4, mime: 'audio/mp4' } });
+    expect(voice.note.audio).toEqual({ file: `${voice.note.id}.m4a`, durationSec: 12, mime: 'audio/mp4' });
+    const path = noteAudioPath(APP, voice)!;
+    expect(path).toBe(`${APP}/songs/song_1/notes/private/m_a/${voice.note.id}.m4a`);
+    expect(await (await storage.readBlob(path)).text()).toBe('voice');
+    // the audio file is not a note
+    expect(await listNotes(storage, APP, ['song_1'], 'm_a')).toEqual([expect.objectContaining({ note: expect.objectContaining({ id: voice.note.id, text: '' }) })]);
+    // editing may leave the text empty, a plain text note may not be empty
+    expect((await saveNote(storage, APP, voice, 'm_a', 'edit', '  ')).note.text).toBe('');
+    await expect(createNote(storage, APP, 'song_1', 'public', 'm_a', { text: ' ', positionSec: null, recordingId: null })).rejects.toBeInstanceOf(InvalidNoteError);
   });
 });
 

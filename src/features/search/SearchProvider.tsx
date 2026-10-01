@@ -143,8 +143,9 @@ export function SearchProvider({ children }: { children: ReactNode }) {
         id: `note:${n.note.id}`,
         type: 'note',
         title: songTitle.get(n.songId) ?? '?',
-        text: n.note.text,
-        extra: author,
+        // a voice note without text is found as "Sprachnotiz" (v0.19.0)
+        text: n.note.text || (n.note.audio ? t('songs:notes.audio.label') : ''),
+        extra: n.note.audio ? `${author} ${t('songs:notes.audio.label')}` : author,
         context: n.scope === 'private' ? t('search:context.private') : t('search:context.noteBy', { name: author }),
         route: `/songs/${n.songId}?tab=${n.scope}&note=${n.note.id}`,
         sortDate: n.note.createdAt,

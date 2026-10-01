@@ -126,6 +126,7 @@ One full-screen player for listening and practising (`features/songs/player/Play
 - **Tabs** (`?view=`): **Songtext** (lyrics with A−/A+, notes as a panel on phones / beside the lyrics on tablets), **Üben** (`PracticeControls`: tempo, pitch, A–B loop, reset – only while this song plays), **Setlist** (only while a setlist plays: `SetlistQueue`).
 - **Header:** ⌄ close · title + one subtitle line (version, or "Setlist · 3 / 12", plus active practice settings – always reserved, R-UI-11) · ⋯ (Zum Song, Zur Setlist).
 - **Bottom:** version choice (only with several versions), seek bar with note markers and loop, transport ⏮ ↺ ⏯ ↻ ⏭ (⏮ ⏭ only in a setlist, otherwise hidden in place). Toasts float above it (`--dock-h` set to the dock height while open).
+- Voice notes (F4 §6.4a, v0.19.0) play in their own small audio element and pause the engine first – never two sounds at once.
 - Since v0.17.0 the song page has no player block of its own: "Abspielen" / "Üben" there, everything else here.
 - The screen below does not slide (`overlays` in `NavigationContext`); the mini player is hidden while the player is open. Screen stays on (Wake Lock).
 

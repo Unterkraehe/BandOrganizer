@@ -172,7 +172,22 @@
     "menu": "Aktionen für diese Notiz",
     "tab": "Notizen",
     "forAll": "Für alle",
-    "onlyMe": "Nur für mich"
+    "onlyMe": "Nur für mich",
+    "audio": {
+      "label": "Sprachnotiz",
+      "record": "Sprachnotiz aufnehmen",
+      "stop": "Aufnahme beenden",
+      "recording": "Aufnahme läuft · {{time}} / {{max}}",
+      "preview": "Aufnahme anhören",
+      "discard": "Verwerfen",
+      "optionalText": "Text dazu (optional) …",
+      "play": "Sprachnotiz abspielen",
+      "pause": "Sprachnotiz anhalten",
+      "loadError": "Die Sprachnotiz konnte nicht geladen werden.",
+      "unsupported": "Auf diesem Gerät kann die App nicht aufnehmen.",
+      "denied": "Das Mikrofon ist für die App blockiert. Erlaube es in den Einstellungen des Browsers bzw. Handys und versuch es noch einmal.",
+      "failed": "Die Aufnahme hat nicht geklappt. Bitte versuch es noch einmal."
+    }
   },
   "versions": {
     "title": "Versionen",
