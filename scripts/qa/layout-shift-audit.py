@@ -33,4 +33,4 @@ with session(query='?demo-songs=40', scheme='light') as s:
     for n in ['Kalender','Chat','Start','Songs']:
         visit('with player: tab '+n, nav(n))
     visit('song detail', lambda: pg.get_by_role('link', name='Open Road', exact=False).first.click())
-    visit('practice view', lambda: pg.get_by_role('button', name='Übungsansicht').first.click())
+    visit('player (Üben)', lambda: pg.get_by_role('button', name='Üben', exact=True).first.click())

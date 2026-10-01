@@ -44,10 +44,18 @@ describe('Setlists (M6 in demo mode)', () => {
     expect(await screen.findByRole('dialog', { name: 'Stadtfest' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Bühnenansicht schließen' }));
 
-    // setlist mode in Songs
-    await user.click(await screen.findByRole('button', { name: 'Setlist üben' }));
-    expect(await screen.findByText('Setlist: Stadtfest')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /Open Road/ }));
-    expect(await screen.findByRole('region', { name: 'Läuft gerade' })).toHaveTextContent('1 / 2');
+    // playing the setlist opens the player on its queue (v0.16.0) – the Songs tab stays the song list
+    await user.click(await screen.findByRole('button', { name: 'Setlist abspielen' }));
+    const player = await screen.findByRole('dialog', { name: 'Player: Open Road' });
+    expect(within(player).getByRole('radio', { name: 'Setlist' })).toBeChecked();
+    expect(within(player).getByRole('link', { name: 'Setlist: Stadtfest' })).toBeInTheDocument();
+    expect(within(player).getByText(/Stadtfest · 1 \/ 2/)).toBeInTheDocument();
+    await user.click(within(player).getByRole('button', { name: 'Nächster' }));
+    expect(await within(screen.getByRole('dialog', { name: 'Player: Rust and Thunder' })).findByText(/Stadtfest · 2 \/ 2/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Player schließen' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Stadtfest' })).toBeInTheDocument();
+    expect(await screen.findByRole('region', { name: 'Läuft gerade' })).toHaveTextContent('2 / 2');
+    await user.click(within(screen.getByRole('navigation', { name: 'Hauptmenü' })).getByRole('link', { name: 'Songs' }));
+    expect(await screen.findByText('6 Songs')).toBeInTheDocument();
   });
 });

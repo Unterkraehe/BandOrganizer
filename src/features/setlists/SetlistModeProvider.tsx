@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { usePlayerSelect } from '@/core/audio/PlayerProvider';
 import type { Song } from '@/features/songs/model';
 import { usePlaySong } from '@/features/songs/usePlaySong';
@@ -23,6 +24,8 @@ interface ModeValue {
   index: number;
   autoAdvance: boolean;
   start: (setlistId: string) => void;
+  /** start a setlist and play its first playable song – call from a tap (iOS audio unlock) */
+  startAndPlay: (setlistId: string) => void;
   end: () => void;
   setAutoAdvance: (value: boolean) => void;
   playAt: (index: number) => void;
@@ -110,6 +113,15 @@ export function SetlistModeProvider({ children }: { children: ReactNode }) {
     index: mode.index,
     autoAdvance: mode.autoAdvance,
     start: (setlistId) => setMode((m) => ({ ...m, setlistId, index: 0 })),
+    startAndPlay: (setlistId) => {
+      const target = setlists.find((s) => s.id === setlistId);
+      if (!target) return;
+      // computed here: the queue state of the new setlist only exists after the next render
+      const songs = songEntries(target).map((entry) => songById.get(entry.songId));
+      const first = songs.findIndex((song) => song?.recording && !song.recording.missing);
+      setMode((m) => ({ ...m, setlistId, index: Math.max(0, first) }));
+      if (first >= 0) play(songs[first]!);
+    },
     end: () => setMode((m) => ({ ...m, setlistId: null, index: 0 })),
     setAutoAdvance: (autoAdvance) => setMode((m) => ({ ...m, autoAdvance })),
     playAt,
@@ -117,6 +129,20 @@ export function SetlistModeProvider({ children }: { children: ReactNode }) {
     previous: () => step(-1),
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+}
+
+/** "Setlist abspielen" from anywhere (setlist, event, chat card): plays it and opens the player's queue (R-UX-09). */
+// eslint-disable-next-line react-refresh/only-export-components
+export function useStartSetlist() {
+  const mode = useSetlistMode();
+  const navigate = useNavigate();
+  return useCallback(
+    (setlistId: string) => {
+      mode.startAndPlay(setlistId);
+      navigate('/player?view=queue');
+    },
+    [mode, navigate],
+  );
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

@@ -92,7 +92,7 @@ Setlist "Stadtfest 2026"                     (linked to: Auftritt Sa, 10. Okt.)
 Read view (default for everyone):
 - Header: name, linked event(s), total duration, song count
 - Blocks with numbered songs, interludes, arrows, notes (public + my personal ones)
-- Actions: **"Setlist üben"** (F3 §5), **"Bühnenansicht"**, **"Drucken"**, "Bearbeiten", "Duplizieren", "Mit Termin verknüpfen"
+- Actions: **"Setlist abspielen"** (until v0.15 "Setlist üben"; plays in the player, F3 §5), **"Bühnenansicht"**, **"Drucken"**, "Bearbeiten", "Duplizieren", "Mit Termin verknüpfen"
 - My personal notes can be edited inline here without entering edit mode (small ✎ next to each song).
 
 ### 4.3 Setlist-Editor (`/setlists/:id/edit`)

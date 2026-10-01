@@ -1,11 +1,12 @@
 import { MoreHorizontal } from 'lucide-react';
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useContext, useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, matchPath, NavLink, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import type { FeatureRegistration } from '@/core/features/registry';
 import { useSession } from '@/core/session/BandSession';
 import { BandMark } from '../components/BandMark';
 import styles from './AppShell.module.css';
+import { isOverlay, NavigationContext, useHistoryDepthTracker } from './navigation';
 import { useTouchGuards } from './useTouchGuards';
 import { useSwipe } from '../swipe';
 import { useMediaQuery } from '../useMediaQuery';
@@ -24,6 +25,7 @@ interface AppShellProps {
 export function AppShell({ features, bottomSlot, children }: AppShellProps) {
   const { t } = useTranslation();
   useTouchGuards();
+  useHistoryDepthTracker();
   const navigate = useNavigate();
   const location = useLocation();
   const phone = useMediaQuery('(max-width: 767px)');
@@ -112,12 +114,15 @@ type NavDirection = 'push' | 'back' | 'tab' | undefined;
  */
 function useNavDirection(pathname: string, tabs: string[], swipe: 'left' | 'right' | undefined): NavDirection {
   const navigationType = useNavigationType();
+  const info = useContext(NavigationContext);
   const previous = useRef(pathname);
   const direction = useRef<NavDirection>(undefined);
   if (previous.current !== pathname) {
     const from = previous.current;
     previous.current = pathname;
-    if (swipe) direction.current = swipe === 'left' ? 'push' : 'back';
+    // the player comes up as a sheet (its own animation); the screen below stays still
+    if (isOverlay(pathname, info) || isOverlay(from, info)) direction.current = undefined;
+    else if (swipe) direction.current = swipe === 'left' ? 'push' : 'back';
     else if (tabs.includes(pathname) && tabs.includes(from)) direction.current = 'tab';
     else if (navigationType === 'POP' || from.startsWith(`${pathname}/`) || tabs.includes(pathname)) direction.current = 'back';
     else direction.current = 'push';

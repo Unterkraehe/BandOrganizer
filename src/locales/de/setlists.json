@@ -25,7 +25,7 @@
   "duration": "{{duration}}",
   "unknownDuration": "Dauer teils unbekannt",
   "actions": {
-    "practice": "Setlist üben",
+    "practice": "Setlist abspielen",
     "stage": "Bühnenansicht",
     "print": "Drucken",
     "edit": "Bearbeiten",

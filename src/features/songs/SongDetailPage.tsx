@@ -1,4 +1,4 @@
-import { ArchiveRestore, ListPlus, Maximize2, Music, Pencil, Plus } from 'lucide-react';
+import { ArchiveRestore, ListPlus, Music, Pencil, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState, type DragEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -118,7 +118,6 @@ export function SongDetailPage() {
       title={song.title}
       actions={
         <>
-          <IconButton label={t('practice.open')} icon={<Maximize2 size={20} />} onClick={() => navigate(`/songs/${song.id}/practice`)} />
           <IconButton label={t('actions.edit')} icon={<Pencil size={20} />} onClick={() => navigate(`/songs/${song.id}/edit`)} />
           <Menu label={t('menu', { title: song.title })} items={menuFor(song)} />
         </>

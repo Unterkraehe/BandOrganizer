@@ -1,6 +1,6 @@
 import { AudioLines, Pause, Play, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { usePlayerEngine, usePlayerSelect } from '@/core/audio/PlayerProvider';
 import { formatDuration, formatMinutes } from '@/core/i18n/format';
 import { Button, IconButton } from '@/ui';
@@ -9,8 +9,8 @@ import { useSetlistMode } from './SetlistModeProvider';
 import { useSetlistInfo } from './useSetlistInfo';
 import styles from './Setlists.module.css';
 
-/** Songs screen in setlist mode (F3 §5): banner + queue in setlist order. */
-export function SetlistModeView() {
+/** The player's "Warteschlange" while a setlist plays (F3 §5, v0.16.0): songs in setlist order, auto-advance, end. */
+export function SetlistQueue() {
   const { t } = useTranslation('setlists');
   const navigate = useNavigate();
   const mode = useSetlistMode();
@@ -26,7 +26,9 @@ export function SetlistModeView() {
   return (
     <section className={styles.banner} aria-label={t('mode.banner', { name: setlist.name })}>
       <div className={styles.bannerHead}>
-        <strong>{t('mode.banner', { name: setlist.name })}</strong>
+        <Link to={`/setlists/${setlist.id}`} style={{ fontWeight: 700 }}>
+          {t('mode.banner', { name: setlist.name })}
+        </Link>
         <span className={styles.meta}>
           {t('mode.count', { count: mode.queue.length })} · {formatMinutes(total.totalSeconds / 60)}
         </span>
@@ -37,10 +39,7 @@ export function SetlistModeView() {
         <Button
           variant="ghost"
           icon={<X size={18} />}
-          onClick={() => {
-            mode.end();
-            navigate('/songs', { replace: true });
-          }}
+          onClick={mode.end}
         >
           {t('mode.end')}
         </Button>

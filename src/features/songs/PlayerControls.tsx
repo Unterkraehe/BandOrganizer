@@ -129,7 +129,7 @@ export function PlayerControls({ song, recording, onRecordingChange, markers }: 
           </p>
         );
       })()}
-      <Button icon={<SlidersHorizontal size={18} />} onClick={() => navigate(`/songs/${song.id}/practice`)} style={{ justifySelf: 'center' }}>
+      <Button icon={<SlidersHorizontal size={18} />} onClick={() => navigate(`/player?song=${song.id}&view=practice`)} style={{ justifySelf: 'center' }}>
         {t('practice.open')}
       </Button>
       {message && (

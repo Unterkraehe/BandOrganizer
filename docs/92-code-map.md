@@ -51,10 +51,10 @@ Texts: `src/locales/de/<same name>.json`. Docs: `docs/features/`. Flow tests (wh
 | F1 HiDrive connection (10) | `core/storage/`, `core/storage/hidrive/`, `core/auth/`, `core/files/`, `core/session/`, `token-helper/`, `public/callback.html` | `guard.ts` (safety guard), `HiDriveProvider.ts`, `BandSession.tsx`, `scan.ts`, `worker.js` | `guard.test`, `HiDriveProvider.test`, `scan.test`, `tokens.test`, `token-helper/worker.test` |
 | F2 Member login (11) | `features/members/`, `features/profile/`, `app/gate/` | `repository.ts`, `MembersPage`, `ProfileForm`, `ProfileSelectScreen` | `members.test`, `flows` (App.test) |
 | F3 App shell (12) | `app/`, `ui/layout/`, `ui/swipe.ts`, `features/start/`, `features/more/` | `routes.tsx`, `AppShell.tsx`, `Page.tsx`, `StartPage` | `App.test`, `flows/touch` |
-| F4 Songs (13) | `features/songs/` (+ `lyrics/`, `practice/`, `uploads/`), `core/lyrics/` | `model.ts` (songs from files + meta), `library.ts` (store), `repository.ts`, `SongsPage`, `SongDetailPage`, `VersionsSection`, `NotesSection` | `songs.test`, `flows/songs`, `flows/uploads-lyrics`, `flows/practice` |
+| F4 Songs (13) | `features/songs/` (+ `lyrics/`, `practice/` (controls), `player/`, `uploads/`), `core/lyrics/` | `model.ts` (songs from files + meta), `library.ts` (store), `repository.ts`, `SongsPage`, `SongDetailPage`, `VersionsSection`, `NotesSection`, `player/PlayerPage` (full-screen player, F9 §8a) | `songs.test`, `flows/songs`, `flows/uploads-lyrics`, `flows/player` |
 | F5 Calendar (14) | `features/calendar/` | `store.ts`, `recurrence.ts`, `time.ts`, `subscription.ts`, `ics.ts`, `EventFormPage` | `recurrence.test`, `store.test`, `flows/calendar` |
 | F6 Chat (15) | `features/chat/`, `core/events.ts`, `features/notifications/` | `store.ts`, `ChatProvider`, `Composer`, `MessageItem`, `push.ts`, `payload.ts` | `chat.test`, `notifications.test`, `flows/chat` |
-| F7 Setlists (16) | `features/setlists/` | `store.ts`, `model.ts`, `SetlistEditorPage`, `PrintSheet` + `Print.module.css`, `SetlistModeProvider` | `setlists.test`, `PrintSheet.test`, `flows/setlists` |
+| F7 Setlists (16) | `features/setlists/` | `store.ts`, `model.ts`, `SetlistEditorPage`, `PrintSheet` + `Print.module.css`, `SetlistModeProvider` (+ `useStartSetlist`), `SetlistQueue` (player tab) | `setlists.test`, `PrintSheet.test`, `flows/setlists` |
 | F8 Search (17) | `features/search/`, `core/search/` | `SearchProvider.tsx` (collects documents from all features), `engine.ts` (MiniSearch), `dates.ts`, `SearchPanel` | `search.test`, `normalize.test`, `flows/search` |
 | F9 Audio engine (18) | `core/audio/`, `public/vendor/signalsmith-stretch/` | `engine.ts`, `PlayerProvider.tsx` (`usePlayer`, `usePlayerSelect`), `stretch.ts` | `engine.test`, `practice.test` |
 | F10 Uploads (19) | `features/songs/uploads/`, `core/uploads/` | `queue.ts`, `validate.ts`, `names.ts`, `FolderPicker`, `NewSongPage`, `AdoptSuggestionDialog` | `uploads.test`, `flows/uploads-lyrics` |
@@ -90,6 +90,8 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 | Refresh after the app was in the background | `onAppResume(listener)` (`core/resume.ts`) – every provider that holds server data registers one |
 | Other members' changes while the app is open | Polling while visible, reading only changed files by `FileEntry.version`: chat (`ChatStore.poll`), calendar (`CalendarStore.refresh` + `useWatchCalendar()` on calendar screens for 20 s instead of 60 s). Apply results only to entries that didn't change locally during the read (see `refresh`) |
 | One feature tells another about a change | System event bus `core/events.ts` (`emitSystemEvent` / `onSystemEvent`); the chat turns events into info lines and pushes |
+| Play a setlist | `useStartSetlist()(setlistId)` (`setlists/SetlistModeProvider.tsx`) from the tap: plays the first playable song (iOS unlock) and opens `/player?view=queue`. Never navigate to `/songs?setlist=` (old address, only redirects) |
+| Open the player | `navigate('/player')` (+ `?song=<id>&view=practice` from a song); it is an overlay (`overlays` in `app/routes.tsx` → no screen slide), closes with `useBack` after its 200 ms closing animation |
 | Player state in lists | `usePlaySong()` (track + status) or `usePlayerSelect(selector)` – **never** `usePlayer()` outside player UI (position changes ~4×/s) |
 | Long lists (> 60 rows) | `ui/VirtualList` with fixed-height rows (R-UI-13) |
 | Floating UI | `Dialog`, `ConfirmDialog`, `Menu` render through a portal – never position overlays inside sticky/transformed parents |
@@ -124,6 +126,7 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 
 **Tests**
 - Flow tests drive the real UI in demo mode with German labels: `enterDemo(user, path)` from `src/test/demo.tsx`, `beforeEach(() => localStorage.clear())`. Row menus are named `Weitere Aktionen für <Titel>`.
+- The player closes after a 200 ms animation: in flow tests `await waitForElementToBeRemoved(player)` before checking the screen below (its title is still in the document meanwhile).
 - jsdom has no layout: `VirtualList` renders plainly up to 60 rows; stand-ins for `matchMedia`, audio and `URL.createObjectURL` are in `src/test/setup.ts`.
 - `src/config.ts` holds the band's HiDrive client ID (empty in a fresh checkout). Tests pass either way; **never put it into a delivery** – `npm run pack` excludes it.
 - A targeted flow run takes ~10–15 s; the full suite ~1–1.5 min on one CPU.
@@ -144,6 +147,6 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 - `usePwaUpdate()` registers the service worker – call it only in `UpdateToast`; elsewhere use `checkForUpdate()` / `applyUpdate()` (`core/pwa/usePwa.ts`).
 - `usePlayer()` in a list screen = full re-render ~4×/s while music plays (see §5).
 
-## 8. Open items (as of v0.15.0)
+## 8. Open items (as of v0.16.0)
 
 Device tests still open: S1/S2 (ETag, file IDs after rename), S4 (share link works as subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with the keyboard on iPhone/Android, push notifications on real devices, `POST /file/copy`. Everything else planned is built; the band test phase decides 1.0.0 (`03-roadmap.md`).

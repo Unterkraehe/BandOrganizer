@@ -1,5 +1,5 @@
-import { createContext, useCallback, useContext } from 'react';
-import { matchPath, useLocation, useNavigate } from 'react-router-dom';
+import { createContext, useCallback, useContext, useEffect, useRef } from 'react';
+import { matchPath, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 
 /**
  * What `Page` needs to know about the app's screens for the ← back button (F3 §4.4, R-UX-09):
@@ -9,9 +9,40 @@ import { matchPath, useLocation, useNavigate } from 'react-router-dom';
 export interface NavigationInfo {
   roots: string[];
   routes: { path: string; parent?: string }[];
+  /** full-screen views that come up as a sheet (player): the screen below doesn't slide (route patterns) */
+  overlays?: string[];
 }
 
 export const NavigationContext = createContext<NavigationInfo>({ roots: ['/'], routes: [] });
+
+export const isOverlay = (pathname: string, info: NavigationInfo) => (info.overlays ?? []).some((path) => matchPath({ path, end: true }, pathname));
+
+/**
+ * How many screens deep the user is in this visit – fallback when the browser doesn't tell us
+ * (memory router in tests). React Router's browser history keeps it in history.state.idx.
+ */
+let depth = 0;
+
+/** Called once by the app frame: follows pushes and pops. */
+export function useHistoryDepthTracker() {
+  const { key } = useLocation();
+  const type = useNavigationType();
+  const last = useRef(key);
+  useEffect(() => {
+    depth = 0; // a new app frame = a new visit
+  }, []);
+  useEffect(() => {
+    if (last.current === key) return; // first render / StrictMode re-run
+    last.current = key;
+    if (type === 'PUSH') depth++;
+    else if (type === 'POP') depth = Math.max(0, depth - 1);
+  }, [key, type]);
+}
+
+function canGoBack(): boolean {
+  const idx = (window.history.state as { idx?: number } | null)?.idx;
+  return typeof idx === 'number' ? idx > 0 : depth > 0;
+}
 
 /** The screen "above" `pathname`: an explicit parent, else the path without its last part that is a known screen. */
 export function parentOf(pathname: string, info: NavigationInfo): string {
@@ -37,9 +68,7 @@ export function useBack(): { show: boolean; goBack: () => void } {
   const navigate = useNavigate();
   const show = !info.roots.includes(pathname);
   const goBack = useCallback(() => {
-    // React Router keeps the position in its own history in history.state.idx (0 = first screen of this visit)
-    const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
-    if (idx > 0) navigate(-1);
+    if (canGoBack()) navigate(-1);
     else navigate(parentOf(pathname, info), { replace: true });
   }, [info, navigate, pathname]);
   return { show, goBack };

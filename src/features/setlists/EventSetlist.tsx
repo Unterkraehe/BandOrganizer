@@ -7,7 +7,7 @@ import { useCalendar } from '@/features/calendar/CalendarProvider';
 import type { Occurrence } from '@/features/calendar/model';
 import { Button, Dialog } from '@/ui';
 import { NewSetlistDialog } from './NewSetlistDialog';
-import { useSetlistMode } from './SetlistModeProvider';
+import { useStartSetlist } from './SetlistModeProvider';
 import { useSetlists } from './SetlistProvider';
 import { useSetlistInfo } from './useSetlistInfo';
 import styles from './Setlists.module.css';
@@ -20,7 +20,7 @@ export function EventSetlist({ occ, title }: { occ: Occurrence; title: string })
   const { store: calendar } = useCalendar();
   const { setlists } = useSetlists();
   const { label } = useSetlistInfo();
-  const mode = useSetlistMode();
+  const startSetlist = useStartSetlist();
   const [choosing, setChoosing] = useState(false);
   const [creating, setCreating] = useState(false);
   const setlist = setlists.find((s) => s.id === occ.setlistId);
@@ -44,10 +44,7 @@ export function EventSetlist({ occ, title }: { occ: Occurrence; title: string })
             <Button
               variant="primary"
               icon={<ListMusic size={18} />}
-              onClick={() => {
-                mode.start(setlist.id);
-                navigate(`/songs?setlist=${setlist.id}`);
-              }}
+              onClick={() => startSetlist(setlist.id)}
             >
               {t('actions.practice')}
             </Button>

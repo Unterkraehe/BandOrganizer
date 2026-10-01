@@ -57,6 +57,8 @@
   --dur: 200ms;
   /* screen changes (push / back / tab) */
   --dur-screen: 220ms;
+  /* the player growing out of the mini player */
+  --dur-sheet: 280ms;
   --ease: cubic-bezier(0.2, 0, 0, 1);
 }
 

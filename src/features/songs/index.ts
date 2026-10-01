@@ -1,4 +1,4 @@
-/** Feature registration (songsFeature): song list, detail, edit, practice, merge, new song, tag settings. */
+/** Feature registration (songsFeature): song list, detail, edit, player, merge, new song, tag settings. */
 import { Music } from 'lucide-react';
 import { createElement } from 'react';
 import type { FeatureRegistration } from '@/core/features/registry';
@@ -8,7 +8,7 @@ import { SongEditPage } from './SongEditPage';
 import { TagsSettingsPage } from './TagsSettingsPage';
 import { LyricsEditorPage } from './lyrics/LyricsEditorPage';
 import { NewSongPage } from './uploads/NewSongPage';
-import { PracticePage } from './practice/PracticePage';
+import { PlayerPage, PracticeRedirect } from './player/PlayerPage';
 import { SongsPage } from './SongsPage';
 
 export const songsFeature: FeatureRegistration = {
@@ -23,7 +23,9 @@ export const songsFeature: FeatureRegistration = {
     { path: '/songs/new', element: createElement(NewSongPage) },
     { path: '/songs/:songId', element: createElement(SongDetailPage) },
     { path: '/songs/:songId/lyrics', element: createElement(LyricsEditorPage) },
-    { path: '/songs/:songId/practice', element: createElement(PracticePage) },
+    // before v0.16.0 the practice view – now the player's "Üben" tab
+    { path: '/songs/:songId/practice', element: createElement(PracticeRedirect) },
+    { path: '/player', element: createElement(PlayerPage) },
     { path: '/songs/:songId/edit', element: createElement(SongEditPage) },
     { path: '/songs/:songId/merge', element: createElement(MergePage) },
     { path: '/settings/tags', element: createElement(TagsSettingsPage) },

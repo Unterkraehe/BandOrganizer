@@ -9,7 +9,10 @@ import { practiceSummary } from './practice/summary';
 import { useSetlistMode } from '@/features/setlists/SetlistModeProvider';
 import styles from './MiniPlayer.module.css';
 
-/** Persistent mini player (F3 §3, R-UX-08). Hidden on the detail page of the playing song. */
+/**
+ * Persistent mini player (F3 §3, R-UX-08). Tapping it opens the player, which grows out of it (v0.16.0).
+ * Hidden while the player is open and on the playing song's page (which has its own player until step 3).
+ */
 export function MiniPlayer() {
   const { t } = useTranslation('songs');
   const { engine, state } = usePlayer();
@@ -18,7 +21,7 @@ export function MiniPlayer() {
   const track = state.track;
   // track.id is the recording; links go to the song (since M3a)
   const songPath = track ? `/songs/${track.songId ?? track.id}` : '';
-  const visible = Boolean(track) && pathname !== songPath && pathname !== `${songPath}/practice`;
+  const visible = Boolean(track) && pathname !== songPath && pathname !== '/player';
   // Tells things pinned to the bottom (chat input, upload indicator) to sit above the mini player
   useEffect(() => {
     document.documentElement.toggleAttribute('data-miniplayer', visible);
@@ -40,7 +43,7 @@ export function MiniPlayer() {
   return (
     <div className={styles.mini} role="region" aria-label={t('player.nowPlaying')}>
       <div className={styles.progress} style={{ width: `${progress}%` }} aria-hidden="true" />
-      <Link to={songPath} className={styles.info} aria-label={`${t('player.open')}: ${track.title}`}>
+      <Link to="/player" className={styles.info} aria-label={`${t('player.open')}: ${track.title}`}>
         <span className={styles.title}>{track.title}</span>
         <span className={styles.status}>
           {inQueue >= 0 ? `${t('setlists:mode.position', { n: setlistMode.index + 1, total: setlistMode.queue.length })} · ` : ''}

@@ -128,7 +128,7 @@ Optional view of the song list that mirrors the HiDrive folder structure.
 - Title, below: chips for key, BPM, tuning, duration (only filled ones)
 - Tags as chips below the title (tap → song list filtered by that tag)
 - If archived: banner "Dieser Song ist archiviert" + "Aus dem Archiv holen"
-- Buttons: "Bearbeiten" (metadata, §4.4), "Vollbild" (practice view, §4.3), ⋯ (Archivieren, Tags bearbeiten, …)
+- Buttons: "Bearbeiten" (metadata, §4.4), ⋯ (Archivieren, Tags bearbeiten, …); "Üben" under the player opens the player (v0.16.0; the "Vollbild" icon was removed – same function)
 - If in setlist mode: "3 / 12 · Nächster: Song X" + ◀ ▶
 
 **Player**
@@ -145,6 +145,8 @@ Optional view of the song list that mirrors the HiDrive folder structure.
 **Footer section:** "In Setlists: Stadtfest 2026, Probe 12.10." (links to F7).
 
 ### 4.3 Vollbild / Übungsansicht (`/songs/:songId/practice`)
+
+> **v0.16.0: replaced by the player** (`/player`, F9 §"Player"): the same content – lyrics with text size, notes (pinned first, ▶ time chips), tempo / pitch / A–B loop, version choice, wake lock – in one full-screen player that also opens from the mini player. Song page "Üben" opens it on the **Üben** tab; the old address redirects. The description below is kept for the behaviour details.
 
 Distraction-free view for practicing at home and in rehearsals. Works in portrait and landscape; the screen stays on while it's open (Wake Lock API, where supported).
 

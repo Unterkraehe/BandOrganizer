@@ -40,7 +40,23 @@
     "decodeError": "Diese Datei kann hier nicht abgespielt werden.",
     "blocked": "Tippe auf Abspielen, um zu starten.",
     "nowPlaying": "Läuft gerade",
-    "open": "Song öffnen"
+    "open": "Player öffnen",
+    "title": "Player",
+    "dialog": "Player: {{title}}",
+    "close": "Player schließen",
+    "menu": "Weitere Aktionen im Player",
+    "viewLabel": "Ansicht",
+    "views": {
+      "lyrics": "Songtext",
+      "practice": "Üben",
+      "queue": "Setlist"
+    },
+    "toSong": "Zum Song",
+    "toSetlist": "Zur Setlist",
+    "empty": "Gerade läuft nichts.",
+    "emptyText": "Spiel einen Song oder eine Setlist ab – dann geht hier der Player auf.",
+    "toSongs": "Zu den Songs",
+    "playToPractice": "Spiel den Song ab, dann kannst du Tempo, Tonhöhe und eine Schleife einstellen."
   },
   "settings": {
     "title": "Songs finden",
@@ -252,9 +268,7 @@
     "path": "Ordnerpfad"
   },
   "practice": {
-    "open": "Übungsansicht",
-    "close": "Übungsansicht schließen",
-    "title": "Üben",
+    "open": "Üben",
     "tempo": "Tempo",
     "tempoValue": "{{value}} %",
     "slower": "Langsamer",

@@ -18,7 +18,7 @@ export function SetlistModeBar({ songId }: { songId: string }) {
   return (
     <div className={styles.bar}>
       <ListMusic size={16} aria-hidden="true" />
-      <Link to={`/songs?setlist=${mode.setlist.id}`}>{mode.setlist.name}</Link>
+      <Link to="/player?view=queue">{mode.setlist.name}</Link>
       <strong>{t('mode.position', { n: index + 1, total: mode.queue.length })}</strong>
       {next?.song && (
         <span>

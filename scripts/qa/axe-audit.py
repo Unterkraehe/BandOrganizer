@@ -22,7 +22,9 @@ for label, kw in [('phone-dark', dict(scheme='dark')), ('desktop-light', dict(sc
         nav(pg, 'calendar/new?type=gig'); pg.get_by_label('Titel').fill('Stadtfest'); pg.get_by_role('button', name='Speichern').click(); pg.wait_for_timeout(500)
         nav(pg, 'chat'); pg.get_by_role('textbox', name='Nachricht an die Band …').fill('Hallo'); pg.get_by_role('button', name='Senden').click(); pg.wait_for_timeout(400)
         pg.evaluate(AXE)
-        for path in SCREENS:
+        # the player (v0.16.0) with a playing song, on its "Üben" and "Songtext" tabs
+        nav(pg, 'songs', wait=900); pg.get_by_role('button', name='abspielen', exact=False).first.click(); pg.wait_for_timeout(800)
+        for path in SCREENS + ['player?view=practice', 'player?view=lyrics']:
             nav(pg, path, wait=900)
             for v in pg.evaluate(RUN):
                 f = findings.setdefault(v['id'], {'impact': v['impact'], 'help': v['help'], 'where': []})

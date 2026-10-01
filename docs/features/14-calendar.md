@@ -152,7 +152,7 @@ Risks and fallback:
 - **Privacy:** anyone who has the subscription link can see the band dates (not files). The link can be renewed in the settings ("Neuen Link erstellen"), which invalidates the old one.
 
 ### 6.6 Setlist link
-- One setlist per event (or per occurrence for series). "Setlist üben" opens Songs in setlist mode (F3 §5).
+- One setlist per event (or per occurrence for series). "Setlist abspielen" (until v0.15: "Setlist üben") plays it in the player, queue tab open (F3 §5).
 - Linking is also possible from the setlist side (F7).
 
 ### 6.7 Info lines in the chat

@@ -41,15 +41,17 @@ with session(width=int(sys.argv[1]) if len(sys.argv) > 1 else 360, height=740) a
     for path in SCREENS:
         nav(pg, path, wait=900)
         check(pg, f'/{path}')
-    # song page + practice view with a long recording name (the practice controls only show while playing)
+    # song page + player with a long recording name (the practice controls only show while playing)
     nav(pg, 'songs', wait=900)
     pg.get_by_role('link', name='Midnight Engine', exact=False).first.click(); pg.wait_for_timeout(1200)
-    # a second version → the version dropdown appears (song page and practice view)
+    # a second version → the version dropdown appears (song page and player)
     pg.get_by_role('button', name='Als Version hinzufügen').first.click(); pg.wait_for_timeout(1500)
     check(pg, 'song page')
-    nav(pg, pg.url.split('/BandOrganizer/')[1] + '/practice', wait=1500)
-    pg.get_by_role('button', name='Abspielen').first.click(); pg.wait_for_timeout(1500)
-    check(pg, 'practice view (playing)')
+    pg.get_by_role('button', name='Abspielen').first.click(); pg.wait_for_timeout(800)
+    pg.get_by_role('button', name='Üben', exact=True).first.click(); pg.wait_for_timeout(1200)
+    for view in ['Üben', 'Songtext']:
+        pg.get_by_role('dialog').get_by_text(view, exact=True).click(); pg.wait_for_timeout(500)
+        check(pg, f'player: {view}')
 
 log('problems:', problems)
 sys.exit(1 if problems else 0)

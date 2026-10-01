@@ -66,7 +66,7 @@ Widgets in fixed order. Each widget is provided by its feature via the widget re
   - Relative date: "Heute", "Morgen", otherwise "Sa, 10. Okt."; time; location
   - Conflict hint if a member is absent: "Tom ist abwesend"
   - Answer summary ("4 ✓ · 1 ? · 1 ✗ · 1 offen") and **my answer buttons** ✓ / ? / ✗ directly on the card; "Antwort fehlt" marker if I haven't answered (F5 §6.1)
-  - **If a setlist is attached:** setlist name + number of songs and a prominent button **"Setlist üben"** → opens Songs in setlist mode (§5) with that setlist.
+  - **If a setlist is attached:** setlist name + number of songs and a prominent button **"Setlist abspielen"** (until v0.15: "Setlist üben") → plays the setlist in the player, queue tab open (§5).
   - Tap on the card (outside the button) → event detail.
 - Absences appear as additional compact lines ("Tom abwesend · 12.–19. Okt."), but only those that overlap one of the 5 shown events or start within the next 14 days.
 - Empty state: "Keine anstehenden Termine" + button "Termin anlegen".
@@ -106,13 +106,11 @@ Simple list of the remaining navigation items (Setlists, Mitglieder, Einstellung
 Tabs (phone bottom bar: Start · Songs · Kalender · Chat · Mehr; "Mehr" holds Setlists, Mitglieder, Einstellungen). Indented = opened from the line above, ← back leads there. *Italic* = also reachable from elsewhere.
 
 ```
-Start (/)                       widgets: chat → Chat; next events → Termin (event cards: "Setlist üben" → Setlist-Modus)
+Start (/)                       widgets: chat → Chat; next events → Termin (event cards: "Setlist abspielen" → Player)
 Songs (/songs)                  list / folders, search, tags; ⋯ per row
   Song (/songs/:id)             *from search, chat cards, setlists, mini player*
     Song bearbeiten (/edit) · Songtext (/lyrics) · Zusammenführen (/merge)
-    Übungsansicht (/practice)   full-screen overlay, ✕ closes
   Neuer Song (/songs/new)
-  Songs in Setlist-Modus (/songs?setlist=…)   *from setlist, event, chat card* – to be replaced by the player queue (plan step 2)
 Kalender (/calendar)            list / month (phone: day panel)
   Termin (/calendar/:id[/:date])  *from start, chat info lines, notifications, setlist*
     Bearbeiten (/edit)
@@ -125,12 +123,18 @@ Mehr (/more)
   Mitglieder (/members) → Mitglied (/members/:id)
   Einstellungen (/settings) → Band (/settings/band) · Tags (/settings/tags) · Profil (/profile)
 Suche (/search, top bar 🔍)     results open the item's own screen
-Mini player (all screens)       → song (plan step 2: → full-screen player)
+Player (/player)                full-screen sheet, grows out of the mini player, ⌄ / back gesture closes (back to where you were)
+                                *from mini player; song page "Üben" (?song=…&view=practice); "Setlist abspielen" on setlist,
+                                setlists list, event, event card, chat card (?view=queue)*; tabs Songtext · Üben · Setlist; ⋯ → Zum Song / Zur Setlist
+Mini player (all screens)       → Player (hidden while the player is open and on the playing song's page)
+Old addresses                   /songs/:id/practice → /player?song=:id&view=practice; /songs?setlist=:id → plays nothing, opens the player queue
 ```
 
-Planned (see roadmap "Navigation & clarity"): step 2 one full-screen player instead of song-page player + practice view, setlist playback in the player; step 3 calmer song page; step 4 setlists unified; step 5 review of all screens.
+Planned (see roadmap "Navigation & clarity"): step 3 calmer song page (no player block; "Abspielen" / "Üben" open the player); step 4 setlists unified; step 5 review of all screens.
 
 ## 5. Setlist Mode (cross-feature)
+
+> **v0.16.0 – the setlist plays in the player, not in the Songs tab (R-UX-09 "no hidden modes"):** "Setlist abspielen" (setlist page, setlists row menu, event page, event card, chat card – one hook `useStartSetlist()`) starts the setlist, plays its first playable song and opens the player on its **Setlist** tab: queue in setlist order with block headers, pauses, interludes, direct transitions, "Automatisch weiter" and "Beenden" (`SetlistQueue`, ex `SetlistModeView`). The player's subtitle shows "Stadtfest · 3 / 12", ⏮ / ⏭ appear in its transport. The Songs tab always shows the song list. The text below describes the original v0.8 design (banner in Songs) – superseded where it differs.
 
 Opening a setlist "in Songs" turns the song list into a practice/rehearsal queue. Triggered by "Setlist üben" on the dashboard, event detail (F5) or setlist detail (F7).
 
@@ -188,7 +192,8 @@ interface DashboardWidget {
 | Route | Screen |
 |---|---|
 | `/` | Start |
-| `/songs`, `/songs?setlist=:id`, `/songs/:songId` | Songs (F4) |
+| `/songs`, `/songs/:songId` | Songs (F4) |
+| `/player` (`?song=`, `?view=lyrics\|practice\|queue`) | Player (F9, v0.16.0) |
 | `/calendar`, `/calendar/:eventId` | Kalender (F5) |
 | `/chat` | Chat (F6) |
 | `/setlists`, `/setlists/:id` | Setlists (F7) |

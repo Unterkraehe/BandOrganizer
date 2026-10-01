@@ -10,7 +10,7 @@ import { todayLocal } from '@/features/calendar/time';
 import { Button, Chip, EmptyState, Menu, Page } from '@/ui';
 import type { Setlist } from './model';
 import { NewSetlistDialog } from './NewSetlistDialog';
-import { useSetlistMode } from './SetlistModeProvider';
+import { useStartSetlist } from './SetlistModeProvider';
 import { useSetlists } from './SetlistProvider';
 import { useSetlistInfo } from './useSetlistInfo';
 import styles from './Setlists.module.css';
@@ -23,7 +23,7 @@ export function SetlistsPage() {
   const { store, setlists, state } = useSetlists();
   const { eventsOf, label } = useSetlistInfo();
   const { members } = useSession();
-  const mode = useSetlistMode();
+  const startSetlist = useStartSetlist();
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState<'all' | 'gig' | 'rehearsal'>('all');
   const [creating, setCreating] = useState(false);
@@ -66,10 +66,7 @@ export function SetlistsPage() {
           items={[
             {
               label: t('actions.practice'),
-              onSelect: () => {
-                mode.start(s.id);
-                navigate(`/songs?setlist=${s.id}`);
-              },
+              onSelect: () => startSetlist(s.id),
             },
             { label: t('actions.stage'), onSelect: () => navigate(`/setlists/${s.id}/stage`) },
             { label: t('actions.print'), onSelect: () => navigate(`/setlists/${s.id}/print`) },

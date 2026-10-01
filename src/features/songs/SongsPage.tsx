@@ -10,7 +10,6 @@ import { useLibrary } from './LibraryProvider';
 import { recordingName, sortSongs, type Recording, type Song, type SongSort, type Tag } from './model';
 import { SongFolders } from './SongFolders';
 import { useSetlistMode } from '@/features/setlists/SetlistModeProvider';
-import { SetlistModeView } from '@/features/setlists/SetlistModeView';
 import { useEffect } from 'react';
 import { TagDialog } from './TagDialog';
 import { usePlaySong } from './usePlaySong';
@@ -51,8 +50,11 @@ export function SongsPage() {
   const menuFor = useSongActions(setTagSong);
   const setlistMode = useSetlistMode();
   const setlistParam = params.get('setlist');
+  // old links "/songs?setlist=…" (before v0.16.0): the setlist now plays in the player – the Songs tab stays the song list
   useEffect(() => {
-    if (setlistParam && setlistMode.setlist?.id !== setlistParam) setlistMode.start(setlistParam);
+    if (!setlistParam) return;
+    if (setlistMode.setlist?.id !== setlistParam) setlistMode.start(setlistParam);
+    navigate('/player?view=queue', { replace: true });
   }, [setlistParam]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const selectedTags = params.getAll('tag');
@@ -98,13 +100,6 @@ export function SongsPage() {
   }, [songs, onlyNew, selectedTags, deferredQuery, sort, haystacks]);
 
   const scanning = state.status === 'scanning';
-  if (setlistParam) {
-    return (
-      <Page title={t('title')}>
-        <SetlistModeView />
-      </Page>
-    );
-  }
   const firstScan = scanning && state.files.length === 0;
   const filtering = Boolean(deferredQuery.trim()) || onlyNew || selectedTags.length > 0;
 

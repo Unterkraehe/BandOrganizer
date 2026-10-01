@@ -52,7 +52,7 @@ Consequences for the design:
 - **Item cards** (when a message shares an item):
   - Song: title, Band-Version duration, ▶ play, "Öffnen"
   - Event: type, date/time, location, answer summary + my answer buttons (✓ / ? / ✗)
-  - Setlist: name, song count, duration, "Öffnen", "Setlist üben"
+  - Setlist: name, song count, duration, "Öffnen", "Setlist abspielen" (→ player, v0.16.0)
 - **Info lines** (system): small, centered, grey ("Lisa hat die Probe am Do, 15. Okt. abgesagt"), tap → item.
 - **Input bar:** text field (multi-line, grows), "+" → "Song teilen", "Termin teilen", "Setlist teilen" (pickers with search), send button. Enter sends on desktop, Shift+Enter = new line.
 - Long press / hover menu on a message: "Antworten", Reaktion, "Bearbeiten" / "Löschen" (own only), "Zum Element" (if context).

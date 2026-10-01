@@ -12,7 +12,7 @@ import { Discussion } from '@/features/chat/Discussion';
 import { LinkEventDialog } from './LinkEventDialog';
 import { NOTE_MAX, songEntries } from './model';
 import { SetlistSheet } from './SetlistSheet';
-import { useSetlistMode } from './SetlistModeProvider';
+import { useStartSetlist } from './SetlistModeProvider';
 import { useSetlists } from './SetlistProvider';
 import { useSetlistInfo } from './useSetlistInfo';
 import styles from './Setlists.module.css';
@@ -26,7 +26,7 @@ export function SetlistDetailPage() {
   const { store, setlists, state } = useSetlists();
   const { songById, eventsOf, durationOf } = useSetlistInfo();
   const { members } = useSession();
-  const mode = useSetlistMode();
+  const startSetlist = useStartSetlist();
   const setlist = setlists.find((s) => s.id === setlistId);
   const [linking, setLinking] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
@@ -59,10 +59,7 @@ export function SetlistDetailPage() {
         <Button
           variant="primary"
           icon={<ListMusic size={18} />}
-          onClick={() => {
-            mode.start(setlist.id);
-            navigate(`/songs?setlist=${setlist.id}`);
-          }}
+          onClick={() => startSetlist(setlist.id)}
         >
           {t('actions.practice')}
         </Button>

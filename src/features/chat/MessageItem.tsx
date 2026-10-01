@@ -6,7 +6,7 @@ import { formatTime } from '@/core/i18n/format';
 import { useSession } from '@/core/session/BandSession';
 import { AnswerButtons } from '@/features/calendar/AnswerButtons';
 import { useCalendar } from '@/features/calendar/CalendarProvider';
-import { useSetlistMode } from '@/features/setlists/SetlistModeProvider';
+import { useStartSetlist } from '@/features/setlists/SetlistModeProvider';
 import { usePlaySong } from '@/features/songs/usePlaySong';
 import { Avatar, Button, Menu } from '@/ui';
 import { useChat } from './ChatProvider';
@@ -54,7 +54,7 @@ function ShareCard({ refItem }: { refItem: ItemRef }) {
   const navigate = useNavigate();
   const resolve = useItemResolver();
   const { play } = usePlaySong();
-  const mode = useSetlistMode();
+  const startSetlist = useStartSetlist();
   const { store: calendar } = useCalendar();
   const { currentMember } = useSession();
   const item = resolve(refItem);
@@ -77,10 +77,7 @@ function ShareCard({ refItem }: { refItem: ItemRef }) {
         {item.kind === 'setlist' && (
           <Button
             icon={<ListMusic size={16} />}
-            onClick={() => {
-              mode.start(item.setlist.id);
-              navigate(`/songs?setlist=${item.setlist.id}`);
-            }}
+            onClick={() => startSetlist(item.setlist.id)}
           >
             {t('card.practice')}
           </Button>

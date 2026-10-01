@@ -1,4 +1,8 @@
 {
+  "0.16.0": [
+    "Der neue Player: Tipp auf den Mini-Player unten – der Player wächst daraus hervor. Dort hast du Songtext, Üben (Tempo, Tonhöhe, Schleife) und bei einer Setlist die Reihenfolge. Mit ⌄ oder der Zurück-Geste geht er wieder zu. Er ersetzt die bisherige Übungsansicht.",
+    "Setlists abspielen: „Setlist abspielen“ (bei der Setlist, am Termin oder im Chat) startet sie sofort im Player. Der Songs-Reiter bleibt dabei die normale Songliste."
+  ],
   "0.15.0": [
     "Zurück-Pfeil: Jede Unterseite (Song, Termin, Setlist, Bearbeiten …) hat oben links jetzt einen ← Zurück-Pfeil – er bringt dich dorthin, wo du herkamst, oder eine Ebene höher, wenn du über einen Link gekommen bist.",
     "Bewegung zeigt den Weg: Neue Seiten gleiten von rechts herein, beim Zurückgehen von links; zwischen den Reitern unten wird weich übergeblendet."

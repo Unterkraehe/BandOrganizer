@@ -1,7 +1,7 @@
 import { ListMusic, Repeat } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
-import { useSetlistMode } from '@/features/setlists/SetlistModeProvider';
+import { Link } from 'react-router-dom';
+import { useStartSetlist } from '@/features/setlists/SetlistModeProvider';
 import { useSetlists } from '@/features/setlists/SetlistProvider';
 import { Button } from '@/ui';
 import { formatTime } from '@/core/i18n/format';
@@ -16,8 +16,7 @@ import styles from './Calendar.module.css';
 export function EventCard({ occ, data }: { occ: Occurrence; data: ReturnType<ReturnType<typeof useOccurrenceData>> }) {
   const { t } = useTranslation('calendar');
   const { members } = useSession();
-  const navigate = useNavigate();
-  const mode = useSetlistMode();
+  const startSetlist = useStartSetlist();
   const { setlists } = useSetlists();
   const setlist = occ.setlistId ? setlists.find((s) => s.id === occ.setlistId) : undefined;
   const Icon = TYPE_ICONS[occ.type];
@@ -67,10 +66,7 @@ export function EventCard({ occ, data }: { occ: Occurrence; data: ReturnType<Ret
             <Button
               variant="primary"
               icon={<ListMusic size={16} />}
-              onClick={() => {
-                mode.start(setlist.id);
-                navigate(`/songs?setlist=${setlist.id}`);
-              }}
+              onClick={() => startSetlist(setlist.id)}
             >
               {t('setlists:actions.practice')}
             </Button>
