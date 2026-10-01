@@ -15,8 +15,9 @@ self.addEventListener('push', (event) => {
       const windows = await clients.matchAll({ type: 'window', includeUncontrolled: true });
       const visible = windows.some((w) => w.visibilityState === 'visible');
       // The open app shows new messages itself. Apple revokes push access if a push shows nothing,
-      // so there the notification is always shown.
-      if (visible && !isApple) return;
+      // so there the notification is always shown. The test (Einstellungen → Benachrichtigungen) is
+      // sent while the app is open, so it is always shown too.
+      if (visible && !isApple && data.tag !== 'test') return;
       await self.registration.showNotification(data.title || 'Band-App', {
         body: data.body || '',
         tag: data.tag || undefined,

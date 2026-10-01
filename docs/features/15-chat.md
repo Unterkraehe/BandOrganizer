@@ -96,7 +96,7 @@ Created by the device that performs the action, stored like messages with `type:
 - **What notifies (decided):** every chat message (incl. item discussions) and the info lines for changed / cancelled / re-scheduled events. Not: absences, answers, Band-Version or design changes. Your own messages never notify you.
 - **Content (decided):** title "<Sender> · <Band>", text = the message (max. ~180 characters; shared items as "📎 Termin" etc.). Event changes: "Termin abgesagt" + the info line. Tapping opens the message (`chat?message=`) or the event.
 - **How:** each device stores its Web Push subscription in `_BandApp/push/<memberId>/<deviceId>.json`. The app of whoever writes the message asks the token helper (`POST /push`, with its HiDrive login) to deliver to all *other* members' devices; the worker encrypts per device (RFC 8291) and signs with VAPID (RFC 8292). Push services only see encrypted data. Devices reported as gone (404/410) are switched off automatically.
-- **Open app:** if the app is visible on a device, no notification is shown there (except on Apple devices, where every push must show one).
+- **Open app:** if the app is visible on a device, no notification is shown there (except on Apple devices, where every push must show one). The test notification (tag `test`) is always shown – it is sent from the open app (v0.14.1).
 - **Requirements:** Android – Chrome, installed or not. iPhone/iPad – iOS 16.4+, app installed on the home screen and opened from there. Not in the demo.
 - **Setup:** VAPID keys + `BAND_ACCOUNT` in the worker (token-helper/README.md).
 

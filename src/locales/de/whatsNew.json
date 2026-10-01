@@ -1,4 +1,7 @@
 {
+  "0.14.1": [
+    "Benachrichtigungen: Die Test-Benachrichtigung erscheint jetzt auch, während die App geöffnet ist (bisher kam sie auf Android nur an, wenn die App im Hintergrund war)."
+  ],
   "0.14.0": [
     "Erinnerungen an Termine: Lass dich vor Auftritten, Proben und anderen Terminen per Benachrichtigung erinnern. In Einstellungen → Benachrichtigungen legst du fest, wie lange vorher (z. B. Auftritte: 1 Tag und 3 Std.). Auf jeder Termin-Seite kannst du das unter „Meine Erinnerung“ für diesen Termin ändern. Keine Erinnerung bei Absagen, bei „Nein“ oder wenn du abwesend bist."
   ],
