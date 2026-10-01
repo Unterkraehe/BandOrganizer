@@ -193,9 +193,11 @@
     "androidSteps": "Google Kalender im Browser am Computer öffnen (calendar.google.com) → links „Weitere Kalender“ → „+“ → „Per URL“ → Link einfügen. Danach erscheint das Abo auch in der Kalender-App auf dem Handy.",
     "outlook": "Outlook",
     "outlookSteps": "Kalender → „Kalender hinzufügen“ → „Aus dem Internet abonnieren“ → Link einfügen.",
-    "unsupported": "Mit diesem Speicher ist kein Abo möglich.",
     "failed": "Das hat nicht geklappt. Bitte prüfe deine Verbindung.",
-    "testHint": "Test: Öffne den Link einmal im Browser. Du solltest Text sehen, der mit „BEGIN:VCALENDAR“ beginnt (oder eine Datei „band.ics“ wird geladen). Siehst du stattdessen eine HiDrive-Seite, sag Bescheid.",
-    "createdBy": "Erstellt von {{name}} am {{date}}"
+    "testHint": "Test: Öffne den Link einmal im Browser. Eine Datei „….ics“ wird geladen oder du siehst Text, der mit „BEGIN:VCALENDAR“ beginnt. Google Kalender kann beim ersten Mal ein paar Minuten brauchen, danach aktualisiert er das Abo alle paar Stunden.",
+    "createdBy": "Erstellt von {{name}} am {{date}}",
+    "legacy": "Der bisherige Abo-Link (über HiDrive) funktioniert nicht mehr – HiDrive-Freigaben laufen ab und erlauben nur eine begrenzte Zahl von Abrufen. Erstelle einen neuen Link und abonniere ihn in deinem Kalender neu (den alten Kalender dort entfernen).",
+    "demo": "Im Demo-Modus ist der Link nur ein Beispiel – er funktioniert nicht.",
+    "notConfigured": "Das Abo ist noch nicht eingerichtet: Im Token-Helper fehlt der Speicher (siehe token-helper/README.md)."
   }
 }

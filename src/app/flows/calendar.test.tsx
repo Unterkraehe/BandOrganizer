@@ -62,7 +62,8 @@ describe('Calendar subscription (M9 in demo mode)', () => {
     await user.click(await screen.findByRole('button', { name: 'Abo-Link erstellen' }));
     const link = (await screen.findByRole('textbox', { name: 'Abo-Link' })) as HTMLInputElement;
     const first = link.value;
-    expect(first).toMatch(/^https:\/\/share\.example\.invalid\/.*band\.ics$/);
+    expect(first).toMatch(/^https:\/\/beispiel\.invalid\/calendar\/[A-Za-z0-9_-]{32}\.ics$/); // demo: example address (v0.19.1)
+    expect(screen.getByText(/Im Demo-Modus ist der Link nur ein Beispiel/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Neuen Link erstellen' }));
     await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Neuen Link erstellen' }));
     await waitFor(() => expect((screen.getByRole('textbox', { name: 'Abo-Link' }) as HTMLInputElement).value).not.toBe(first));

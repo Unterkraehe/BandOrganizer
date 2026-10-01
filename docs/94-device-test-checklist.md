@@ -10,7 +10,7 @@
 - [ ] **Conflicts:** open the same song on two devices, change the key on both, save one after the other → the second shows who changed it (F4 §4.4).
 - [ ] **S6 – large uploads:** upload a WAV > 50 MB, ideally over mobile data; interrupt the connection once → retries / "Erneut versuchen" work (F10 §5.6).
 - [ ] **Copy:** "In die Songliste übernehmen" on a suggestion → the copy is in the chosen folder, the original is still in "Vorschläge" (`POST /file/copy`, F4).
-- [ ] **S4 – calendar subscription:** create the link (Kalender → ⋯ → Kalender abonnieren), open it once in a browser: text starting with `BEGIN:VCALENDAR` or a `band.ics` download = works; a HiDrive page = needs the token-helper fallback (F5 §6.5b). Then subscribe on a phone; change an event → it shows up after the calendar app refreshes.
+- [ ] **Calendar subscription (v0.19.1, via the token helper):** deploy the new `worker.js` (KV `REMINDERS` bound). Kalender → ⋯ → Kalender abonnieren → "Abo-Link erstellen" (an old HiDrive link shows the "funktioniert nicht mehr" notice). Open the link in a browser: a `.ics` download or text starting with `BEGIN:VCALENDAR`. Subscribe in Google Calendar (calendar.google.com → Weitere Kalender → + → Per URL) and on an iPhone; the events appear (Google: minutes to hours). Change an event → it shows up after the calendar app refreshes. ~~S4: HiDrive share link~~ – answered: unsuitable (expires, download limit).
 - [ ] **S5 – .ics export:** "Zum Kalender hinzufügen" on an event on iPhone and Android → arrives in the calendar with the right time.
 
 ## B. Phones

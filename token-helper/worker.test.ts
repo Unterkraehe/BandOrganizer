@@ -258,3 +258,67 @@ describe('reminders before events (F6 §4.7)', () => {
     expect(calls).toEqual([lisa.endpoint, lisa.endpoint]);
   });
 });
+
+describe('calendar subscription (F5 §6.5b, v0.19.1)', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  const kvEnv = () => {
+    const kv = new Map<string, string>();
+    return {
+      kv,
+      env: {
+        ...env,
+        BAND_ACCOUNT: 'rockband',
+        REMINDERS: {
+          get: async (key: string) => kv.get(key) ?? null,
+          put: async (key: string, value: string) => void kv.set(key, value),
+          delete: async (key: string) => void kv.delete(key),
+        },
+      },
+    };
+  };
+  const SECRET = 'AbCdEfGhIjKlMnOpQrStUvWxYz012345';
+  const ICS = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nX-WR-CALNAME:Overload\r\nEND:VCALENDAR\r\n';
+  const upload = (method: 'PUT' | 'DELETE', body: unknown) =>
+    new Request('https://h.example/calendar', {
+      method,
+      headers: { Origin: ORIGIN, 'Content-Type': 'application/json', Authorization: 'Bearer good-token' },
+      body: JSON.stringify(body),
+    });
+  const hidrive = (alias = 'rockband') =>
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ alias }), { status: 200 }));
+  // calendar apps send no Origin header
+  const fetchIcs = (secret: string, method = 'GET') => worker.fetch(new Request(`https://h.example/calendar/${secret}.ics`, { method }), kvEnvCurrent);
+  let kvEnvCurrent: ReturnType<typeof kvEnv>['env'];
+
+  it('stores the calendar for the band only and serves it to calendar apps', async () => {
+    const { env: cEnv, kv } = kvEnv();
+    kvEnvCurrent = cEnv;
+    hidrive('someone-else');
+    expect((await worker.fetch(upload('PUT', { secret: SECRET, ics: ICS }), cEnv)).status).toBe(403);
+    vi.restoreAllMocks();
+    hidrive();
+    expect((await worker.fetch(upload('PUT', { secret: 'short', ics: ICS }), cEnv)).status).toBe(400);
+    expect((await worker.fetch(upload('PUT', { secret: SECRET, ics: '<html>' }), cEnv)).status).toBe(400);
+    expect((await worker.fetch(upload('PUT', { secret: SECRET, ics: ICS }), cEnv)).status).toBe(200);
+    expect(kv.get(`ics:${SECRET}`)).toBe(ICS);
+
+    const res = await fetchIcs(SECRET);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toBe('text/calendar; charset=utf-8');
+    expect(await res.text()).toBe(ICS);
+    expect((await fetchIcs(SECRET, 'HEAD')).status).toBe(200);
+    expect((await fetchIcs('ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')).status).toBe(404);
+
+    expect((await worker.fetch(upload('DELETE', { secret: SECRET }), cEnv)).status).toBe(200);
+    expect((await fetchIcs(SECRET)).status).toBe(404);
+  });
+
+  it('without the KV store: uploads say "not configured", the address is not found', async () => {
+    const { REMINDERS: _kv, ...noKv } = kvEnv().env;
+    void _kv;
+    kvEnvCurrent = noKv as never;
+    expect((await worker.fetch(upload('PUT', { secret: SECRET, ics: ICS }), noKv)).status).toBe(501);
+    expect((await fetchIcs(SECRET)).status).toBe(404);
+  });
+});

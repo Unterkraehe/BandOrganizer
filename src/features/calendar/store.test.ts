@@ -99,9 +99,22 @@ describe('CalendarStore (F5)', () => {
   });
 });
 
-describe('calendar subscription (F5 §6.5b)', () => {
-  it('shares band.ics, keeps it current, renews and ends the link', async () => {
-    const { createSubscription, endSubscription, readSubscription, writeBandIcs, bandIcs } = await import('./subscription');
+describe('calendar subscription (F5 §6.5b, v0.19.1: via the token helper)', () => {
+  /** stands in for the token helper: secret → .ics */
+  function testFeed() {
+    const files = new Map<string, string>();
+    let puts = 0;
+    return {
+      files,
+      puts: () => puts,
+      put: async (secret: string, ics: string) => void (puts++, files.set(secret, ics)),
+      remove: async (secret: string) => void files.delete(secret),
+      url: (secret: string) => `https://helper.example/calendar/${secret}.ics`,
+    };
+  }
+
+  it('publishes the calendar at a secret address, keeps it current, renews and ends it', async () => {
+    const { createSubscription, endSubscription, readSubscription, updateFeed, bandIcs, isLegacy } = await import('./subscription');
     const provider = new MemoryStorageProvider();
     provider.seedFolder('/h');
     const storage = new SafeStorage(provider, { appRoot: APP });
@@ -109,22 +122,43 @@ describe('calendar subscription (F5 §6.5b)', () => {
     await store.load();
     const labels = { title: () => 'Probe', cancelledPrefix: 'Abgesagt: ' };
     const ics = () => bandIcs(store.getState(), labels, 'Overload');
+    const feed = testFeed();
 
-    const sub = await createSubscription(storage, APP, ics(), 'm_lisa', null);
-    expect(await readSubscription(storage, APP)).toMatchObject({ active: true, url: sub.url });
-    expect(await provider.sharedFile(sub.url!)).toContain('X-WR-CALNAME:Overload');
+    const sub = await createSubscription(storage, APP, feed, ics(), 'm_lisa', null);
+    expect(sub.secret).toMatch(/^[A-Za-z0-9_-]{32}$/);
+    expect(sub.url).toBe(`https://helper.example/calendar/${sub.secret}.ics`);
+    expect(await readSubscription(storage, APP)).toMatchObject({ active: true, secret: sub.secret, url: sub.url });
+    expect(isLegacy(sub)).toBe(false);
+    expect(feed.files.get(sub.secret!)).toContain('X-WR-CALNAME:Overload');
 
     await store.create({ type: 'rehearsal', title: null, allDay: false, start: fromLocal('2026-10-01', '19:00'), end: fromLocal('2026-10-01', '22:00'), meetingTime: null, location: null, description: null, recurrence: null, answersEnabled: true, memberId: null });
-    expect(await writeBandIcs(storage, APP, ics(), null)).toBe(true);
-    expect(await provider.sharedFile(sub.url!)).toContain('DTSTART;TZID=Europe/Berlin:20261001T190000');
+    expect(await updateFeed(feed, sub.secret!, ics(), 'feed')).toBe(true);
+    expect(feed.files.get(sub.secret!)).toContain('DTSTART;TZID=Europe/Berlin:20261001T190000');
+    // (the "unchanged → no upload" cache needs localStorage – not available in this node test)
 
-    const renewed = await createSubscription(storage, APP, ics(), 'm_lisa', sub);
-    expect(await provider.sharedFile(sub.url!)).toBeNull(); // old link is dead
-    expect(await provider.sharedFile(renewed.url!)).toContain('BEGIN:VEVENT');
+    const renewed = await createSubscription(storage, APP, feed, ics(), 'm_lisa', sub);
+    expect(feed.files.has(sub.secret!)).toBe(false); // old address is dead
+    expect(feed.files.get(renewed.secret!)).toContain('BEGIN:VEVENT');
 
-    await endSubscription(storage, APP, renewed, 'm_lisa');
+    await endSubscription(storage, APP, feed, renewed, 'm_lisa');
     expect(await readSubscription(storage, APP)).toBeNull();
-    expect(await provider.sharedFile(renewed.url!)).toBeNull();
+    expect(feed.files.size).toBe(0);
+  });
+
+  it('recognises an old HiDrive share-link subscription and removes that link when a new one is made', async () => {
+    const { createSubscription, readSubscription, isLegacy } = await import('./subscription');
+    const provider = new MemoryStorageProvider();
+    provider.seedFolder('/h');
+    const storage = new SafeStorage(provider, { appRoot: APP });
+    await storage.writeText(`${APP}/calendar/export/band.ics`, 'BEGIN:VCALENDAR');
+    const link = await storage.createShareLink(`${APP}/calendar/export/band.ics`);
+    await storage.writeJson(`${APP}/calendar/export/subscription.json`, { schemaVersion: 1, active: true, shareId: link.id, url: link.url, createdAt: '', createdBy: 'm_tom' });
+
+    const old = await readSubscription(storage, APP);
+    expect(isLegacy(old)).toBe(true);
+    const fresh = await createSubscription(storage, APP, testFeed(), 'BEGIN:VCALENDAR', 'm_lisa', old);
+    expect(await provider.sharedFile(link.url)).toBeNull();
+    expect(isLegacy(fresh)).toBe(false);
   });
 });
 

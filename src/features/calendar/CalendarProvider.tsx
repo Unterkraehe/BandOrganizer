@@ -3,14 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { useSession } from '@/core/session/BandSession';
 import { CalendarStore } from './store';
 import { onAppResume } from '@/core/resume';
-import { bandIcs, readSubscription, writeBandIcs, type Subscription } from './subscription';
+import { bandIcs, memoryFeed, readSubscription, updateFeed, workerFeed, type CalendarFeed, type Subscription } from './subscription';
 
 interface SubscriptionState {
   subscription: Subscription | null;
   loaded: boolean;
   setSubscription: (sub: Subscription | null) => void;
-  /** current band.ics content (for creating the link) */
+  /** current band calendar as .ics (for creating the link) */
   currentIcs: () => string;
+  /** where the subscription file lives (token helper; memory in the demo) */
+  feed: CalendarFeed;
 }
 
 const CalendarContext = createContext<CalendarStore | null>(null);
@@ -52,6 +54,7 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
   // Calendar subscription: keep band.ics current after changes (F5 §6.5b)
   const { t } = useTranslation('calendar');
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [feed] = useState<CalendarFeed>(() => (mode === 'demo' ? memoryFeed() : workerFeed));
   const [subLoaded, setSubLoaded] = useState(false);
   const state = useSyncExternalStore(store.subscribe, store.getState);
   const currentIcs = () =>
@@ -65,19 +68,21 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
       .catch(() => undefined)
       .finally(() => setSubLoaded(true));
   }, [storage, appRoot]);
+  // keep the subscribed calendar current: upload a few seconds after changes, only if it changed (v0.19.1)
+  const secret = subscription?.secret ?? null;
   useEffect(() => {
-    if (!subscription || !storage || !appRoot || state.status !== 'ready') return;
+    if (!secret || state.status !== 'ready' || !store.isFresh()) return;
     const timer = setTimeout(() => {
-      void writeBandIcs(storage, appRoot, icsRef.current(), mode === 'demo' ? null : `bandapp.calendar.ics.${band?.id}`).catch((error) =>
-        console.warn('Updating band.ics failed', error),
+      void updateFeed(feed, secret, icsRef.current(), mode === 'demo' ? null : `bandapp.calendar.feed.${band?.id}`).catch((error) =>
+        console.warn('Updating the calendar subscription failed', error),
       );
     }, 3000);
     return () => clearTimeout(timer);
-  }, [subscription, state.events, state.exceptions, state.status, storage, appRoot, mode, band?.id]);
+  }, [secret, feed, store, state.events, state.exceptions, state.status, mode, band?.id]);
 
   return (
     <CalendarContext.Provider value={store}>
-      <SubscriptionContext.Provider value={{ subscription, loaded: subLoaded, setSubscription, currentIcs }}>{children}</SubscriptionContext.Provider>
+      <SubscriptionContext.Provider value={{ subscription, loaded: subLoaded, setSubscription, currentIcs, feed }}>{children}</SubscriptionContext.Provider>
     </CalendarContext.Provider>
   );
 }

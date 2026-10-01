@@ -4,29 +4,24 @@ import { useTranslation } from 'react-i18next';
 import { useNotify } from '@/app/notify/NotifyProvider';
 import { formatDateWithYear } from '@/core/i18n/format';
 import { useSession } from '@/core/session/BandSession';
-import { Button, ConfirmDialog, EmptyState, Page, Section } from '@/ui';
+import { Button, ConfirmDialog, Page, Section } from '@/ui';
 import { useCalendarSubscription } from './CalendarProvider';
-import { createSubscription, endSubscription, webcalUrl } from './subscription';
+import { createSubscription, endSubscription, FeedNotConfiguredError, isLegacy, webcalUrl } from './subscription';
 import styles from './Calendar.module.css';
 
 /** "Kalender abonnieren" (F5 §6.5b). */
 export function SubscriptionPage() {
   const { t } = useTranslation('calendar');
   const notify = useNotify();
-  const { storage, appRoot, currentMember, members } = useSession();
-  const { subscription, loaded, setSubscription, currentIcs } = useCalendarSubscription();
+  const { storage, appRoot, currentMember, members, mode } = useSession();
+  const { subscription, loaded, setSubscription, currentIcs, feed } = useCalendarSubscription();
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState<'renew' | 'end' | null>(null);
   const me = currentMember?.id ?? 'unknown';
 
   if (!storage || !appRoot) return null;
-  if (!storage.canShare) {
-    return (
-      <Page title={t('subscription.title')}>
-        <EmptyState icon={<CalendarSync size={28} />} title={t('subscription.unsupported')} text="" />
-      </Page>
-    );
-  }
+  const legacy = isLegacy(subscription);
+  const active = subscription?.secret ? subscription : null;
 
   const run = async (action: () => Promise<void>, done: string) => {
     setBusy(true);
@@ -35,20 +30,23 @@ export function SubscriptionPage() {
       notify({ message: done });
     } catch (error) {
       console.error('Subscription action failed', error);
-      notify({ message: t('subscription.failed') });
+      notify({ message: error instanceof FeedNotConfiguredError ? t('subscription.notConfigured') : t('subscription.failed') });
     } finally {
       setBusy(false);
     }
   };
   const create = (renew: boolean) =>
-    run(async () => setSubscription(await createSubscription(storage, appRoot, currentIcs(), me, subscription)), renew ? t('subscription.renewed') : t('subscription.created'));
+    run(async () => setSubscription(await createSubscription(storage, appRoot, feed, currentIcs(), me, subscription)), renew ? t('subscription.renewed') : t('subscription.created'));
 
   return (
     <Page title={t('subscription.title')}>
       <p>{t('subscription.intro')}</p>
       <p className={styles.hint}>{t('subscription.privacy')}</p>
 
-      {loaded && !subscription?.url && (
+      {legacy && <p className={styles.banner}>{t('subscription.legacy')}</p>}
+      {mode === 'demo' && <p className={styles.hint}>{t('subscription.demo')}</p>}
+
+      {loaded && !active && (
         <div>
           <Button variant="primary" size="lg" icon={<CalendarSync size={20} />} disabled={busy} onClick={() => void create(false)}>
             {busy ? t('subscription.creating') : t('subscription.create')}
@@ -56,30 +54,30 @@ export function SubscriptionPage() {
         </div>
       )}
 
-      {subscription?.url && (
+      {active?.url && (
         <>
           <Section title={t('subscription.linkLabel')}>
             <div className={styles.section}>
-              <input className={styles.select} readOnly value={subscription.url} aria-label={t('subscription.linkLabel')} onFocus={(e) => e.target.select()} style={{ width: '100%' }} />
+              <input className={styles.select} readOnly value={active.url} aria-label={t('subscription.linkLabel')} onFocus={(e) => e.target.select()} style={{ width: '100%' }} />
               <div className={styles.actions}>
                 <Button
                   variant="primary"
                   icon={<Copy size={18} />}
                   onClick={() =>
                     void navigator.clipboard
-                      .writeText(subscription.url!)
+                      .writeText(active.url!)
                       .then(() => notify({ message: t('subscription.copied') }))
                       .catch(() => notify({ message: t('subscription.failed') }))
                   }
                 >
                   {t('subscription.copy')}
                 </Button>
-                <Button icon={<ExternalLink size={18} />} onClick={() => (window.location.href = webcalUrl(subscription.url!))}>
+                <Button icon={<ExternalLink size={18} />} onClick={() => (window.location.href = webcalUrl(active.url!))}>
                   {t('subscription.openInApp')}
                 </Button>
               </div>
               <p className={styles.hint}>
-                {t('subscription.createdBy', { name: members.find((m) => m.id === subscription.createdBy)?.displayName ?? '?', date: formatDateWithYear(subscription.createdAt) })}
+                {t('subscription.createdBy', { name: members.find((m) => m.id === active.createdBy)?.displayName ?? '?', date: formatDateWithYear(active.createdAt) })}
               </p>
               <p className={styles.hint}>{t('subscription.testHint')}</p>
             </div>
@@ -130,7 +128,7 @@ export function SubscriptionPage() {
         onConfirm={() => {
           setConfirm(null);
           if (subscription) void run(async () => {
-            await endSubscription(storage, appRoot, subscription, me);
+            await endSubscription(storage, appRoot, feed, subscription, me);
             setSubscription(null);
           }, t('subscription.ended'));
         }}

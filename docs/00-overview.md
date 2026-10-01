@@ -1,7 +1,7 @@
 # Overload App – Project Overview
 
 > **App name:** Overload App (may change later – the name is only set in config/translations, see R-I18N-07)
-> **Status:** Implementation – v0.19.0: release candidate for 1.0 – all planned features are built; the band test phase decides when it becomes 1.0.0. Working on the code? Start with [`92-code-map.md`](92-code-map.md).
+> **Status:** Implementation – v0.19.1: release candidate for 1.0 – all planned features are built; the band test phase decides when it becomes 1.0.0. Working on the code? Start with [`92-code-map.md`](92-code-map.md).
 > **Last updated:** 2026-09-24
 
 This file is the entry point for the whole project. Read it first, then `01-general-rules.md` and `02-design-system.md`, then the feature file you are working on. The build order is defined in `03-roadmap.md`.
@@ -39,7 +39,7 @@ There are no admin roles planned for v1. Every member can do everything (subject
 | F2 | In-app member login (profile per device) | `features/11-member-login.md` | Implemented ✅ |
 | F3 | Main menu / app shell (incl. dashboard, setlist mode) | `features/12-main-menu.md` | Implemented ✅ |
 | F4 | Songs (list, versions, player, practice view, notes) | `features/13-songs.md` | Implemented ✅ |
-| F5 | Calendar (gigs, rehearsals, absences, recurring events, answers, export) | `features/14-calendar.md` | Implemented (spikes S4/S5 pending) |
+| F5 | Calendar (gigs, rehearsals, absences, recurring events, answers, export) | `features/14-calendar.md` | Implemented (S4 answered → token helper; S5 pending) |
 | F6 | Band chat (management chat, item discussions) | `features/15-chat.md` | Implemented ✅ (push notifications since v0.13) |
 | F7 | Setlist maker (blocks, notes, transitions, print, stage view, suggestions) | `features/16-setlists.md` | Implemented ✅ |
 | F8 | Global search (app items only) | `features/17-global-search.md` | Implemented ✅ |
@@ -151,7 +151,7 @@ _BandApp/
 │  ├─ events/<eventId>.json
 │  ├─ exceptions/<eventId>/<YYYY-MM-DD>.json     changed or cancelled single dates of a series
 │  ├─ answers/<eventId>/<occurrenceKey>/<memberId>.json
-│  └─ export/band.ics, subscription.json         calendar subscription (target of the public share link)
+│  └─ export/subscription.json                   calendar subscription link (secret); the .ics is served by the token helper (v0.19.1; band.ics of older versions is unused)
 ├─ setlists/<setlistId>/
 │  ├─ setlist.json
 │  └─ personal-notes/<memberId>.json
@@ -230,6 +230,7 @@ This list grows with the feature plans. Consistent wording is a rule (R-I18N-05)
 | 2026-09-26 | Neutral default band color "Messing" until a band sets its own | No pre-branding for other bands (R-UI-10) |
 | 2026-09-30 | Work on the code starts from a hand-written code map (`92-code-map.md`) plus a generated index (`93-code-index.md`); maintenance scripts (`npm run check / map / serve / pack`); app flow tests split per feature (`src/app/flows/`) | Faster, safer changes: find the right file at once, run only the relevant tests, one command for CI-equivalent checks, reproducible deliveries |
 | 2026-09-30 | Push notifications for chat messages and event changes via the token helper (`POST /push`, Web Push + VAPID, stateless); subscriptions stored in `_BandApp/push/` | Phones freeze background web apps – only push works reliably; no new server needed |
+| 2026-10-01 | Calendar subscription served by the token helper (`GET /calendar/<secret>.ics`, uploaded by the apps to KV) instead of a HiDrive share link | Spike S4: HiDrive share links expire and have a download limit (`ttl`/`maxcount` = tariff maximum) and point to a web page – a real Google subscription showed "page not found". Calendar data on Cloudflare was already accepted for reminders |
 | 2026-10-01 | Voice notes on songs: recorded in the app (MediaRecorder, max. 3 min, MP4/AAC preferred), stored as a file next to the note in `_BandApp/songs/<id>/notes/`, public or private like text notes | Faster than typing in rehearsals ("so klingt die zweite Stimme"); same rules, permissions and soft delete as text notes |
 | 2026-10-01 | Rule R-UX-09 (integrated, obvious, simple) + navigation map; overhaul in 5 released steps: ← back everywhere + screen motion, one full-screen player (replaces song-page player and practice view), calmer song page, unified setlists, review. Setlists stay under "Mehr" | Band members found the navigation confusing (no way back, look-alike screens, setlist mode hijacking the Songs tab) |
 | 2026-10-01 | Rule R-UI-14: phones never scroll sideways (360 px, down to 320 px); intentional sideways rows carry `data-scroll-x`; checked by `scripts/qa/overflow-check.py` | The practice controls scrolled sideways on phones for songs with several versions |

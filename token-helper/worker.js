@@ -11,10 +11,14 @@
  * Third job (v0.14): reminders before calendar events (F6 §4.7). The app uploads the band's
  * upcoming reminders (PUT /reminders); a Cron Trigger every 5 minutes sends the due ones.
  *
+ * Fourth job (v0.19.1): the calendar subscription (F5 §6.5b). The app uploads the band calendar
+ * (.ics) under a secret (PUT /calendar); calendar apps fetch it from GET /calendar/<secret>.ics –
+ * the only route without an origin check, because Google/Apple/Outlook fetch it from their servers.
+ *
  * Rules (R-CODE-10): no logging of tokens, codes or messages, requests only from the app's own
- * origin, no file access. The only thing stored is the reminder list (KV, decided: titles and
- * times of the next 8 weeks' events + the devices' push addresses), replaced by every upload.
- * Push and reminder requests need a valid HiDrive login of the band.
+ * origin (except the .ics), no file access. Stored in KV: the reminder list (titles and times of
+ * the next 8 weeks' events + push addresses) and the subscribed calendar (.ics), each replaced by
+ * every upload. Push, reminder and calendar uploads need a valid HiDrive login of the band.
  *
  * Environment variables (Cloudflare dashboard → Worker → Settings → Variables and Secrets):
  *   HIDRIVE_CLIENT_ID      (text)    – the client ID from the HiDrive registration
@@ -24,7 +28,7 @@
  *   VAPID_PRIVATE_KEY      (secret)
  *   VAPID_SUBJECT          (text)    – contact for the push services, e.g. "mailto:band@example.com"
  *   BAND_ACCOUNT           (text)    – HiDrive user name of the band account; only it may send pushes
- *   REMINDERS              (KV namespace binding) – reminder list; plus a Cron Trigger every 5 minutes (README.md)
+ *   REMINDERS              (KV namespace binding) – reminder list and calendar subscription; plus a Cron Trigger every 5 minutes (README.md)
  */
 
 const HIDRIVE_TOKEN_URL = 'https://my.hidrive.com/oauth2/token';
@@ -48,6 +52,12 @@ export default {
       return new Response('BandOrganizer token helper: ok', { headers: { 'Content-Type': 'text/plain' } });
     }
 
+    // Calendar apps fetch the subscription from their own servers – no app origin, no login (the secret is the key)
+    const icsMatch = url.pathname.match(/^\/calendar\/([A-Za-z0-9_-]+)\.ics$/);
+    if (icsMatch && (request.method === 'GET' || request.method === 'HEAD')) {
+      return serveCalendar(icsMatch[1], env, request.method === 'HEAD');
+    }
+
     if (!originAllowed) {
       return json({ error: 'origin_not_allowed' }, 403, null);
     }
@@ -67,6 +77,10 @@ export default {
 
     if (url.pathname === '/reminders' && request.method === 'PUT') {
       return handleReminders(request, env, origin);
+    }
+
+    if (url.pathname === '/calendar' && (request.method === 'PUT' || request.method === 'DELETE')) {
+      return handleCalendar(request, env, origin);
     }
 
     if (request.method !== 'POST' || (url.pathname !== '/token' && url.pathname !== '/refresh')) {
@@ -124,7 +138,7 @@ export default {
 function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Max-Age': '86400',
     'Cache-Control': 'no-store',
@@ -301,6 +315,54 @@ async function sendDueReminders(env, now) {
   }
   const results = await Promise.all(sends);
   return results.filter((status) => typeof status === 'number' && status < 300).length;
+}
+
+/* ------------------------------------------------------------------------------------------ */
+/* Calendar subscription (F5 §6.5b, v0.19.1)                                                   */
+/* ------------------------------------------------------------------------------------------ */
+
+const SECRET = /^[A-Za-z0-9_-]{32}$/;
+const MAX_ICS_BYTES = 1024 * 1024;
+const icsKey = (secret) => `ics:${secret}`;
+
+async function serveCalendar(secret, env, headOnly) {
+  const notFound = () => new Response('Not found', { status: 404, headers: { 'Content-Type': 'text/plain', 'Cache-Control': 'no-store' } });
+  if (!env.REMINDERS || !SECRET.test(secret)) return notFound();
+  const ics = await env.REMINDERS.get(icsKey(secret));
+  if (ics === null) return notFound();
+  return new Response(headOnly ? null : ics, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/calendar; charset=utf-8',
+      'Content-Disposition': 'inline; filename="band.ics"',
+      // calendar apps poll every few hours; a short cache keeps changes visible soon
+      'Cache-Control': 'public, max-age=300',
+    },
+  });
+}
+
+async function handleCalendar(request, env, origin) {
+  if (!env.REMINDERS) return json({ error: 'calendar_not_configured' }, 501, origin);
+  const denied = await checkBandLogin(request, env, origin);
+  if (denied) return denied;
+  const text = await request.text();
+  if (text.length > MAX_ICS_BYTES + 200) return json({ error: 'invalid_request' }, 400, origin);
+  let body;
+  try {
+    body = JSON.parse(text);
+  } catch {
+    return json({ error: 'invalid_request' }, 400, origin);
+  }
+  const secret = typeof body?.secret === 'string' ? body.secret : '';
+  if (!SECRET.test(secret)) return json({ error: 'invalid_request' }, 400, origin);
+  if (request.method === 'DELETE') {
+    await env.REMINDERS.delete(icsKey(secret));
+    return json({ ok: true }, 200, origin);
+  }
+  const ics = typeof body.ics === 'string' ? body.ics : '';
+  if (!ics.startsWith('BEGIN:VCALENDAR') || ics.length > MAX_ICS_BYTES) return json({ error: 'invalid_request' }, 400, origin);
+  await env.REMINDERS.put(icsKey(secret), ics);
+  return json({ ok: true }, 200, origin);
 }
 
 let cachedVapid = null;

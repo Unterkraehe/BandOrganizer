@@ -3,9 +3,12 @@
 | | |
 |---|---|
 | **ID** | F5 |
-| **Status** | Implemented incl. subscription (v0.12.0). Spikes S4 (share link works as subscription) and S5 (.ics on iPhone/Android) pending |
+| **Status** | Implemented incl. subscription (v0.12.0; via the token helper since v0.19.1). Spike S4 answered: HiDrive share links are unsuitable (expire, download limit). S5 (.ics on iPhone/Android) pending |
 
 > **Subscription – implementation notes (v0.12.0)**
+> **v0.19.1 – subscription via the token helper (spike S4 answered):** HiDrive share links don't work as subscriptions: they expire and allow only a limited number of downloads (HiDrive API: `ttl` and `maxcount` default to the tariff maximum; a calendar app fetches every few hours), and their address is a HiDrive web page, not the file. A band member's Google subscription showed "page not found". Now: "Abo-Link erstellen" makes a random 32-character secret and uploads the band calendar (.ics) to the token helper (`PUT /calendar`, band login, KV store); the link is `…workers.dev/calendar/<secret>.ics` (served as `text/calendar`, no origin check, no expiry, no limit). Every member's app re-uploads a few seconds after calendar changes (only if the .ics changed, compared per device; only after a fresh calendar load). "Neuen Link erstellen" = new secret, the old one is deleted; "Abo beenden" deletes it. `subscription.json` (schema 2) holds `secret` + `url`; an old share-link subscription (`shareId`) shows a notice "funktioniert nicht mehr – neuen Link erstellen" and its share link is deleted when a new link is made. `band.ics` on HiDrive is no longer written. Demo mode: an example address, nothing leaves the browser. Decision log 2026-10-01.
+>
+> Original implementation (until v0.19.0):
 > - Kalender → ⋯ → "Kalender abonnieren" (also in Einstellungen and via search). "Abo-Link erstellen" writes `_BandApp/calendar/export/band.ics` and creates a HiDrive share link (`POST /sharelink?path=…&type=file`) for exactly this file; the link is stored in `calendar/export/subscription.json` so every member sees it.
 > - While a subscription exists, every app rewrites `band.ics` a few seconds after calendar changes – only when the content actually changed (compared per device).
 > - "Neuen Link erstellen" deletes the old share link first (old subscriptions stop working); "Abo beenden" deletes the link and marks the subscription inactive. `band.ics` stays (app file).
@@ -172,7 +175,7 @@ calendar/
 ├─ events/<eventId>.json                          ← single events and series (with rrule)
 ├─ exceptions/<eventId>/<YYYY-MM-DD>.json         ← cancelled/changed occurrences of a series
 ├─ answers/<eventId>/<occurrenceKey>/<memberId>.json
-└─ export/band.ics                                ← generated subscription file
+└─ export/subscription.json                       ← the subscription link (secret + address); the .ics itself lives in the token helper (v0.19.1)
 ```
 
 `occurrenceKey` = `single` for non-recurring events, otherwise the original local date.

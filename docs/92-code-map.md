@@ -71,7 +71,7 @@ Full tree with explanations: overview §8. Who reads/writes it:
 | `tags/`, `songs/<id>/meta.json`, `songs/<id>/notes/…` | `features/songs/repository.ts`, `library.ts`, `useSongNotes.ts` | meta is created lazily; field-level update with conflict check; voice notes = `<noteId>.m4a` next to the note JSON (`noteAudioPath`), recorded with `core/audio/recorder.ts`, played by `AudioNote.tsx` |
 | `songs/<id>/practice/<memberId>.json` | `features/songs/practice.ts` | tempo/pitch/loop per member and version |
 | `calendar/events|exceptions|answers/` | `features/calendar/repository.ts`, `store.ts` | a member only writes their own answer file |
-| `calendar/export/` | `features/calendar/subscription.ts` | `band.ics` + `subscription.json` (share link) |
+| `calendar/export/subscription.json` | `features/calendar/subscription.ts` | subscription link (secret + address, schema 2); the .ics goes to the token helper (`workerFeed`, `PUT /calendar`), not to HiDrive (v0.19.1) |
 | `setlists/<id>/` | `features/setlists/repository.ts`, `store.ts` | personal notes: one file per member |
 | `chat/messages|reactions|read/` | `features/chat/store.ts` | one file per message; polling, no server |
 | `push/<memberId>/<deviceId>.json` | `features/notifications/push.ts` | Web Push subscription of one device |
@@ -149,6 +149,6 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 - `usePwaUpdate()` registers the service worker – call it only in `UpdateToast`; elsewhere use `checkForUpdate()` / `applyUpdate()` (`core/pwa/usePwa.ts`).
 - `usePlayer()` in a list screen = full re-render ~4×/s while music plays (see §5).
 
-## 8. Open items (as of v0.19.0)
+## 8. Open items (as of v0.19.1)
 
 Device tests still open: S1/S2 (ETag, file IDs after rename), S4 (share link works as subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with the keyboard on iPhone/Android, push notifications on real devices, `POST /file/copy`. Everything else planned is built; the band test phase decides 1.0.0 (`03-roadmap.md`).

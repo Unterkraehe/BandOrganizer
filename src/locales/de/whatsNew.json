@@ -1,4 +1,7 @@
 {
+  "0.19.1": [
+    "Kalender-Abo repariert: Der Abo-Link funktioniert jetzt dauerhaft (bisher liefen die HiDrive-Freigaben ab). Wer das Abo schon hatte: Kalender → ⋯ → Kalender abonnieren → „Abo-Link erstellen“ und den neuen Link im Kalender neu abonnieren, den alten dort entfernen."
+  ],
   "0.19.0": [
     "Sprachnotizen: Bei den Notizen eines Songs kannst du jetzt „Sprachnotiz aufnehmen“ – bis zu 3 Minuten, z. B. „so geht die zweite Stimme“. Vor dem Speichern anhören oder verwerfen, Text dazu ist optional. Für alle oder nur für dich, wie andere Notizen."
   ],

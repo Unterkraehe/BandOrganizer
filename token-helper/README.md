@@ -44,6 +44,10 @@ The worker also delivers push notifications for the band chat and event changes.
 
 Keep the keys: if `VAPID_PUBLIC_KEY` changes later, every member has to switch notifications off and on again.
 
+## Calendar subscription (v0.19.1)
+
+The worker serves the band calendar to Google / Apple / Outlook at `https://<worker>/calendar/<secret>.ics` (the app creates the secret: Kalender → ⋯ → Kalender abonnieren). It uses the **same KV binding `REMINDERS`** as the reminders below – if that is set up, nothing else is needed; just paste the new `worker.js` → **Deploy**. Check: create the link in the app, open it in a browser → a `.ics` file or text starting with `BEGIN:VCALENDAR`. Stored: the band calendar (.ics) under `ics:<secret>`, replaced by every upload, deleted with "Neuen Link erstellen" / "Abo beenden".
+
 ## Reminders before events (v0.14)
 
 The worker sends reminders before events (Einstellungen → Benachrichtigungen → Erinnerungen an Termine). The members' apps upload the next 8 weeks' reminders; a timer in the worker sends the due ones every 5 minutes. Needs the push setup above, plus once:
