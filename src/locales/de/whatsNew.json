@@ -1,4 +1,7 @@
 {
+  "0.14.2": [
+    "„Aktualisieren“ funktioniert jetzt zuverlässig: Nach dem Tippen steht „Wird aktualisiert …“ und die App lädt spätestens nach wenigen Sekunden neu – auch wenn die neue Version schon in einem anderen Fenster aktiviert wurde."
+  ],
   "0.14.1": [
     "Benachrichtigungen: Die Test-Benachrichtigung erscheint jetzt auch, während die App geöffnet ist (bisher kam sie auf Android nur an, wenn die App im Hintergrund war)."
   ],

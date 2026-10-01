@@ -6,7 +6,7 @@ import { NotificationSettings } from '@/features/notifications/NotificationSetti
 import { readTextSize, writeTextSize, type TextSize } from '@/core/theme/textSize';
 import { useNavigate } from 'react-router-dom';
 import { formatRelativeDay, formatTime } from '@/core/i18n/format';
-import { usePwaUpdate } from '@/core/pwa/usePwa';
+import { checkForUpdate } from '@/core/pwa/usePwa';
 import { useSession } from '@/core/session/BandSession';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import type { ThemePreference } from '@/core/theme/theme';
@@ -22,7 +22,6 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const { preference, setPreference } = useTheme();
   const [textSize, setTextSize] = useState<TextSize>(readTextSize);
-  const { checkForUpdate } = usePwaUpdate();
   const { currentMember, band, mode, alias, switchProfile, disconnect } = useSession();
   const [updateState, setUpdateState] = useState<'idle' | 'checking' | 'done' | 'unavailable'>('idle');
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);

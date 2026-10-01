@@ -177,6 +177,7 @@ interface DashboardWidget {
 ### 6.4 App-wide notices
 - **No connection to HiDrive:** small bar below the top bar "Offline – zeige gespeicherte Daten" (R-UX-02/03).
 - **New app version:** toast "Neue Version verfügbar" + "Aktualisieren" (service worker update). Never reload automatically while audio is playing or input is unsaved.
+  - **v0.14.2 – "Aktualisieren" always works:** `applyUpdate()` (`core/pwa/usePwa.ts`) shows "Wird aktualisiert …", tells the waiting version to take over (or waits up to 10 s for one still installing), reloads when it controls the page and **after 3 s at the latest in any case** (e.g. the new version was already activated from another window). Before, it relied on vite-plugin-pwa's `updateServiceWorker`, which did nothing when no version was waiting any more or the reload event didn't arrive. `usePwaUpdate()` must be used in one place only (it registers the service worker); "Nach Updates suchen" uses the plain `checkForUpdate()`.
 - **Install hint:** shown once on phones that can install the PWA ("Zum Startbildschirm hinzufügen"); on iPhone with short instructions (Teilen → Zum Home-Bildschirm). Dismissable forever.
 
 ### 6.4a "Was ist neu"
