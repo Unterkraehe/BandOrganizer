@@ -101,6 +101,9 @@ No pinch/double-tap zoom (meta viewport + iOS gesture events + `touch-action: ma
 **R-UI-13 — Long lists are windowed.**
 Lists that can exceed ~60 rows (songs, chat history in the future) render only the rows around the viewport (`VirtualList`) with fixed row heights, memoized rows and lazily built row menus. Tapping a tab must respond in well under 150 ms on a mid-range phone with 300 songs.
 
+**R-UI-14 — No sideways scrolling on phones.**
+On a 360 px wide phone (and down to 320 px) no screen, panel or dialog may be wider than the screen – neither the page nor any scroll area inside it. Only rows that are *meant* to scroll sideways (filter chips, tabs, PDF pages) may do so, and they carry the attribute `data-scroll-x`. Long content (file names, titles, select options) is cut with an ellipsis or wraps, it never widens the layout. Rules of thumb: grid containers get `grid-template-columns: minmax(0, 1fr)` (an `auto` column grows to its widest content); flex children that hold text get `min-width: 0`; a `<select>` always gets `width: 100%; min-width: 0` (it is as wide as its longest option); no fixed widths above ~300 px. Verified with `scripts/qa/overflow-check.py` (360 and 320 px, long texts injected).
+
 **R-UI-09 — Designed for 3–12 members.**
 Anything that lists members (chat, absences, availability, note authors) must stay readable with 12 people on a phone screen. Member colors come from a fixed palette of at least 12 clearly distinguishable colors.
 

@@ -85,7 +85,7 @@ function Practice({ song, onClose, t }: { song: Song; onClose: () => void; t: Re
       </div>
 
       <div className={styles.dock}>
-        <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
+        <div className={styles.dockMain}>
           <SetlistModeBar songId={song.id} />
           {song.recordings.filter((r) => !r.missing).length > 1 && (
             <select
@@ -95,7 +95,7 @@ function Practice({ song, onClose, t }: { song: Song; onClose: () => void; t: Re
                 const next = song.recordings.find((r) => r.id === e.target.value);
                 if (next) play(song, next);
               }}
-              style={{ minHeight: 40, borderRadius: 'var(--radius-md)', background: 'var(--surface-2)', color: 'var(--text)', border: '1px solid var(--border)', padding: '0 var(--space-2)' }}
+              className={styles.versionSelect}
             >
               {song.recordings
                 .filter((r) => !r.missing)

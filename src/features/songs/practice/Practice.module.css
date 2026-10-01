@@ -1,5 +1,7 @@
 .controls {
   display: grid;
+  /* minmax(0, 1fr): a grid column otherwise grows to its widest content (R-UI-14) */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
 }
 
@@ -9,6 +11,7 @@
 
 .control {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-1);
 }
 
@@ -126,12 +129,34 @@
 
 .dock {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4) calc(env(safe-area-inset-bottom) + var(--space-3));
   border-top: 1px solid var(--border);
   background: var(--surface);
   max-height: 55vh;
   overflow: auto;
+}
+
+.dockMain {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+/* a <select> is as wide as its longest option – long file names pushed the controls sideways (R-UI-14) */
+.versionSelect {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  min-height: 40px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: var(--fs-md);
 }
 
 .transport {

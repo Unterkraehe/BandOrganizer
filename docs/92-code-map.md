@@ -138,11 +138,11 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 - `npm run check` needs `node_modules` (`npm ci`) and `npm`/`npx` on the PATH; it stops with a clear message otherwise. `npm run map` (`node scripts/gen-code-index.mjs`) needs only Node.
 - Don't bundle `signalsmith-stretch` – it builds its AudioWorklet from its own source text; it is vendored in `public/vendor/` and loaded with a dynamic import.
 - pdf.js must stay on the v4 **legacy** build (v5 needs very new JS features).
-- A `<select>` is as wide as its longest option – always `width: 100%; min-width: 0` in grids/flex.
+- No sideways scrolling on phones (R-UI-14): a `<select>` is as wide as its longest option – always `width: 100%; min-width: 0`; grid containers `grid-template-columns: minmax(0, 1fr)`; intentional sideways rows carry `data-scroll-x`. Check: `python3 scripts/qa/overflow-check.py [320]`.
 - A page that scrolls itself when it opens (chat) must do it after React Router's `<ScrollRestoration>` (`app/routes.tsx`), which resets to the top in a layout effect of the root route – i.e. in `requestAnimationFrame`, not in the page's own `useLayoutEffect`.
 - `usePwaUpdate()` registers the service worker – call it only in `UpdateToast`; elsewhere use `checkForUpdate()` / `applyUpdate()` (`core/pwa/usePwa.ts`).
 - `usePlayer()` in a list screen = full re-render ~4×/s while music plays (see §5).
 
-## 8. Open items (as of v0.14.4)
+## 8. Open items (as of v0.14.5)
 
 Device tests still open: S1/S2 (ETag, file IDs after rename), S4 (share link works as subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with the keyboard on iPhone/Android, push notifications on real devices, `POST /file/copy`. Everything else planned is built; the band test phase decides 1.0.0 (`03-roadmap.md`).

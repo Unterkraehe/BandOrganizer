@@ -1,6 +1,6 @@
 # Implementation Roadmap
 
-> **Status:** M0–M9 built · v0.14.4 = release candidate: the band test phase decides when it becomes **1.0.0** · open tests: S1/S2 (file IDs, ETag), S4 (share link as calendar subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with keyboard on iPhone/Android, push notifications and event reminders on real devices (needs KV + Cron Trigger in the token helper), HiDrive copy (`POST /file/copy`)
+> **Status:** M0–M9 built · v0.14.5 = release candidate: the band test phase decides when it becomes **1.0.0** · open tests: S1/S2 (file IDs, ETag), S4 (share link as calendar subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with keyboard on iPhone/Android, push notifications and event reminders on real devices (needs KV + Cron Trigger in the token helper), HiDrive copy (`POST /file/copy`)
 > Order and scope of the build, from an empty repository to v1.0. Each milestone ends with a **deployed version the band can use and test**.
 
 ## 1. Principles
@@ -212,6 +212,7 @@ Done when: the band uses the app for a full rehearsal-and-gig cycle without fall
 | 0.14.2 | "Aktualisieren" always ends in a reload (own update sequence instead of the plugin's) |
 | 0.14.3 | Calendar picks up other members' changes while open (incremental refresh); new events announced in chat + push |
 | 0.14.4 | Month view on phones: tapping a day opens its events in a panel from the bottom |
+| 0.14.5 | Practice view fits phones with a version dropdown; rule R-UI-14 (no sideways scrolling) + `overflow-check.py` |
 
 Details per change: feature files (status blocks) and the "Was ist neu" texts in `src/locales/de/whatsNew.json`.
 

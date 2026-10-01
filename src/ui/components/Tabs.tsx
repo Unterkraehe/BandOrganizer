@@ -10,7 +10,7 @@ interface Tab<T extends string> {
 /** Simple tabs (song detail sections). */
 export function Tabs<T extends string>({ label, tabs, value, onChange }: { label: string; tabs: Tab<T>[]; value: T; onChange: (value: T) => void }) {
   return (
-    <div className={styles.tabs} role="tablist" aria-label={label}>
+    <div className={styles.tabs} data-scroll-x role="tablist" aria-label={label}>
       {tabs.map((tab) => (
         <button
           key={tab.value}

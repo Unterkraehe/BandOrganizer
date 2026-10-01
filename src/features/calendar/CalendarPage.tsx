@@ -76,7 +76,7 @@ export function CalendarPage() {
             { value: 'month', label: t('view.month') },
           ]}
         />
-        <div className={styles.filterRow} role="group" aria-label={t('filter')}>
+        <div className={styles.filterRow} data-scroll-x role="group" aria-label={t('filter')}>
           {EVENT_TYPES.map((type) => (
             <Chip key={type} pressed={types.has(type)} tone={type} onClick={() => toggleType(type)}>
               {t(`types.${type}`)}

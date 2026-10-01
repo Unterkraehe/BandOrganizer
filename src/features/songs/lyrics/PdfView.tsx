@@ -44,5 +44,5 @@ export function PdfView({ data, zoom }: { data: ArrayBuffer; zoom: number }) {
   }, [data, zoom, t]);
 
   if (error) return <p className={styles.hint}>{t('lyrics.loadError')}</p>;
-  return <div ref={container} className={styles.pdf} />;
+  return <div ref={container} className={styles.pdf} data-scroll-x />;
 }

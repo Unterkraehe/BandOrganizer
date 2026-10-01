@@ -186,7 +186,7 @@ export function SearchPanel({ initialQuery, onNavigate, onClose }: { initialQuer
       </div>
 
       {q.length >= 2 && (
-        <div className={styles.filters} role="group" aria-label={t('filter.all')}>
+        <div className={styles.filters} data-scroll-x role="group" aria-label={t('filter.all')}>
           {FILTERS.map((f) => (
             <Chip key={f} pressed={filter === f} onClick={() => setFilter(f)}>
               {t(`filter.${f}`)}
