@@ -62,6 +62,7 @@ One shared band calendar for gigs, rehearsals, absences and other dates — with
 - **View switch:** "Liste" | "Monat". Default: phone → Liste, tablet/desktop → Monat (remembered per device).
 - **Liste ("Demnächst"):** grouped by month, each event as a card: type icon, relative date ("Heute", "Morgen", "Sa, 10. Okt."), time, title/location, answer summary ("4 ✓ · 1 ? · 1 ✗ · 1 offen"), my own answer buttons, 🔁 icon for recurring, setlist badge + "Setlist üben" (F3 §5).
 - **Monat:** grid; events as colored chips, absences as grey bars across days; tap a day → day list; long press / double click on an empty day → new event on that date.
+  - **v0.14.4 – phones:** tapping a day opens its events in a panel from the bottom (the shared `Dialog`: event cards with answer buttons + "Termin am … anlegen"; empty days say "Keine Termine an diesem Tag."). Reason: in a band test the day list below the grid was off screen and a tap seemed to do nothing. Closes with ✕ or a tap outside (like every dialog, not with the back gesture). Tablets/desktop keep the list below the grid.
 - **Filter chips:** Auftritte, Proben, Abwesenheiten, Sonstiges (all on by default).
 - **"Vergangene Termine"** link at the end of the list (past events are never deleted).
 - **"+" button** (floating on phone, in the top bar on desktop) → new event (§4.3).

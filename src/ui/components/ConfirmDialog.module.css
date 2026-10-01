@@ -11,6 +11,9 @@
 
 .dialog {
   width: min(100%, 460px);
+  /* long content (e.g. a day with many events) scrolls inside instead of leaving the screen */
+  max-height: calc(100dvh - 2 * var(--space-4) - env(safe-area-inset-bottom));
+  overflow: auto;
   display: grid;
   gap: var(--space-3);
   padding: var(--space-6);

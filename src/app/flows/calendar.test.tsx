@@ -2,6 +2,8 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { enterDemo } from '@/test/demo';
+import { formatDate } from '@/core/i18n/format';
+import { addDays, todayLocal } from '@/features/calendar/time';
 
 describe('Calendar (M5 in demo mode)', () => {
   beforeEach(() => localStorage.clear());
@@ -93,5 +95,35 @@ describe('Reminders before events (v0.14)', () => {
     expect(await screen.findByText(/3 Std\. und 30 Min\. vorher · nur für diesen Termin/)).toBeInTheDocument();
     await user.click(reset);
     expect(await screen.findByText(/3 Std\. vorher · Standard für Auftritte/)).toBeInTheDocument();
+  });
+});
+
+describe('Month view on a phone (v0.14.4)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('tapping a day opens its events in a panel from the bottom', async () => {
+    const today = todayLocal();
+    const user = userEvent.setup();
+    await enterDemo(user, `/calendar/new?date=${today}`);
+    await user.click(await screen.findByRole('button', { name: 'Auftritt' }));
+    await user.type(screen.getByLabelText('Titel'), 'Stadtfest');
+    await user.click(screen.getByRole('button', { name: 'Speichern' }));
+    await screen.findByRole('heading', { level: 1, name: 'Stadtfest' });
+
+    await user.click(screen.getByRole('link', { name: 'Kalender' }));
+    await user.click(await screen.findByRole('radio', { name: 'Monat' }));
+    const dayLabel = formatDate(`${today}T12:00:00Z`);
+    await user.click(screen.getByRole('button', { name: `${dayLabel}, 1` }));
+    const panel = await screen.findByRole('dialog', { name: dayLabel });
+    expect(within(panel).getByText('Stadtfest')).toBeInTheDocument();
+    expect(within(panel).getByRole('button', { name: `Termin am ${dayLabel} anlegen` })).toBeInTheDocument();
+    await user.click(within(panel).getByRole('button', { name: 'Schließen' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    // an empty day answers too
+    const other = addDays(today, today.endsWith('-01') ? 1 : -1);
+    const otherLabel = formatDate(`${other}T12:00:00Z`);
+    await user.click(screen.getByRole('button', { name: otherLabel }));
+    expect(within(await screen.findByRole('dialog', { name: otherLabel })).getByText('Keine Termine an diesem Tag.')).toBeInTheDocument();
   });
 });

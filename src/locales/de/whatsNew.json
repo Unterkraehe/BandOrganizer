@@ -1,4 +1,7 @@
 {
+  "0.14.4": [
+    "Kalender, Monatsansicht auf dem Handy: Tippst du auf einen Tag, öffnen sich seine Termine direkt unten im Bild – du musst nicht mehr nach unten scrollen."
+  ],
   "0.14.3": [
     "Neue Termine erscheinen bei allen schneller: Der Kalender schaut bei geöffneter App regelmäßig nach Änderungen der anderen (auf der Kalender-Seite alle 20 Sekunden).",
     "Neue Termine werden jetzt im Band-Chat angekündigt („… hat Probe am … eingetragen“) und lösen eine Benachrichtigung aus (Schalter „Neue Termine, Änderungen und Absagen“)."

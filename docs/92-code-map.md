@@ -143,6 +143,6 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 - `usePwaUpdate()` registers the service worker – call it only in `UpdateToast`; elsewhere use `checkForUpdate()` / `applyUpdate()` (`core/pwa/usePwa.ts`).
 - `usePlayer()` in a list screen = full re-render ~4×/s while music plays (see §5).
 
-## 8. Open items (as of v0.14.3)
+## 8. Open items (as of v0.14.4)
 
 Device tests still open: S1/S2 (ETag, file IDs after rename), S4 (share link works as subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with the keyboard on iPhone/Android, push notifications on real devices, `POST /file/copy`. Everything else planned is built; the band test phase decides 1.0.0 (`03-roadmap.md`).

@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useNotify } from '@/app/notify/NotifyProvider';
 import { formatDate } from '@/core/i18n/format';
 import { useSession } from '@/core/session/BandSession';
-import { Button, Chip, EmptyState, IconButton, Menu, Page, SegmentedControl } from '@/ui';
+import { Button, Chip, Dialog, EmptyState, IconButton, Menu, Page, SegmentedControl } from '@/ui';
 import { useIsWide } from '@/ui/useMediaQuery';
 import { useCalendar, useWatchCalendar } from './CalendarProvider';
 import { EventCard } from './EventCard';
@@ -179,6 +179,25 @@ function MonthView({ types, today }: { types: Set<EventType>; today: string }) {
   const selectedOccs = onDay(selected);
   const dataFor = useOccurrenceData(selectedOccs);
   const go = (patch: Record<string, string>) => setParams({ month, day: selected, ...patch }, { replace: true });
+  // Phones: the day's events are below the fold – a tap opens them in a panel from the bottom (v0.14.4)
+  const wide = useIsWide();
+  const [sheet, setSheet] = useState(false);
+  const dayLabel = formatDate(`${selected}T12:00:00Z`);
+  const dayEvents = (
+    <>
+      {selectedOccs.length === 0 && <p className={styles.hint}>{t('noneOnDay')}</p>}
+      <ul className={styles.list}>
+        {selectedOccs.map((o) => (
+          <EventCard key={occurrenceId(o)} occ={o} data={dataFor(o)} />
+        ))}
+      </ul>
+      <div>
+        <Button icon={<Plus size={18} />} onClick={() => navigate(`/calendar/new?date=${selected}`)}>
+          {t('newOn', { date: dayLabel })}
+        </Button>
+      </div>
+    </>
+  );
 
   return (
     <>
@@ -209,7 +228,10 @@ function MonthView({ types, today }: { types: Set<EventType>; today: string }) {
               data-today={d === today || undefined}
               data-selected={d === selected || undefined}
               aria-label={`${formatDate(`${d}T12:00:00Z`)}${list.length ? `, ${list.length}` : ''}`}
-              onClick={() => go({ day: d, month: d.slice(0, 7) })}
+              onClick={() => {
+                go({ day: d, month: d.slice(0, 7) });
+                if (!wide) setSheet(true);
+              }}
             >
               <span className={styles.dayNumber}>{Number(d.slice(8))}</span>
               {list.slice(0, 3).map((o) => (
@@ -226,19 +248,12 @@ function MonthView({ types, today }: { types: Set<EventType>; today: string }) {
         })}
       </div>
       <section className={styles.month}>
-        <h2 className={styles.monthTitle}>{formatDate(`${selected}T12:00:00Z`)}</h2>
-        {selectedOccs.length === 0 && <p className={styles.hint}>{t('noneOnDay')}</p>}
-        <ul className={styles.list}>
-          {selectedOccs.map((o) => (
-            <EventCard key={occurrenceId(o)} occ={o} data={dataFor(o)} />
-          ))}
-        </ul>
-        <div>
-          <Button icon={<Plus size={18} />} onClick={() => navigate(`/calendar/new?date=${selected}`)}>
-            {t('newOn', { date: formatDate(`${selected}T12:00:00Z`) })}
-          </Button>
-        </div>
+        <h2 className={styles.monthTitle}>{dayLabel}</h2>
+        {!sheet && dayEvents}
       </section>
+      <Dialog open={sheet && !wide} title={dayLabel} closeLabel={t('common:actions.close')} onClose={() => setSheet(false)}>
+        {dayEvents}
+      </Dialog>
     </>
   );
 }
