@@ -1,3 +1,4 @@
+/** Feature registration (calendarFeature): navigation entry and all calendar routes. */
 import { CalendarDays } from 'lucide-react';
 import { createElement } from 'react';
 import type { FeatureRegistration } from '@/core/features/registry';

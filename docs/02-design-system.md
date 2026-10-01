@@ -205,3 +205,10 @@ Built once in `src/ui/`, documented with examples in both themes:
 | 4 | Fonts | Oswald (headings, navigation, overlines) + Inter (body/UI), self-hosted |
 | 5 | Band logo | Optional upload, dark and light variant |
 | 6 | Website decoration (concrete texture, brush strokes, wide display font) | Not used in the app |
+
+## Addendum (v0.11 – v0.13)
+
+- **Event type chips** (calendar filters) use `Chip` with `tone="gig|rehearsal|absence|other"`: filled with `--event-<type>` and `--event-<type>-on` (readable text color) while active, colored outline while off. In light mode orange (`gig`) uses dark text – white on that orange is only 3.9:1.
+- **Floating menus** use `--surface-raised` / `--border-raised` and are rendered at the top level of the page (portal), so rows and headings can never cover them.
+- **Text size** (Einstellungen → Darstellung: Normal / Groß 115 % / Sehr groß 130 %) scales the root font size; all sizes are `rem`. It replaces pinch zoom, which is disabled (R-UI-12).
+- **Print** is always black on white; `data-no-print` hides app chrome; the setlist print has its own styles (`features/setlists/Print.module.css`).

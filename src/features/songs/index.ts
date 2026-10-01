@@ -1,3 +1,4 @@
+/** Feature registration (songsFeature): song list, detail, edit, practice, merge, new song, tag settings. */
 import { Music } from 'lucide-react';
 import { createElement } from 'react';
 import type { FeatureRegistration } from '@/core/features/registry';

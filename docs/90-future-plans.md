@@ -35,9 +35,9 @@
 
 ## 3. Ideas Backlog (not yet decided)
 
-- Push notifications (new chat messages, new events, reminders)
-- Attendance (Zu-/Absagen) per gig/rehearsal
-- Practice mode: play a setlist as playlist, speed control, A–B loop
+- Push notifications: ✅ chat messages and event changes since v0.13.0 (F6 §4.6). Still open: reminders before events, notification for **new** events, per-chat mute
+- Attendance (Zu-/Absagen) per gig/rehearsal – ✅ done in F5 (v0.7.0)
+- Practice mode: play a setlist as playlist, speed control, A–B loop – ✅ done (setlist mode v0.8.0, practice view v0.6.0)
 - Photo gallery for live photos on HiDrive
 - Band finances (Bandkasse): income, expenses, gig fees
 - Equipment / backline list and "who brings what"

@@ -1,3 +1,4 @@
+/** Global test setup: jest-dom matchers and jsdom stand-ins (matchMedia, audio play/pause, URL.createObjectURL). */
 import '@testing-library/jest-dom/vitest';
 import '@/core/i18n';
 

@@ -1,3 +1,4 @@
+/** Text input with label, hint, error and "optional" marker. */
 import { forwardRef, useId, type InputHTMLAttributes, type ReactNode } from 'react';
 import styles from './TextField.module.css';
 

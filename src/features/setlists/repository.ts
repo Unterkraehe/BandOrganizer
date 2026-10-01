@@ -1,3 +1,4 @@
+/** Reads/writes `_BandApp/setlists/<id>/setlist.json` and the member's personal notes. */
 import type { Versioned } from '@/core/band/band';
 import { migrate } from '@/core/data/migrate';
 import { joinPath, NotFoundError, type SafeStorage } from '@/core/storage';

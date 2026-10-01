@@ -1,3 +1,4 @@
+/** Feature registration (startFeature): the start screen at "/". */
 import { Home } from 'lucide-react';
 import { createElement } from 'react';
 import type { FeatureRegistration } from '@/core/features/registry';

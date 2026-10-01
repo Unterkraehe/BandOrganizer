@@ -13,6 +13,7 @@
 > - Opens: phone `/search` (full page, deep link `?q=`), tablet/desktop overlay with `Ctrl/⌘ + K`, icon in every top bar. Search history and "Zuletzt geöffnet" are per member and device-local.
 > - Result targets: lyrics line (`?tab=lyrics&find=`, text/Word files – PDF opens the song text without a line marker), note (`?note=`), chat message (`?message=`), setlist (whole setlist).
 > - Switching profile clears the member-specific part of the index immediately.
+> - **More generous matching (v0.12.3):** apostrophes are ignored ("dont" finds "Don't"), and list searches also compare a variant without spaces ("acdc" finds "AC/DC") – `core/search/normalize.ts` (`matchesQuery`, `searchHaystack`). Songs that are member suggestions are labelled "Vorschlag" in the results.
 | **Depends on** | F2, F4, F5, F6, F7 |
 | **Used by** | – (consumer of all features) |
 

@@ -1,3 +1,4 @@
+/** Feature registration (chatFeature): navigation entry with unread badge. */
 import { MessageCircle } from 'lucide-react';
 import { createElement } from 'react';
 import type { FeatureRegistration } from '@/core/features/registry';

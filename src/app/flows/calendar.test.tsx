@@ -1,0 +1,69 @@
+import { screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { enterDemo } from '@/test/demo';
+
+describe('Calendar (M5 in demo mode)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('creates a weekly rehearsal, answers and cancels one date', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/calendar');
+    await user.click((await screen.findAllByRole('button', { name: 'Termin anlegen' }))[0]!);
+    await user.click(screen.getByRole('button', { name: 'Probe' }));
+    await user.clear(screen.getByLabelText('Ort'));
+    await user.type(screen.getByLabelText('Ort'), 'Proberaum');
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Wiederholung' }), 'weekly');
+    await user.click(screen.getByRole('button', { name: 'Speichern' }));
+
+    // detail of the first date
+    expect(await screen.findByText(/Jede Woche am/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Ich bin dabei' }));
+    expect(await screen.findByText('Zugesagt (1)')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Absagen' }));
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Nur diesen Termin' }));
+    expect(await screen.findByText('Fällt aus')).toBeInTheDocument();
+
+    // start screen shows the next dates
+    await user.click(screen.getByRole('link', { name: 'Start' }));
+    expect(await screen.findByRole('heading', { name: 'Nächste Termine' })).toBeInTheDocument();
+    expect(screen.getAllByText(/Proberaum/).length).toBeGreaterThan(1);
+  });
+
+  it('shows an absence as conflict on a gig', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/calendar/new?type=absence&date=2027-03-10');
+    await user.click(await screen.findByRole('button', { name: 'Speichern' }));
+    await screen.findByText(/Lisa abwesend/);
+    await user.click(screen.getByRole('link', { name: 'Kalender' }));
+    await user.click((await screen.findAllByRole('button', { name: 'Termin anlegen' }))[0]!);
+    await user.click(screen.getByRole('button', { name: 'Auftritt' }));
+    await user.type(screen.getByLabelText('Titel'), 'Stadtfest');
+    const date = screen.getByLabelText('Datum');
+    await user.clear(date);
+    await user.type(date, '2027-03-10');
+    await user.click(screen.getByRole('button', { name: 'Speichern' }));
+    expect(await screen.findByText('Lisa ist abwesend')).toBeInTheDocument();
+    expect(screen.getByText(/Treffpunkt 18:00/)).toBeInTheDocument();
+  });
+});
+
+describe('Calendar subscription (M9 in demo mode)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('creates, renews and ends the subscription link', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/calendar/subscribe');
+    await user.click(await screen.findByRole('button', { name: 'Abo-Link erstellen' }));
+    const link = (await screen.findByRole('textbox', { name: 'Abo-Link' })) as HTMLInputElement;
+    const first = link.value;
+    expect(first).toMatch(/^https:\/\/share\.example\.invalid\/.*band\.ics$/);
+    await user.click(screen.getByRole('button', { name: 'Neuen Link erstellen' }));
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Neuen Link erstellen' }));
+    await waitFor(() => expect((screen.getByRole('textbox', { name: 'Abo-Link' }) as HTMLInputElement).value).not.toBe(first));
+    await user.click(screen.getByRole('button', { name: 'Abo beenden' }));
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Abo beenden' }));
+    expect(await screen.findByRole('button', { name: 'Abo-Link erstellen' })).toBeInTheDocument();
+  });
+});

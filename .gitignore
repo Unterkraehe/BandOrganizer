@@ -5,6 +5,7 @@ node_modules/
 dist/
 dev-dist/
 coverage/
+release/
 *.tsbuildinfo
 
 # Logs
@@ -24,3 +25,4 @@ npm-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+__pycache__/

@@ -122,3 +122,5 @@ interface AudioEngine {
 
 - Recording, multitrack/stem mixing
 - Waveform display
+
+> **State slices (v0.11)** – `usePlayer()` returns the full state including the position (~4 updates per second): only the mini player, the player controls and the practice view use it. Everything else uses `usePlaySong()` or `usePlayerSelect(selector)` (shallow-compared slice), so lists and providers don't re-render while music plays. `PlayerState.ended` counts finished tracks (setlist mode advances on it).

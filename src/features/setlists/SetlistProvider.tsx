@@ -1,3 +1,4 @@
+/** Provides the SetlistStore (setlists + own personal notes) and the useSetlists() hook. */
 import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useSession } from '@/core/session/BandSession';
 import { SetlistStore } from './store';

@@ -1,3 +1,4 @@
+/** Test stand-in for the service worker registration (virtual:pwa-register). */
 // Test stand-in for "virtual:pwa-register/react" (the real module only exists in Vite builds).
 import { useState } from 'react';
 

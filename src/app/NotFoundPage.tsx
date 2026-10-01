@@ -1,3 +1,4 @@
+/** Screen for unknown addresses (404 inside the app). */
 import { Compass } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';

@@ -1,7 +1,7 @@
 # Overload App – Project Overview
 
 > **App name:** Overload App (may change later – the name is only set in config/translations, see R-I18N-07)
-> **Status:** Implementation – v0.12.0 release candidate: M0–M8 + polish built; M9 review done; next: band test phase → 1.0.0
+> **Status:** Implementation – v0.13.4: release candidate for 1.0 – all planned features are built; the band test phase decides when it becomes 1.0.0. Working on the code? Start with [`92-code-map.md`](92-code-map.md).
 > **Last updated:** 2026-09-24
 
 This file is the entry point for the whole project. Read it first, then `01-general-rules.md` and `02-design-system.md`, then the feature file you are working on. The build order is defined in `03-roadmap.md`.
@@ -35,16 +35,16 @@ There are no admin roles planned for v1. Every member can do everything (subject
 
 | # | Feature | File | Status |
 |---|---|---|---|
-| F1 | HiDrive connection & file sync | `features/10-hidrive-connection.md` | Planned (spikes pending) |
-| F2 | In-app member login (profile per device) | `features/11-member-login.md` | Planned ✅ |
-| F3 | Main menu / app shell (incl. dashboard, setlist mode) | `features/12-main-menu.md` | Planned ✅ |
-| F4 | Songs (list, versions, player, practice view, notes) | `features/13-songs.md` | Planned ✅ |
-| F5 | Calendar (gigs, rehearsals, absences, recurring events, answers, export) | `features/14-calendar.md` | Planned (spikes pending) |
-| F6 | Band chat (management chat, item discussions) | `features/15-chat.md` | Planned ✅ |
-| F7 | Setlist maker (blocks, notes, transitions, print, stage view, suggestions) | `features/16-setlists.md` | Planned ✅ |
-| F8 | Global search (app items only) | `features/17-global-search.md` | Planned ✅ |
-| F10 | Adding content & uploads (new songs, recordings, lyrics incl. typing, logo) | `features/19-uploads.md` | Planned (spike S6) |
-| F9 | Audio engine (core module: playback, pitch shift, tempo change, A–B loop) | `features/18-audio-engine.md` | Planned (spikes pending) |
+| F1 | HiDrive connection & file sync | `features/10-hidrive-connection.md` | Implemented – real HiDrive login works; spikes S1/S2 pending |
+| F2 | In-app member login (profile per device) | `features/11-member-login.md` | Implemented ✅ |
+| F3 | Main menu / app shell (incl. dashboard, setlist mode) | `features/12-main-menu.md` | Implemented ✅ |
+| F4 | Songs (list, versions, player, practice view, notes) | `features/13-songs.md` | Implemented ✅ |
+| F5 | Calendar (gigs, rehearsals, absences, recurring events, answers, export) | `features/14-calendar.md` | Implemented (spikes S4/S5 pending) |
+| F6 | Band chat (management chat, item discussions) | `features/15-chat.md` | Implemented ✅ (push notifications since v0.13) |
+| F7 | Setlist maker (blocks, notes, transitions, print, stage view, suggestions) | `features/16-setlists.md` | Implemented ✅ |
+| F8 | Global search (app items only) | `features/17-global-search.md` | Implemented ✅ |
+| F10 | Adding content & uploads (new songs, recordings, lyrics incl. typing, logo) | `features/19-uploads.md` | Implemented (spike S6 pending) |
+| F9 | Audio engine (core module: playback, pitch shift, tempo change, A–B loop) | `features/18-audio-engine.md` | Implemented (iPhone retest with effects pending) |
 
 ### Later features
 
@@ -86,71 +86,50 @@ Key architectural decisions:
 - **Central safety guard.** Every write/move/delete call passes through one guard function that enforces the "never touch foreign files" rule (see `01-general-rules.md`, R-DATA).
 - **Static hosting on GitHub Pages + tiny token helper.** The app is pure client-side code on GitHub Pages. A small serverless function (the *token helper*) holds the HiDrive client secret and exchanges/refreshes tokens, so members stay connected for 60 days (auto-extended). It stores no data and never touches files. See F1 §4.
 
-## 6. Proposed Tech Stack (to be confirmed)
+## 6. Tech Stack (as built)
 
-| Area | Proposal | Why |
+| Area | Choice | Notes |
 |---|---|---|
-| Language | TypeScript | Type safety across a growing app |
-| UI framework | React + Vite | Large ecosystem, fast builds |
-| PWA | `vite-plugin-pwa` (Workbox) | Installable app, service worker, later offline cache |
-| Routing | React Router | Standard, supports deep links |
-| Server state / sync | TanStack Query | Caching, background refresh, polling for chat |
-| Local storage | IndexedDB via Dexie | Device profile, cache, later offline mode |
-| i18n | i18next + react-i18next | German now, more languages later |
-| Styling | CSS custom properties (design tokens) + CSS Modules, shared components in `src/ui/` | Tokens-first design system (R-UI-07), no class soup, fewer dependencies |
-| Search | MiniSearch (client-side index) | No server needed |
-| Audio | Web Audio API + `signalsmith-stretch` (WASM/AudioWorklet, MIT) | Independent pitch shift and tempo change (F9) |
-| Hosting | **GitHub Pages** (decided) | Free, HTTPS, deploy via GitHub Actions |
-| Token helper | One serverless function on Cloudflare Workers (free tier) | Keeps the HiDrive client secret, enables 60-day logins |
+| Language | TypeScript (strict) | `tsc -b` is part of the build |
+| UI | React 19 + Vite 6, CSS Modules + design tokens (`src/ui/`) | Tokens-first (R-UI-07), no CSS framework |
+| PWA | `vite-plugin-pwa` (Workbox `generateSW`) + `public/push-sw.js` | Installable; push handlers are loaded into the generated service worker with `importScripts` |
+| Routing | React Router 7 (`react-router-dom`) | Routes are generated from the feature registry |
+| State / sync | Small own stores per feature (`useSyncExternalStore`) with cached-first loading and optimistic writes | **No TanStack Query** – decided against it: the stores are tiny, HiDrive has no push channel, and each store knows its own conflict rules |
+| Device storage | `localStorage` (settings, small caches, tokens, drafts) | **No IndexedDB / Dexie** so far; only needed for the later offline mode (L1) |
+| i18n | i18next + react-i18next, German only | One JSON namespace per feature in `src/locales/de/` |
+| Search | MiniSearch 7 (client-side, main thread) | See F8 |
+| Audio | `<audio>` + blob URL; Web Audio + `signalsmith-stretch` 1.3 (vendored in `public/vendor/`) while tempo/pitch/loop are active | See F9 |
+| Documents | `pdfjs-dist` 4 (legacy build) for PDF lyrics, `mammoth` for Word | Loaded only when a lyrics file is opened |
+| Long lists | `@tanstack/react-virtual` behind `ui/VirtualList` | R-UI-13 |
+| Tests | Vitest 3, Testing Library, jsdom; Playwright (Python) for phone checks in `scripts/qa/` | `npm run check` |
+| Hosting | **GitHub Pages**, deployed by GitHub Actions | Free, HTTPS |
+| Token helper | One Cloudflare Worker (free tier): HiDrive token exchange + Web Push delivery | `token-helper/`, rule R-CODE-10 |
 
-## 7. Code Structure (planned)
+## 7. Code Structure (as built)
+
+The detailed, current structure lives in two files that are kept up to date with the code:
+
+- [`92-code-map.md`](92-code-map.md) – concepts, layers, where data lives, shared mechanisms, recipes, gotchas (hand-written).
+- [`93-code-index.md`](93-code-index.md) – every source file with its purpose and exports, all routes, texts and tests (**generated**: `npm run map`).
+
+In short:
 
 ```
-band-app/
-├─ docs/                     ← these planning files live here
-│  ├─ 00-overview.md
-│  ├─ 01-general-rules.md
-│  ├─ 02-design-system.md
-│  ├─ 03-roadmap.md
-│  ├─ 90-future-plans.md
-│  └─ features/*.md
-├─ token-helper/             ← Cloudflare Worker for HiDrive token exchange (F1)
-├─ public/                   ← icons, manifest assets
+BandOrganizer/
+├─ docs/               planning, rules, feature files, code map + index
+├─ scripts/            check / serve / pack / code index (Node) and qa/ (Playwright, Python)
+├─ token-helper/       Cloudflare Worker: HiDrive token exchange + push delivery
+├─ public/             icons, callback.html (OAuth), push-sw.js, vendor/signalsmith-stretch
 └─ src/
-   ├─ app/                   ← app shell, routing, providers, layout
-   ├─ core/
-   │  ├─ storage/            ← StorageProvider interface, safety guard
-   │  │  └─ hidrive/         ← HiDrive implementation
-   │  ├─ auth/               ← HiDrive session + member profile
-   │  ├─ i18n/               ← i18n setup, formatters (dates, numbers)
-   │  ├─ data/               ← shared models, IDs, schema versions
-│  ├─ audio/              ← audio engine (F9)
-│  ├─ lyrics/             ← lyrics renderers per file format (F4)
-   │  └─ search/             ← search index service
-   ├─ features/
-   │  ├─ songs/
-   │  ├─ calendar/
-   │  ├─ chat/
-   │  ├─ setlists/
-   │  ├─ search/
-   │  ├─ menu/
-   │  └─ profile/
-   ├─ ui/                    ← shared, feature-agnostic components
-   └─ locales/
-      └─ de/                 ← one JSON file per feature namespace
+   ├─ app/             shell wiring: providers, routes, gate screens (welcome → setup → profile), toasts
+   ├─ core/            feature-independent logic: storage + safety guard, auth, audio, session, i18n, data helpers
+   ├─ features/        songs, calendar, chat, setlists, search, members, settings, notifications, start, more, profile
+   ├─ ui/              shared components, layout (AppShell, Page), styles/tokens
+   ├─ locales/de/      one JSON file per namespace
+   └─ test/            test setup + demo helper
 ```
 
-Each feature folder follows the same internal layout:
-
-```
-features/<name>/
-├─ index.ts        ← feature registration (menu entry, routes)
-├─ routes/         ← screens
-├─ components/     ← feature-specific components
-├─ repository.ts   ← data access (via StorageProvider only)
-├─ model.ts        ← types for this feature
-└─ search.ts       ← what this feature contributes to global search
-```
+Dependency direction: `features → core + ui (+ each other)`, `app → everything`, `ui → core`, `core → nothing` (two known exceptions: `core/session` loads members via `features/members`; `ui/Avatar` uses `initials` from the members model). Details: `92-code-map.md` §2.
 
 ## 8. App Data Folder on HiDrive
 
@@ -158,19 +137,33 @@ All data the app creates lives in one folder: `_BandApp/` (underscore so it sort
 
 ```
 _BandApp/
-├─ app.json                     ← band name, schema version, settings
-├─ README.txt                   ← explains to humans what this folder is
+├─ app.json                              band name, color, logo paths, standard upload folder, scan settings (incl. suggestion folders)
+├─ README.txt                            explains to humans what this folder is
+├─ branding/logo-<light|dark>-<ms>.<ext> band logos (app-created)
 ├─ members/<memberId>.json
+├─ tags/<tagId>.json
 ├─ songs/<songId>/
-│  ├─ meta.json                 ← link to audio file, title, key, BPM, …
-│  └─ notes/
-│     ├─ public/<noteId>.json
-│     └─ private/<memberId>/<noteId>.json
-├─ calendar/<eventId>.json
-├─ chat/messages/<YYYY-MM>/<timestamp>_<messageId>.json
-├─ setlists/<setlistId>.json
-└─ exports/                     ← files the user explicitly exports (e.g. setlist PDFs)
+│  ├─ meta.json                          title, key, BPM, tuning, artist, tags, recordings, Band-Version, lyrics link, archive/hidden, merges
+│  ├─ notes/public/<noteId>.json
+│  ├─ notes/private/<memberId>/<noteId>.json
+│  └─ practice/<memberId>.json           tempo / pitch / loop per member and version
+├─ calendar/
+│  ├─ events/<eventId>.json
+│  ├─ exceptions/<eventId>/<YYYY-MM-DD>.json     changed or cancelled single dates of a series
+│  ├─ answers/<eventId>/<occurrenceKey>/<memberId>.json
+│  └─ export/band.ics, subscription.json         calendar subscription (target of the public share link)
+├─ setlists/<setlistId>/
+│  ├─ setlist.json
+│  └─ personal-notes/<memberId>.json
+├─ chat/
+│  ├─ messages/<YYYY-MM>/<timestamp>_<messageId>.json
+│  ├─ reactions/<messageId>/<memberId>.json
+│  └─ read/<memberId>.json
+├─ push/<memberId>/<deviceId>.json       Web Push subscription of one device
+└─ exports/                              planned (L6): files the user explicitly exports
 ```
+
+Band files (audio, lyrics, photos …) live elsewhere in the HiDrive home and are never changed; the app only creates new files there on upload or "In die Songliste übernehmen" (create-only, R-DATA-03).
 
 Details per folder are defined in the feature files.
 
@@ -234,6 +227,7 @@ This list grows with the feature plans. Consistent wording is a rule (R-I18N-05)
 | 2026-09-24 | Files can be uploaded from the app into a configurable upload root (one folder per song), create-only (never overwrite/move/delete); typed lyrics saved as new `.txt` per edit | Add content without opening HiDrive; data safety kept |
 | 2026-09-26 | Styling with design tokens + CSS Modules instead of Tailwind | Tokens are the single source of truth; simpler to enforce R-UI-07 |
 | 2026-09-26 | Neutral default band color "Messing" until a band sets its own | No pre-branding for other bands (R-UI-10) |
+| 2026-09-30 | Work on the code starts from a hand-written code map (`92-code-map.md`) plus a generated index (`93-code-index.md`); maintenance scripts (`npm run check / map / serve / pack`); app flow tests split per feature (`src/app/flows/`) | Faster, safer changes: find the right file at once, run only the relevant tests, one command for CI-equivalent checks, reproducible deliveries |
 | 2026-09-30 | Push notifications for chat messages and event changes via the token helper (`POST /push`, Web Push + VAPID, stateless); subscriptions stored in `_BandApp/push/` | Phones freeze background web apps – only push works reliably; no new server needed |
 | 2026-09-30 | Optimistic writes everywhere users wait (song meta incl. grouping, notes, tags, answers, events, setlists): show at once, save in the background, roll back + message on failure. Demo option `?demo-latency=250` simulates HiDrive round trips | Each HiDrive write is 3–4 round trips; with mobile latency actions felt sluggish |
 | 2026-09-30 | Tab swipe surface = whole screen with `touch-action: pan-y` on tab screens | Makes swipes real user activations; otherwise Chrome's history-manipulation intervention skips the entries and Back closes the app |

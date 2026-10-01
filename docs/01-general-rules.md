@@ -157,10 +157,13 @@ No `any` without a comment explaining why.
 Required: safety guard (R-DATA-04), data migrations (R-DATA-08), repositories. UI tests for main flows.
 
 **R-CODE-07 — Docs first.**
-Before implementing or changing a feature, its feature file is updated. The feature file's status and the overview's feature index are kept current. Every larger technical decision goes into the decision log (overview §10).
+Before implementing or changing a feature, its feature file is updated. The feature file's status and the overview's feature index are kept current. Every larger technical decision goes into the decision log (overview §10). When the structure changes (new feature, storage path, provider, shared mechanism, convention), `docs/92-code-map.md` is updated as well; `npm run map` regenerates the code index.
 
 **R-CODE-08 — Small, reviewable changes.**
 One feature or sub-feature per change; commit messages in English, referencing feature IDs (e.g. `F4: add song list sorting`).
+
+**R-CODE-12 — Code map first.**
+Before changing code, read `docs/92-code-map.md` (concepts, data layout, recipes, gotchas) and look files up in `docs/93-code-index.md` (generated). Work in this order: find the files → change → run the relevant tests (`npm run check -- <filter>`) → `npm run check` before anything is delivered. Deliveries are made with `npm run pack`, which never includes `src/config.ts` (it holds the band's own HiDrive client ID).
 
 **R-CODE-09 — Static hosting on GitHub Pages.**
 The app must run as static files. Routing works under the repository sub-path (configurable base path) and survives page reloads on deep links (SPA fallback). The repository is public on the free GitHub plan, so nothing confidential may ever be committed (see R-CODE-04). The token helper (F1) lives in `token-helper/` and is deployed separately to Cloudflare Workers.

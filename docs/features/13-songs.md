@@ -3,10 +3,19 @@
 | | |
 |---|---|
 | **ID** | F4 |
-| **Status** | Implemented (v0.6.0) incl. lyrics, folder view and practice view (§4.3). Open: desktop master–detail, "Mit Notizen" filter (M8). Spike: HiDrive file ID stability (§6.1) |
+| **Status** | Implemented (v0.13.4) incl. lyrics, folder view, practice view (§4.3), member suggestions and version similarity. Open: desktop master–detail, "Mit Notizen" filter (M8). Spike: HiDrive file ID stability (§6.1) |
 
 > **v0.11.0 performance:** the song list is windowed (`VirtualList`, above 60 rows), rows are memoized with fixed heights (title and details on one line), row menus are built lazily, sorting/filtering use one shared collator and pre-normalized search text, and the list no longer re-renders on playback position ticks. Measured with 300 songs at 4× CPU slowdown: tab tap 510–640 ms → 75–100 ms. Test with `?demo-songs=300` in demo mode.
 >
+> **List structure & performance (v0.11 – v0.13.4)**
+> - **Toolbar (v0.13.4):** row 1 = sorting (A–Z / Neueste) and view (Liste / Ordner) side by side, on phones too; row 2 = filters: "Neu" and the tags.
+> - **Windowed list:** `ui/components/VirtualList.tsx` renders only the rows around the viewport once a list has more than 60 rows (below that everything is rendered – simpler and testable). Rows have **fixed heights** (`ROW_HEIGHT` 73 px, 99 px with tags in `SongsPage.tsx`; single-line title and details) so the estimate is exact and scroll restoration works.
+> - **Rows are memoized** (`SongRow`): props are primitives or stable callbacks; the ⋯ menu builds its items only when opened (`Menu` accepts `items` as a function).
+> - **Player state in slices:** screens use `usePlaySong()` (track + status only), never the position – the position changes ~4×/s and would re-render the whole list while music plays (`usePlayerSelect`, F9).
+> - **Search/filter:** haystacks per song are normalized once per data change (`searchHaystack`, also matches "acdc" for "AC/DC" and ignores apostrophes).
+> - **Artist ("Interpret"):** optional field in the edit form; used by the printed setlist (F7).
+> - **Optimistic writes:** `LibraryStore.update` shows a change immediately and rolls it back with a message if saving fails; notes and tags do the same.
+
 > **Member suggestions (v0.13.2)** – a song counts as a *suggestion* while **all** its existing files lie in a folder whose name contains a suggestion folder name (band setting `scan.suggestionFolders`, default "Vorschläge", anywhere in the path, umlaut-tolerant, e.g. "Vorschläge/Tom", "Band/Vorschlaege 2026"). Suggestions are left out of the main list and shown in an own section "Vorschläge (n)" below it (collapsed by default, state remembered per device; search hits are offered there like for the archive). In the folder view they appear only when the section is shown, marked "Vorschlag". Setlist picker: after the band's songs, marked; never in "Lange nicht gespielt". As soon as a song has a file outside such a folder (e.g. a rehearsal recording grouped as version), it is a normal song automatically. No tags are written.
 
 > **Adopting a suggestion (v0.13.3)** – "In die Songliste übernehmen" (row menu or banner on the song page): the member picks a folder (folder picker, default = last audio upload folder / standard upload folder; suggestion folders are refused). The Band-Version file is **copied** there (HiDrive server-side `POST /file/copy`, create-only: unique name, never overwrites; the guard allows copies only into the app folder or the home). The copy becomes the new Band-Version, so the song has a file outside "Vorschläge" and is a normal song. The original stays as another version (R-DATA-01: band files are never moved or deleted).

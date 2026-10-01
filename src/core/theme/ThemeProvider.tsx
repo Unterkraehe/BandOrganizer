@@ -1,3 +1,4 @@
+/** Theme preference (system / light / dark): follows the device setting live and applies the resolved theme to the document. */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   applyTheme,

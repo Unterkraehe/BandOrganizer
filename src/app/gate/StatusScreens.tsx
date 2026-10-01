@@ -1,3 +1,4 @@
+/** Full-screen loading and error screens shown while the session starts. */
 import { WifiOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSession } from '@/core/session/BandSession';

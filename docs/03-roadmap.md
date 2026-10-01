@@ -1,6 +1,6 @@
 # Implementation Roadmap
 
-> **Status:** M0–M8 ✅ · UI polish ✅ (v0.11.0) · M9 🟡 v0.12.0 = release candidate: subscription, accessibility & performance review done – **band test phase next**, then 1.0.0 · open tests: S1/S2, S4, S5, S6, iPhone with effects + keyboard/chat
+> **Status:** M0–M9 built · v0.13.4 = release candidate: the band test phase decides when it becomes **1.0.0** · open tests: S1/S2 (file IDs, ETag), S4 (share link as calendar subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with keyboard on iPhone/Android, push notifications on real devices, HiDrive copy (`POST /file/copy`)
 > Order and scope of the build, from an empty repository to v1.0. Each milestone ends with a **deployed version the band can use and test**.
 
 ## 1. Principles
@@ -194,6 +194,20 @@ Scope:
 - Band test phase (1–2 weeks of real use), bug fixing, docs update, version 1.0.0.
 
 Done when: the band uses the app for a full rehearsal-and-gig cycle without falling back to the old way.
+
+## 4a. Releases since the release candidate
+
+| Version | What changed |
+|---|---|
+| 0.12.1 – 0.12.3 | Printed setlist in the band's own paper layout; larger, bolder text and new "DIREKT" arrows; print preview shows the real A4 page; swipe surface = whole screen (Back works after swiping); app refreshes after a long time in the background; more generous search; song versions in the preview |
+| 0.12.4 | Version suggestions by similarity (all "Holy Diver" file name variants) |
+| 0.12.5 | Optimistic updates everywhere users wait; song page no longer scrolls sideways with long file names |
+| 0.13.0 | Push notifications (chat messages, event changes) through the token helper |
+| 0.13.1 | ⋯ menus drawn above everything, with a raised background |
+| 0.13.2 – 0.13.3 | Member suggestions ("Vorschläge") in their own section; "In die Songliste übernehmen" copies the Band-Version out of Vorschläge |
+| 0.13.4 | Song list toolbar in two rows (switches, then filters) |
+
+Details per change: feature files (status blocks) and the "Was ist neu" texts in `src/locales/de/whatsNew.json`.
 
 ## 5. Definition of Done (every milestone)
 

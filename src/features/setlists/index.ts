@@ -1,3 +1,4 @@
+/** Feature registration (setlistsFeature): list, detail, editor, stage view and print routes. */
 import { ListMusic } from 'lucide-react';
 import { createElement } from 'react';
 import type { FeatureRegistration } from '@/core/features/registry';

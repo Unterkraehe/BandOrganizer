@@ -21,7 +21,8 @@
 > - Absence "cancel for all following" ends the series.
 > - Answers are loaded for the past 7 and next 180 days.
 > - `.ics` export: VTIMEZONE Europe/Berlin, RRULE, cancelled dates as `STATUS:CANCELLED` overrides; on phones via the share sheet, otherwise download.
-> - Not yet: chat info lines (M7), "Setlist üben"/setlist link (M6), subscription (M9).
+> - Optimistic (v0.12.5): `CalendarStore` shows creating, editing, cancelling and answering immediately, saves in the background and rolls back with a message on failure; the event form closes at once.
+> - Chat info lines, the setlist link and the subscription were added later (F6, F7, §6.5b).
 | **Depends on** | F1, F2, F3 |
 | **Used by** | F3 Dashboard, F7 Setlists, F8 Search, F6 Chat (info lines) |
 

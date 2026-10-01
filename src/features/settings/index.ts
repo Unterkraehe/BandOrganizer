@@ -1,3 +1,4 @@
+/** Feature registration (settingsFeature): settings, band settings and profile routes. */
 import { Settings } from 'lucide-react';
 import { createElement } from 'react';
 import type { FeatureRegistration } from '@/core/features/registry';

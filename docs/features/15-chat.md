@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **ID** | F6 |
-| **Status** | Implemented (v0.9.0) |
+| **Status** | Implemented (v0.9.0); push notifications since v0.13.0 (§4.6) |
 
 > **v0.11.0:** the input bar is `position: fixed` above the bottom bar / mini player / keyboard and never scrolls away; the list keeps room for it (spacer). Your own message always jumps into view; incoming messages follow only when you are near the bottom.
 >

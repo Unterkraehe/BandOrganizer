@@ -1,18 +1,25 @@
-# Quality checks (phone behaviour)
+# Quality checks (browser behaviour)
 
-Small Playwright (Python) scripts that check the things unit tests can't see. They drive the built app in a
-phone-sized Chromium in **demo mode**.
+Small Playwright (Python) scripts for the things unit tests can't see. They drive the **built** app in demo mode
+(phone-sized Chromium unless noted). Shared setup is in `common.py` (`session()`, `open_demo()`, `nav()`, `log()`).
 
 ```bash
-npm run build && npx vite preview --port 4173 &     # serve the build
-pip install playwright && playwright install chromium
-python3 scripts/qa/layout-shift-audit.py             # layout shifts per screen (CLS incl. shifts right after taps)
-python3 scripts/qa/tab-switch-perf.py                # tab tap → content, 300 songs, 4× CPU slowdown
-python3 scripts/qa/phone-interaction-check.py        # swipe tabs, answer buttons stay put, pinned chat input, dialog on top
+npm run build && node scripts/serve.mjs start          # serve dist/ on http://localhost:4173/BandOrganizer/ (stop: … stop)
+pip install playwright pillow && playwright install chromium
+python3 scripts/qa/<script>.py                          # exit code 0 = fine
 ```
 
-Targets (R-UI-11, R-UI-13): layout shift ≈ 0 on every screen; tab switch < 150 ms with 300 songs at 4× slowdown;
-answer buttons keep their position when tapped; chat input stays directly above the bottom bar / mini player.
+| Script | Checks | Target |
+|---|---|---|
+| `layout-shift-audit.py` | Layout shifts on every screen, incl. right after taps and when the mini player appears | CLS ≈ 0 (R-UI-11) |
+| `tab-switch-perf.py` | Tab tap → content with 300 songs, 4× CPU slowdown | < 150 ms (R-UI-13) |
+| `phone-interaction-check.py` | Swipe between tabs, answer buttons stay put, chat input pinned above bottom bar/mini player, dialog on top, zoom guards | all as described in the output |
+| `menu-overlay-check.py` | ⋯ menus fully on screen and on top (also last row in the archive), both themes | `on screen: True on top: True` |
+| `latency-check.py` | With 250 ms per storage call the UI still reacts at once (optimistic updates); no sideways scrolling | < 300 ms |
+| `axe-audit.py` | axe-core accessibility audit, phone dark + desktop light | only the intentional zoom finding |
+| `push-sw-check.py` | A push message reaches the service worker and shows the notification (needs Chromium's new headless mode) | notification title/body/tag/url as sent |
+| `print-pdf.py [out.pdf]` | Builds a sample setlist and prints it to PDF – look at it with `pdftoppm -r 70 -png out.pdf page` | visual |
 
-`?demo-songs=300` fills the demo with 300 songs. Not covered here (needs a real device): the on-screen keyboard on
-iOS/Android, lock-screen audio, install/PWA behaviour.
+`?demo-songs=300` fills the demo with 300 songs, `?demo-latency=250` slows every storage call down (see `docs/92-code-map.md`).
+Set `QA_URL` to test another address. Not covered (needs a real device): the on-screen keyboard on iOS/Android,
+lock-screen audio, install/PWA behaviour, real push delivery.

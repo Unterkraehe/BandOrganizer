@@ -1,3 +1,4 @@
+/** Public entry of the UI kit: `import { Button, Dialog, … } from '@/ui'`. */
 export { Avatar } from './components/Avatar';
 export { BandColorPicker } from './components/BandColorPicker';
 export { BandMark } from './components/BandMark';

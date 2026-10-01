@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **ID** | F3 |
-| **Status** | Planned – ready for implementation |
+| **Status** | Implemented (v0.3.0), polished in v0.11.0 (swipe tabs, calm layout, touch behaviour); search button in every top bar since v0.10.0 |
 | **Depends on** | F1, F2 |
 | **Used by** | all features |
 
@@ -119,6 +119,14 @@ Opening a setlist "in Songs" turns the song list into a practice/rehearsal queue
 ## 6. Behaviour & Rules
 
 > **Setlist mode implemented (v0.8.0)** – see F7 implementation notes.
+
+> **Implementation notes (v0.13.4)**
+> - **Shell:** `ui/layout/AppShell.tsx` builds the navigation from the feature registry (`core/features/registry.ts`, listed in `features/index.ts`). `FeatureRegistration.useBadge` puts a counter on a navigation item (chat: unread messages).
+> - **Providers** (outer → inner, `app/App.tsx`): Theme → Notify → Session → [gate: welcome → band setup → profile] → Library → Uploads → Calendar → Setlist → SetlistMode → Chat → router. Inside the router (`app/routes.tsx`): Search provider → top-bar extras (search button) → shell; the search overlay and the notification navigator sit beside the shell.
+> - **Swipe between the bottom-bar screens** (`ui/swipe.ts`, wired in the shell): the whole screen is the surface, sliders / text fields / sideways-scrolling rows / dialogs / screen edges are ignored. While a tab screen is shown, `html[data-swipe-tabs]` sets `touch-action: pan-y`, so the browser leaves sideways swipes to the app – only then they count as real user actions; otherwise Chrome skips the history entries and **Back closes the app** (decision log 2026-09-30).
+> - **Titles** are one line (ellipsis) so the top-bar buttons never move between screens; the upload indicator sits at the bottom, not over top-bar buttons.
+> - **Back to the app** (`core/resume.ts`): after ≥ 20 s in the background, a bfcache restore or a frozen heartbeat, the stores reload (songs/notes, calendar, chat, setlists, band + members).
+> - **Notifications:** tapping a push opens the target (`features/notifications/NotificationNavigator.tsx`).
 
 ### 6.1 Feature registry
 Each feature registers (R-CODE-02):

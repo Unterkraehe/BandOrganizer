@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **ID** | F1 |
-| **Status** | Implemented (v0.2.0) except the real login test – waiting for HiDrive client ID; spikes S1/S2 pending |
+| **Status** | Implemented – real login works since v0.4.2 (all API quirks found on the real HiDrive are in §4 "API facts"); spikes S1 (ETag/expose headers) and S2 (file IDs after rename/move) pending |
 | **Depends on** | – |
 | **Used by** | all features |
 
@@ -66,6 +66,8 @@ HiDrive app type **"server"** + **token helper** on Cloudflare Workers.
 | App data folder | fixed: `<home>/_BandApp` (every device must find it without extra input) |
 | Conflict check | `version = "<mtime>:<chash>"` compared before writing (no `If-Match`, see CORS test) |
 | Uploads | `POST /file?dir=&name=` without `on_exist` → HiDrive refuses existing names (create-only) |
+| Copy | `POST /file/copy?src=&dst=` without `on_exist` → HiDrive refuses an existing target (create-only). Used by "In die Songliste übernehmen" (v0.13.3); not yet tested against the real HiDrive |
+| Share links | `POST /sharelink?path=&type=file` → `{ id, uri }`, `DELETE /sharelink?id=` – the calendar subscription (v0.12.0); spike S4: does `uri` deliver the raw file? |
 | Updates | `PUT /file?dir=&name=` (overwrite). A `path` parameter is rejected with 400 – fixed in v0.9.1; before that, every change to an existing app file failed on real HiDrive |
 
 **Demo mode:** "Demo ausprobieren" on the welcome screen runs the whole app against an in-memory storage with a few sample files. Nothing is saved; useful for trying the app without an account and for UI tests.
@@ -93,23 +95,30 @@ Rules: CORS restricted to the app's origin, no storage, no token logging (R-CODE
 - **Sync strategy (v1):** online-first. Data is fetched from HiDrive, cached in memory/IndexedDB for speed, refreshed in the background (on app focus, on interval, on pull-to-refresh).
 - All write operations go through the safety guard (R-DATA-04).
 
-### StorageProvider interface (draft)
+### StorageProvider interface (as built, `src/core/storage/types.ts`)
 
 ```ts
 interface StorageProvider {
-  id: string;                       // e.g. "hidrive"
-  list(path: string): Promise<FileEntry[]>;
-  stat(path: string): Promise<FileEntry>;
-  readText(path: string): Promise<string>;
-  readJson<T>(path: string): Promise<T>;
-  getStreamUrl(path: string): Promise<string>;   // for audio/images
-  // write operations – only callable through the safety guard
-  writeJson(path: string, data: unknown, opts?: { ifMatch?: string }): Promise<FileEntry>;
-  createFolder(path: string): Promise<void>;
-  move(from: string, to: string): Promise<void>;
-  delete(path: string): Promise<void>;
+  readonly id: string;                                        // "hidrive", "memory" (tests + demo)
+  // read
+  list(path): Promise<FileEntry[]>;
+  stat(path): Promise<FileEntry | null>;
+  readText(path): Promise<string>;
+  readBlob(path): Promise<Blob>;                              // audio, images, documents
+  // write – only ever called by the safety guard (SafeStorage)
+  writeText(path, content, options?): Promise<FileEntry>;     // create or update (expectedVersion → conflict check)
+  createFile(path, content, options?): Promise<FileEntry>;    // MUST fail with AlreadyExistsError
+  createFolder(path): Promise<FileEntry>;                     // ONE folder, the parent must exist (the guard creates parents inside its zones)
+  move(from, to): Promise<FileEntry>;
+  delete(path): Promise<void>;
+  // optional capabilities
+  copyFile?(from, to): Promise<FileEntry>;                    // server-side copy to a NEW path
+  createShareLink?(path): Promise<ShareLink>;                 // public read-only link to one file
+  deleteShareLink?(id): Promise<void>;
 }
 ```
+
+Features never see the provider: they use `SafeStorage` (`guard.ts`), which also offers `writeJson`, `readJson`, `copyFile` (fallback: download + upload), `createShareLink` and enforces the zones of R-DATA-03/04 (app folder: everything; rest of the home: create-only; share links only for files in `_BandApp/`).
 
 ## 5. Data Model & Storage
 

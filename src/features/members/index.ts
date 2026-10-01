@@ -1,3 +1,4 @@
+/** Feature registration (membersFeature): member list and member detail routes. */
 import { Users } from 'lucide-react';
 import { createElement } from 'react';
 import type { FeatureRegistration } from '@/core/features/registry';

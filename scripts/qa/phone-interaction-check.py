@@ -1,20 +1,10 @@
-import time, json
-from playwright.sync_api import sync_playwright
-base='http://localhost:4173/BandOrganizer/'
-T=time.time()
-def log(*a): print(round(time.time()-T,1), *a, flush=True)
-with sync_playwright() as p:
-    b=p.chromium.launch()
-    ctx=b.new_context(viewport={'width':390,'height':844}, has_touch=True, is_mobile=True, color_scheme='dark')
-    pg=ctx.new_page(); pg.set_default_timeout(15000)
-    cdp=ctx.new_cdp_session(pg)
-    pg.on('pageerror', lambda e: log('PAGEERROR', str(e)[:200]))
-    pg.goto(base+'?demo-songs=40')
-    pg.get_by_role('button', name='Demo ausprobieren').click()
-    pg.get_by_role('textbox', name='Bandname').fill('Overload'); pg.get_by_role('button', name='Band einrichten').click()
-    pg.get_by_role('textbox', name='Name').fill('Lisa'); pg.get_by_role('button', name="Los geht's").click()
-    pg.wait_for_timeout(1200)
+"""Phone behaviour: swipe tabs, answer buttons stay put, pinned chat input, dialog on top, zoom guards."""
+import json
+from common import log, session
 
+with session(query='?demo-songs=40', scheme='dark') as s:
+    pg, ctx = s.pg, s.ctx
+    cdp = s.cdp_session()
     def swipe(x0,x1,y=420):
         cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':x0,'y':y}]})
         for i in range(1,7):
@@ -66,4 +56,3 @@ with sync_playwright() as p:
     # zoom / font sizes
     log('viewport meta:', pg.evaluate("document.querySelector('meta[name=viewport]').content"))
     log('smallest input font-size:', pg.evaluate("Math.min(...[...document.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,select')].map(e=>parseFloat(getComputedStyle(e).fontSize)))"))
-    b.close()

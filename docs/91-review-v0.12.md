@@ -39,3 +39,9 @@ Guard tests (incl. new share-link rule) green: the app writes only inside `_Band
 ## Band test phase – checklist
 
 See the delivery message of v0.12.0; results go into this file.
+
+## Follow-ups after the review (v0.12.1 – v0.13.4)
+
+- **Zoom:** the intentional "no zoom" finding stays; the text size setting is the compensation.
+- **Perceived speed:** v0.12.5 made all waiting actions optimistic (see decision log 2026-09-30); `?demo-latency=250` simulates HiDrive round trips for checking this.
+- **New screens/settings since the review:** notifications settings (v0.13.0), suggestion folders in the song scan settings (v0.13.2), "In die Songliste übernehmen" dialog (v0.13.3). Not yet part of an automated accessibility run – `scripts/qa/axe-audit.py` runs the same axe-core check again.

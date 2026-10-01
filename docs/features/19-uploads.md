@@ -235,3 +235,5 @@ None of its own; new songs/lyrics are indexed by F4/F8 as usual.
 | 1a | Picker for | **All** uploads: audio files, lyrics files and typed lyrics (§4.3) – changed 2026-09-28 |
 | 2 | Lyrics | Upload **and** type in the app (saved as `.txt`); edits create new files, old versions stay as history |
 | 3 | Other attachments | Only audio + lyrics in v1 |
+
+> **Copying within the HiDrive (v0.13.3)** – "In die Songliste übernehmen" (F4, member suggestions) copies a Band-Version file with `SafeStorage.copyFile` (server-side `POST /file/copy`, create-only, unique name) into a folder chosen with the same folder picker as uploads (§4.2); the copy becomes the new Band-Version.

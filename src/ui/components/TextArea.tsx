@@ -1,3 +1,4 @@
+/** Multi-line text field with label, hint and error (same look as TextField). */
 import { forwardRef, useId, type TextareaHTMLAttributes } from 'react';
 import styles from './TextField.module.css';
 

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **ID** | F7 |
-| **Status** | Implemented (v0.8.0); print layout reworked in v0.12.1 |
+| **Status** | Implemented (v0.8.0); print layout reworked in v0.12.1 – v0.12.3 |
 
 > **Print layout (v0.12.1)** – modelled on the band's own sheet "Playlist Beimerstetten":
 > - Every block on its own A4 page: header row with the block name (large) and "<Setlist name> - Stand: <last change, dd.mm.yy>".

@@ -44,7 +44,7 @@ export interface StorageProvider {
   writeText(path: string, content: string, options?: WriteOptions): Promise<FileEntry>;
   /** Creates a new file. MUST fail with AlreadyExistsError if the path exists. */
   createFile(path: string, content: FileContent, options?: CreateOptions): Promise<FileEntry>;
-  /** Creates a folder (and missing parents). Existing folders are not an error. */
+  /** Creates ONE folder – the parent must exist (the guard creates missing parents inside its zones). An existing folder is not an error. */
   createFolder(path: string): Promise<FileEntry>;
   move(from: string, to: string): Promise<FileEntry>;
   delete(path: string): Promise<void>;

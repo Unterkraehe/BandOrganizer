@@ -1,19 +1,11 @@
-import time, json
-from playwright.sync_api import sync_playwright
-base='http://localhost:4173/BandOrganizer/'
-T=time.time()
-def log(*a): print(round(time.time()-T,1), *a, flush=True)
+"""Layout shifts (CLS) on every main screen, incl. shifts right after taps. Target: ≈ 0 everywhere (R-UI-11)."""
+import json
+from common import log, session
+
 INSTALL = """() => { window.__ls=[]; new PerformanceObserver(l => { for (const e of l.getEntries()) { window.__ls.push({v:e.value, s:(e.sources||[]).map(s=>{const n=s.node; return n ? (n.tagName||'#text')+'.'+(String(n.className||'').toString().slice(0,40)) : '?'}).slice(0,3)}); } }).observe({type:'layout-shift', buffered:true}); }"""
-with sync_playwright() as p:
-    b=p.chromium.launch()
-    ctx=b.new_context(viewport={'width':390,'height':844}, has_touch=True, is_mobile=True)
-    pg=ctx.new_page(); pg.set_default_timeout(15000)
-    pg.on('pageerror', lambda e: log('PAGEERROR', str(e)[:200]))
-    pg.goto(base+'?demo-songs=40')
-    pg.get_by_role('button', name='Demo ausprobieren').click()
-    pg.get_by_role('textbox', name='Bandname').fill('Overload'); pg.get_by_role('button', name='Band einrichten').click()
-    pg.get_by_role('textbox', name='Name').fill('Lisa'); pg.get_by_role('button', name="Los geht's").click()
-    pg.wait_for_timeout(1500)
+
+with session(query='?demo-songs=40', scheme='light') as s:
+    pg = s.pg
     # some data: an event, a chat message
     pg.get_by_role('link', name='Kalender').first.click(); pg.wait_for_timeout(300)
     pg.get_by_role('button', name='Termin anlegen').first.click(); pg.get_by_role('button', name='Probe').click()
@@ -38,4 +30,3 @@ with sync_playwright() as p:
         visit('with player: tab '+n, nav(n))
     visit('song detail', lambda: pg.get_by_role('link', name='Open Road', exact=False).first.click())
     visit('practice view', lambda: pg.get_by_role('button', name='Übungsansicht').first.click())
-    b.close()

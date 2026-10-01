@@ -1,3 +1,4 @@
+/** App entry: blocks pinch-zoom gestures and mounts <App /> (the service worker is registered in core/pwa/usePwa). */
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import '@/core/i18n';

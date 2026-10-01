@@ -1,3 +1,4 @@
+/** First screen without a connection: "Mit HiDrive verbinden" or demo mode. */
 import { LogIn, PlayCircle, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSession, type SessionStatus } from '@/core/session/BandSession';

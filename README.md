@@ -3,7 +3,7 @@
 A Progressive Web App for band organization: songs, lyrics, notes, practice tools, calendar, setlists and a band chat – all stored on the band's own HiDrive.
 
 - **Live:** https://unterkraehe.github.io/BandOrganizer/
-- **Status:** v0.12.0 – release candidate for 1.0 (all planned features built; band test phase next). See [`docs/03-roadmap.md`](docs/03-roadmap.md).
+- **Status:** v0.13.4 – release candidate for 1.0 (all planned features built; the band test phase decides 1.0.0). See [`docs/03-roadmap.md`](docs/03-roadmap.md).
 - **UI language:** German. Code, comments and docs: English.
 
 ## Documentation
@@ -15,9 +15,13 @@ Everything is planned in `docs/` – read these before changing anything:
 | [`docs/00-overview.md`](docs/00-overview.md) | Vision, architecture, data layout, decision log |
 | [`docs/01-general-rules.md`](docs/01-general-rules.md) | Rules for every change (data safety, i18n, UI, code) |
 | [`docs/02-design-system.md`](docs/02-design-system.md) | Tokens, themes, typography, components, branding |
-| [`docs/03-roadmap.md`](docs/03-roadmap.md) | Milestones M0–M9 |
+| [`docs/03-roadmap.md`](docs/03-roadmap.md) | Milestones M0–M9 and releases since |
 | [`docs/features/`](docs/features/) | One file per feature (F1–F10) |
 | [`docs/90-future-plans.md`](docs/90-future-plans.md) | Ideas after v1 |
+| [`docs/92-code-map.md`](docs/92-code-map.md) | **Code map** – layers, data layout, shared mechanisms, recipes, gotchas (start here to change code) |
+| [`docs/93-code-index.md`](docs/93-code-index.md) | Generated index of every source file, route, text namespace and test |
+| [`docs/94-device-test-checklist.md`](docs/94-device-test-checklist.md) | Open tests that need real HiDrive / real phones, and the band test phase |
+| [`CLAUDE.md`](CLAUDE.md) | Short instructions for Claude / developers (reading order, workflow) |
 
 The most important rule: **the app never modifies or deletes files it did not create.** All writes go through the safety guard in `src/core/storage/guard.ts` (R-DATA-04).
 
@@ -32,6 +36,12 @@ npm test           # unit tests (Vitest)
 npm run lint       # ESLint
 npm run build      # production build into dist/
 npm run preview    # serve the production build locally
+npm run check      # types + lint + code index + all tests + build (what CI does)
+npm run check -- --quick           # types + lint + code index only
+npm run check -- flows/songs       # only tests whose path matches
+npm run map        # regenerate docs/93-code-index.md
+node scripts/serve.mjs start       # serve dist/ in the background for scripts/qa (stop: `… stop`)
+npm run pack -- --out release      # delivery zip (never contains src/config.ts)
 ```
 
 ## Deployment
