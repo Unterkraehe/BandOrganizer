@@ -1,4 +1,4 @@
-/** Global test setup: jest-dom matchers and jsdom stand-ins (matchMedia, audio play/pause, URL.createObjectURL). */
+/** Global test setup: jest-dom matchers and jsdom stand-ins (matchMedia, audio play/pause, URL.createObjectURL, scrolling). */
 import '@testing-library/jest-dom/vitest';
 import '@/core/i18n';
 
@@ -28,4 +28,10 @@ if (typeof window !== 'undefined') {
   };
   if (!URL.createObjectURL) URL.createObjectURL = () => 'blob:test';
   if (!URL.revokeObjectURL) URL.revokeObjectURL = () => undefined;
+}
+
+// jsdom has no layout: scrolling does nothing (window.scrollTo only logs "not implemented")
+if (typeof window !== 'undefined') {
+  window.scrollTo = () => {};
+  if (!Element.prototype.scrollIntoView) Element.prototype.scrollIntoView = () => {};
 }

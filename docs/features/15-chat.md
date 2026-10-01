@@ -5,6 +5,8 @@
 | **ID** | F6 |
 | **Status** | Implemented (v0.9.0); push notifications since v0.13.0 (§4.6) |
 
+> **v0.13.5:** opening the chat jumps to the "Neue Nachrichten" divider, or to the newest message when nothing is unread. The jump runs one animation frame after mounting, because React Router's `<ScrollRestoration>` (root route) resets the page to the top after the page's own layout effects.
+>
 > **v0.11.0:** the input bar is `position: fixed` above the bottom bar / mini player / keyboard and never scrolls away; the list keeps room for it (spacer). Your own message always jumps into view; incoming messages follow only when you are near the bottom.
 >
 > **Implementation notes (v0.9.0)**

@@ -37,16 +37,22 @@ export function ChatPage() {
     if (ready && last && document.visibilityState === 'visible') store.markRead(last.createdAt);
   }, [last, store, ready]);
 
-  // first open: jump to the unread divider, later: follow new messages
+  // first open: jump to the unread divider (or the newest message), later: follow new messages
   const initial = useRef(true);
+  const initialFrame = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(initialFrame.current), []);
   useLayoutEffect(() => {
     if (!state.messages.length) return;
     if (initial.current) {
       initial.current = false;
       if (target) return; // opened from a search result: the message is scrolled into view instead
-      const divider = document.getElementById('chat-unread');
-      if (divider) divider.scrollIntoView({ block: 'center' });
-      else window.scrollTo({ top: document.body.scrollHeight });
+      // One frame later: the router's <ScrollRestoration> (a layout effect of the root route, which runs
+      // after this one) resets the page to the top on every navigation and would undo the jump.
+      initialFrame.current = requestAnimationFrame(() => {
+        const divider = document.getElementById('chat-unread');
+        if (divider) divider.scrollIntoView({ block: 'center' });
+        else window.scrollTo({ top: document.documentElement.scrollHeight });
+      });
       return;
     }
     // Your own message always jumps into view; incoming ones follow only if you are reading at the bottom

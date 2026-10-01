@@ -1,4 +1,7 @@
 {
+  "0.13.5": [
+    "Chat: Beim Öffnen springt der Chat jetzt zu den neuen Nachrichten bzw. zur neuesten Nachricht – du musst nicht mehr von oben nach unten scrollen."
+  ],
   "0.13.4": [
     "Songliste: Sortierung und Ansicht (Liste/Ordner) stehen jetzt nebeneinander in einer Zeile, darunter in einer zweiten Zeile „Neu“ und die Tags – auch auf dem Handy."
   ],

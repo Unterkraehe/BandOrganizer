@@ -1,6 +1,6 @@
 # Implementation Roadmap
 
-> **Status:** M0–M9 built · v0.13.4 = release candidate: the band test phase decides when it becomes **1.0.0** · open tests: S1/S2 (file IDs, ETag), S4 (share link as calendar subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with keyboard on iPhone/Android, push notifications on real devices, HiDrive copy (`POST /file/copy`)
+> **Status:** M0–M9 built · v0.13.5 = release candidate: the band test phase decides when it becomes **1.0.0** · open tests: S1/S2 (file IDs, ETag), S4 (share link as calendar subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with keyboard on iPhone/Android, push notifications on real devices, HiDrive copy (`POST /file/copy`)
 > Order and scope of the build, from an empty repository to v1.0. Each milestone ends with a **deployed version the band can use and test**.
 
 ## 1. Principles
@@ -206,6 +206,7 @@ Done when: the band uses the app for a full rehearsal-and-gig cycle without fall
 | 0.13.1 | ⋯ menus drawn above everything, with a raised background |
 | 0.13.2 – 0.13.3 | Member suggestions ("Vorschläge") in their own section; "In die Songliste übernehmen" copies the Band-Version out of Vorschläge |
 | 0.13.4 | Song list toolbar in two rows (switches, then filters) |
+| 0.13.5 | Chat opens at the unread divider / newest message again (the router's scroll reset had moved it to the top) |
 
 Details per change: feature files (status blocks) and the "Was ist neu" texts in `src/locales/de/whatsNew.json`.
 

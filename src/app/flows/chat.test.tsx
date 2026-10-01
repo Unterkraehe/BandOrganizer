@@ -1,6 +1,6 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { enterDemo } from '@/test/demo';
 
 describe('Chat (M7 in demo mode)', () => {
@@ -44,6 +44,24 @@ describe('Chat (M7 in demo mode)', () => {
     expect(await screen.findByText('Neue Nachrichten')).toBeInTheDocument();
     await user.click(screen.getByRole('link', { name: 'Start' }));
     expect(await screen.findByText('Keine neuen Nachrichten')).toBeInTheDocument();
+  });
+
+  it('opens at the newest message instead of the top (v0.13.5)', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/chat');
+    await user.type(await screen.findByRole('textbox', { name: 'Nachricht an die Band …' }), 'Probe am Freitag?');
+    await user.click(screen.getByRole('button', { name: 'Senden' }));
+    await screen.findByText('Probe am Freitag?');
+    await user.click(screen.getByRole('link', { name: 'Start' }));
+
+    const scrollTo = vi.spyOn(window, 'scrollTo');
+    try {
+      await user.click(await screen.findByRole('link', { name: 'Chat' }));
+      // the router resets the page to the top (scrollTo(0, 0)); the chat must scroll down after that
+      await waitFor(() => expect(scrollTo.mock.calls.at(-1)?.[0]).toEqual({ top: expect.any(Number) }));
+    } finally {
+      scrollTo.mockRestore();
+    }
   });
 });
 
