@@ -45,6 +45,7 @@ with session(width=int(sys.argv[1]) if len(sys.argv) > 1 else 360, height=740) a
     nav(pg, 'songs', wait=900)
     pg.get_by_role('link', name='Midnight Engine', exact=False).first.click(); pg.wait_for_timeout(1200)
     # a second version → the version dropdown appears (song page and player)
+    pg.get_by_role('tab', name='Versionen').click(); pg.wait_for_timeout(300)  # song page tabs (v0.17.0)
     pg.get_by_role('button', name='Als Version hinzufügen').first.click(); pg.wait_for_timeout(1500)
     check(pg, 'song page')
     pg.get_by_role('button', name='Abspielen').first.click(); pg.wait_for_timeout(800)

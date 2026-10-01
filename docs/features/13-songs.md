@@ -124,6 +124,8 @@ Optional view of the song list that mirrors the HiDrive folder structure.
 
 ### 4.2 Song-Detail (`/songs/:songId`)
 
+> **v0.17.0 – the song page is about the song (R-UX-09):** top bar ← · ✎ · ⋯ · 🔍, the title large below it (wraps, never cut – `Page titleBelow`), banners (archive, suggestion), chips, then **one action pair: "Abspielen" (toggles to "Pause") and "Üben"** (plays and opens the player on its Üben tab). No player block any more – seek, versions while listening, tempo/pitch/loop are in the player (F9 §8a); the mini player shows on the song page too. Tabs sharing the width: **Songtext · Notizen (n) · Versionen · Infos** – Notizen with a "Für alle (n) / Nur für mich" switch (links `?tab=public|private` still work), Versionen = versions, Band-Version and "Als Version hinzufügen" suggestions, Infos = "In Setlists" + Diskussion. Without lyrics one button "Songtext hinzufügen" opens the three ways (auswählen / hochladen / eintippen). The description below is the original design; it is superseded where it differs.
+
 **Header**
 - Title, below: chips for key, BPM, tuning, duration (only filled ones)
 - Tags as chips below the title (tap → song list filtered by that tag)

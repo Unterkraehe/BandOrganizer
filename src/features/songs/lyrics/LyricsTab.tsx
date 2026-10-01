@@ -30,6 +30,7 @@ export function LyricsTab({ song, find }: { song: Song; find?: string | null }) 
   const [size, setSize] = useState(() => Number(localStorage.getItem(SIZE_KEY)) || 1);
   const [chooser, setChooser] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [adding, setAdding] = useState(false);
   const [history, setHistory] = useState(false);
   const lyrics = song.lyrics;
   const [contentRoot, setContentRoot] = useState<HTMLElement | null>(null);
@@ -146,17 +147,25 @@ export function LyricsTab({ song, find }: { song: Song; find?: string | null }) 
               ))}
             </ul>
           )}
+          {/* one button, the three ways in a small dialog (R-UX-09: few visible actions) */}
           <div className={styles.emptyActions}>
-            <Button icon={<FilePlus size={18} />} onClick={() => setChooser(true)}>
-              {t('lyrics.choose')}
-            </Button>
-            <Button icon={<Upload size={18} />} onClick={() => setUploading(true)}>
-              {t('lyrics.upload')}
-            </Button>
-            <Button icon={<Keyboard size={18} />} onClick={() => navigate(`/songs/${song.id}/lyrics`)}>
-              {t('lyrics.type')}
+            <Button icon={<Plus size={18} />} onClick={() => setAdding(true)}>
+              {t('lyrics.add')}
             </Button>
           </div>
+          <Dialog open={adding} title={t('lyrics.add')} closeLabel={t('common:actions.close')} onClose={() => setAdding(false)}>
+            <div className={styles.addChoices}>
+              <Button icon={<FilePlus size={18} />} onClick={() => (setAdding(false), setChooser(true))}>
+                {t('lyrics.choose')}
+              </Button>
+              <Button icon={<Upload size={18} />} onClick={() => (setAdding(false), setUploading(true))}>
+                {t('lyrics.upload')}
+              </Button>
+              <Button icon={<Keyboard size={18} />} onClick={() => navigate(`/songs/${song.id}/lyrics`)}>
+                {t('lyrics.type')}
+              </Button>
+            </div>
+          </Dialog>
         </div>
       )}
 

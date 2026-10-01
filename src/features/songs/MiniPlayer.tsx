@@ -11,7 +11,7 @@ import styles from './MiniPlayer.module.css';
 
 /**
  * Persistent mini player (F3 §3, R-UX-08). Tapping it opens the player, which grows out of it (v0.16.0).
- * Hidden while the player is open and on the playing song's page (which has its own player until step 3).
+ * Hidden only while the player is open.
  */
 export function MiniPlayer() {
   const { t } = useTranslation('songs');
@@ -19,9 +19,7 @@ export function MiniPlayer() {
   const setlistMode = useSetlistMode();
   const { pathname } = useLocation();
   const track = state.track;
-  // track.id is the recording; links go to the song (since M3a)
-  const songPath = track ? `/songs/${track.songId ?? track.id}` : '';
-  const visible = Boolean(track) && pathname !== songPath && pathname !== '/player';
+  const visible = Boolean(track) && pathname !== '/player';
   // Tells things pinned to the bottom (chat input, upload indicator) to sit above the mini player
   useEffect(() => {
     document.documentElement.toggleAttribute('data-miniplayer', visible);

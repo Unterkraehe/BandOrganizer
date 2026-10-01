@@ -7,9 +7,14 @@
 
 .tab {
   position: relative;
-  flex: none;
+  /* the tabs share the width – all visible on a 320 px phone, nothing hidden off screen (R-UX-09, R-UI-14) */
+  flex: 1 1 0;
+  min-width: 0;
   min-height: var(--touch);
-  padding: 0 var(--space-4);
+  padding: 0 var(--space-1);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   border: none;
   background: transparent;
   color: var(--text-muted);
@@ -34,8 +39,34 @@
 
 .count {
   display: inline-block;
-  min-width: 3.4ch;
-  margin-left: 0.3em;
+  margin-left: 0.25em;
+  font-size: 0.85em;
   text-align: left;
   font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 479px) {
+  .tabs {
+    gap: 0;
+  }
+  .tab {
+    padding: 0 2px;
+    font-size: var(--fs-sm);
+  }
+}
+
+@media (max-width: 359px) {
+  .tab {
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 768px) {
+  .tabs {
+    justify-content: flex-start;
+  }
+  .tab {
+    flex: none;
+    padding: 0 var(--space-4);
+  }
 }

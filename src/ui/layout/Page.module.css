@@ -50,6 +50,18 @@
   white-space: nowrap;
 }
 
+.titleBelow {
+  /* starts right under the top bar; long titles wrap instead of being cut ("MIDNIGHT …") */
+  margin: calc(-1 * var(--space-2)) 0 calc(-1 * var(--space-4));
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-2xl);
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+}
+
 .actions {
   flex: none;
   /* stays on the right even when the title is visually hidden (start screen) */

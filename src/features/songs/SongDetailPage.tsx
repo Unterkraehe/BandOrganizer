@@ -1,18 +1,17 @@
-import { ArchiveRestore, ListPlus, Music, Pencil, Plus } from 'lucide-react';
-import { useEffect, useMemo, useState, type DragEvent } from 'react';
+import { ArchiveRestore, ListPlus, Music, Pause, Pencil, Play, Plus, SlidersHorizontal } from 'lucide-react';
+import { useEffect, useState, type DragEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { rememberSong } from '@/features/search/recent';
 import { useHighlightElement } from '@/features/search/useHighlightTarget';
 import { useNotify } from '@/app/notify/NotifyProvider';
 import { kindOf } from '@/core/uploads/validate';
-import { Button, EmptyState, IconButton, Menu, Page, Tabs } from '@/ui';
+import { Button, EmptyState, IconButton, Menu, Page, SegmentedControl, Tabs } from '@/ui';
 import { useLibrary } from './LibraryProvider';
 import { LyricsTab } from './lyrics/LyricsTab';
 import { LyricsUploadDialog } from './lyrics/LyricsUploadDialog';
 import type { Recording } from './model';
 import { NotesSection } from './NotesSection';
-import { PlayerControls } from './PlayerControls';
 import type { NoteEntry } from './repository';
 import { TagDialog } from './TagDialog';
 import { AddRecordingDialog } from './uploads/AddRecordingDialog';
@@ -26,26 +25,36 @@ import { InSetlists } from '@/features/setlists/InSetlists';
 import { Discussion } from '@/features/chat/Discussion';
 import styles from './SongDetail.module.css';
 
-type Tab = 'lyrics' | 'public' | 'private';
+type Tab = 'lyrics' | 'notes' | 'versions' | 'info';
+type Scope = 'public' | 'private';
+const TABS: Tab[] = ['lyrics', 'notes', 'versions', 'info'];
 const TAB_KEY = 'bandapp.songs.tab';
+/** links from search and older stored tabs: "public" / "private" = the notes tab with that scope */
+const tabOf = (value: string | null): Tab | null => (value === 'public' || value === 'private' ? 'notes' : TABS.includes(value as Tab) ? (value as Tab) : null);
 
-/** Song detail (F4 §4.2): player, Songtext / notes tabs, versions. */
+/**
+ * Song page (F4 §4.2, v0.17.0): about the song – one "Abspielen", "Üben" opens the player (F9 §8a),
+ * tabs Songtext / Notizen / Versionen / Infos. Listening and practising happen in the player.
+ */
 export function SongDetailPage() {
   const { t } = useTranslation('songs');
   const { songId } = useParams();
   const navigate = useNavigate();
   const notify = useNotify();
   const { songs, state, store, tags } = useLibrary();
-  const { play, state: player } = usePlaySong();
+  const { play, state: player, engine } = usePlaySong();
   const [tagOpen, setTagOpen] = useState(false);
   const [addRecording, setAddRecording] = useState<{ file?: File } | null>(null);
   const [lyricsDrop, setLyricsDrop] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
   const [params] = useSearchParams();
-  const urlTab = params.get('tab') as Tab | null;
-  const [tab, setTabState] = useState<Tab>(() => urlTab ?? (localStorage.getItem(TAB_KEY) as Tab | null) ?? 'lyrics');
+  const urlTab = params.get('tab');
+  const [tab, setTabState] = useState<Tab>(() => tabOf(urlTab) ?? tabOf(localStorage.getItem(TAB_KEY)) ?? 'lyrics');
+  const [scope, setScope] = useState<Scope>(() => (urlTab === 'private' ? 'private' : 'public'));
   useEffect(() => {
-    if (urlTab) setTabState(urlTab);
+    const next = tabOf(urlTab);
+    if (next) setTabState(next);
+    if (urlTab === 'public' || urlTab === 'private') setScope(urlTab);
   }, [urlTab, params]);
   const menuFor = useSongActions(() => setTagOpen(true));
 
@@ -70,14 +79,6 @@ export function SongDetailPage() {
     if (song) rememberSong(song.id);
   }, [song?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const markers = useMemo(
-    () =>
-      notes.entries
-        .filter((e) => e.note.positionSec !== null && (e.note.recordingId === recording?.id || e.note.recordingId === null))
-        .map((e) => e.note.positionSec!),
-    [notes.entries, recording?.id],
-  );
-
   if (!song) {
     if (state.status === 'scanning' && state.files.length === 0) return <Page title={t('title')}>{null}</Page>;
     return (
@@ -94,6 +95,8 @@ export function SongDetailPage() {
   const songTags = song.tagIds.map((id) => tags.find((tag) => tag.id === id)).filter((tag) => tag !== undefined);
   const chips = [song.key, song.bpm ? t('details.bpmValue', { bpm: song.bpm }) : null, song.tuning].filter(Boolean);
   const publicCount = notes.entries.filter((e) => e.scope === 'public').length;
+  const current = player.track?.songId === song.id;
+  const playingThis = current && (player.status === 'playing' || player.status === 'loading');
 
   const jump = (entry: NoteEntry) => {
     const target = song.recordings.find((r) => r.id === entry.note.recordingId && !r.missing) ?? recording;
@@ -116,6 +119,7 @@ export function SongDetailPage() {
   return (
     <Page
       title={song.title}
+      titleBelow
       actions={
         <>
           <IconButton label={t('actions.edit')} icon={<Pencil size={20} />} onClick={() => navigate(`/songs/${song.id}/edit`)} />
@@ -181,37 +185,76 @@ export function SongDetailPage() {
         )}
 
         <SetlistModeBar songId={song.id} />
-        {recording ? (
-          <PlayerControls song={song} recording={recording} onRecordingChange={(r) => setChosenId(r.id)} markers={markers} />
-        ) : (
-          <div className={styles.player}>
-            <p className={styles.hint} style={{ textAlign: 'center' }}>
-              {t('noRecording')}
-            </p>
-            <Button variant="primary" icon={<Plus size={18} />} onClick={() => setAddRecording({})} style={{ justifySelf: 'center' }}>
-              {t('uploads:addRecording')}
-            </Button>
-          </div>
-        )}
+        {/* one primary action; listening and practising details live in the player (R-UX-09) */}
+        <div className={styles.playRow}>
+          {recording ? (
+            <>
+              <Button
+                variant="primary"
+                size="lg"
+                icon={playingThis ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+                onClick={() => (current ? (engine.unlock(), engine.toggle()) : play(song, recording))}
+                disabled={recording.missing}
+              >
+                {playingThis ? t('player.pause') : t('player.play')}
+              </Button>
+              <Button
+                size="lg"
+                icon={<SlidersHorizontal size={18} />}
+                onClick={() => {
+                  if (!current) play(song, recording);
+                  navigate(`/player?song=${song.id}&view=practice`);
+                }}
+                disabled={recording.missing}
+              >
+                {t('practice.open')}
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className={styles.hint}>{t('noRecording')}</p>
+              <Button variant="primary" icon={<Plus size={18} />} onClick={() => setAddRecording({})}>
+                {t('uploads:addRecording')}
+              </Button>
+            </>
+          )}
+        </div>
 
-        <Tabs
-          label={t('lyrics.tab')}
-          value={tab}
-          onChange={setTab}
-          tabs={[
-            { value: 'lyrics', label: t('lyrics.tab') },
-            { value: 'public', label: t('notes.public'), count: publicCount },
-            { value: 'private', label: t('notes.private') },
-          ]}
-        />
-        {tab === 'lyrics' ? (
-          <LyricsTab song={song} find={params.get('find')} />
-        ) : (
-          <NotesSection scope={tab} song={song} recording={recording} notes={notes} onJump={jump} />
-        )}
-        <InSetlists songId={song.id} mergedIds={song.mergedSongIds} />
-        <Discussion context={{ type: 'song', id: song.id }} />
-        <VersionsSection song={song} onSelect={(r) => setChosenId(r.id)} onAdd={() => setAddRecording({})} />
+        <div className={styles.tabsBlock}>
+          <Tabs
+            label={t('detail.tabs')}
+            value={tab}
+            onChange={setTab}
+            tabs={[
+              { value: 'lyrics', label: t('lyrics.tab') },
+              { value: 'notes', label: t('notes.tab'), count: notes.entries.length },
+              { value: 'versions', label: t('versions.tab') },
+              { value: 'info', label: t('detail.info') },
+            ]}
+          />
+          {tab === 'lyrics' && <LyricsTab song={song} find={params.get('find')} />}
+          {tab === 'notes' && (
+            <>
+              <SegmentedControl
+                label={t('notes.tab')}
+                value={scope}
+                onChange={setScope}
+                options={[
+                  { value: 'public', label: publicCount ? `${t('notes.forAll')} (${publicCount})` : t('notes.forAll') },
+                  { value: 'private', label: t('notes.onlyMe') },
+                ]}
+              />
+              <NotesSection scope={scope} song={song} recording={recording} notes={notes} onJump={jump} />
+            </>
+          )}
+          {tab === 'versions' && <VersionsSection song={song} onSelect={(r) => setChosenId(r.id)} onAdd={() => setAddRecording({})} />}
+          {tab === 'info' && (
+            <>
+              <InSetlists songId={song.id} mergedIds={song.mergedSongIds} />
+              <Discussion context={{ type: 'song', id: song.id }} />
+            </>
+          )}
+        </div>
       </div>
       {tagOpen && <TagDialog song={song} onClose={() => setTagOpen(false)} />}
       {adopting && song.suggested && <AdoptSuggestionDialog song={song} onClose={() => setAdopting(false)} />}

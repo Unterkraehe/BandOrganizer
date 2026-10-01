@@ -34,6 +34,7 @@ describe('Songs (M2 in demo mode)', () => {
     expect(screen.getByText('1 Song')).toBeInTheDocument();
     await user.click(screen.getByRole('link', { name: /Slow Burn/ }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Slow Burn (Probe)' })).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: /Versionen/ }));
     expect(screen.getByText(/Proben\/2026-09-17/)).toBeInTheDocument();
   });
 });
@@ -65,14 +66,15 @@ describe('Song library (M3a in demo mode)', () => {
     const user = userEvent.setup();
     await openSong(user, /^Open Road/);
     await user.click(await screen.findByRole('button', { name: 'Abspielen' }));
-    await user.click(screen.getByRole('tab', { name: /Notizen für alle/ }));
+    await user.click(screen.getByRole('tab', { name: /Notizen/ }));
+    expect(screen.getByRole('radio', { name: 'Für alle' })).toBeChecked();
     await user.type(screen.getByRole('textbox', { name: 'Notiz für die Band …' }), 'Bridge ab jetzt 2×');
     await user.click(screen.getByRole('checkbox', { name: /Position übernehmen/ }));
     await user.click(screen.getByRole('button', { name: 'Notiz speichern' }));
     expect(await screen.findByText('Bridge ab jetzt 2×')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /springen/ })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('tab', { name: 'Meine Notizen' }));
+    await user.click(screen.getByRole('radio', { name: 'Nur für mich' }));
     expect(screen.getByText('Nur für dich sichtbar in der App')).toBeInTheDocument();
     await user.type(screen.getByRole('textbox', { name: 'Notiz nur für dich …' }), 'Solo: Kapo 3');
     await user.click(screen.getByRole('button', { name: 'Notiz speichern' }));
@@ -110,6 +112,7 @@ describe('Song library (M3a in demo mode)', () => {
   it('groups a similar file as version and makes it the Band-Version', async () => {
     const user = userEvent.setup();
     await openSong(user, /^Midnight Engine(?! \()/);
+    await user.click(await screen.findByRole('tab', { name: /Versionen/ }));
     await user.click(await screen.findByRole('button', { name: 'Als Version hinzufügen' }));
     expect(await screen.findByText(/ist jetzt eine Version/)).toBeInTheDocument();
     const versions = screen.getByRole('heading', { name: 'Versionen' }).closest('section')!;
@@ -161,5 +164,30 @@ describe('Adopting a suggestion (v0.13.3)', () => {
     await user.click(screen.getByRole('button', { name: 'Vorschläge ausblenden' }));
     expect(screen.getByRole('button', { name: 'Vorschläge anzeigen (1)' })).toBeInTheDocument();
     expect(screen.getByText('Velvet Horizon')).toBeInTheDocument();
+  });
+});
+
+describe('Song page = about the song (v0.17.0)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('one "Abspielen", tabs Songtext / Notizen / Versionen / Infos, "Üben" opens the player', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/songs');
+    await screen.findByText('6 Songs');
+    await user.click(screen.getByRole('link', { name: /^Open Road/ }));
+    await screen.findByRole('heading', { level: 1, name: 'Open Road' });
+    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual(['Songtext', expect.stringMatching(/^Notizen/), expect.stringMatching(/^Versionen/), 'Infos']);
+    expect(screen.queryByRole('slider')).not.toBeInTheDocument(); // no player block on the song page any more
+
+    await user.click(screen.getByRole('button', { name: 'Abspielen' }));
+    expect(await within(screen.getByRole('main')).findByRole('button', { name: 'Pause' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Läuft gerade' })).toHaveTextContent('Open Road'); // mini player on the song page too
+
+    await user.click(screen.getByRole('tab', { name: 'Infos' }));
+    expect(screen.getByText(/Diskussion/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Üben' }));
+    const player = await screen.findByRole('dialog', { name: 'Player: Open Road' });
+    expect(within(player).getByRole('radio', { name: 'Üben' })).toBeChecked();
   });
 });

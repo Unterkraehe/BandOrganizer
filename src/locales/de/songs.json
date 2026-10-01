@@ -169,7 +169,10 @@
     "saveEdit": "Speichern",
     "tooLong": "Höchstens 2000 Zeichen.",
     "loadError": "Notizen konnten nicht geladen werden.",
-    "menu": "Aktionen für diese Notiz"
+    "menu": "Aktionen für diese Notiz",
+    "tab": "Notizen",
+    "forAll": "Für alle",
+    "onlyMe": "Nur für mich"
   },
   "versions": {
     "title": "Versionen",
@@ -191,7 +194,8 @@
     "addAsVersion": "Als Version hinzufügen",
     "merged": "„{{source}}“ ist jetzt eine Version von „{{target}}“",
     "menu": "Aktionen für diese Version",
-    "play": "Diese Version abspielen"
+    "play": "Diese Version abspielen",
+    "tab": "Versionen"
   },
   "merge": {
     "title": "Als Version hinzufügen",
@@ -256,7 +260,8 @@
     "saveAnyway": "Trotzdem speichern",
     "draft": "Entwurf wiederhergestellt",
     "uploadTitle": "Songtext hochladen",
-    "page": "Seite {{page}}"
+    "page": "Seite {{page}}",
+    "add": "Songtext hinzufügen"
   },
   "view": {
     "label": "Ansicht",
@@ -320,5 +325,9 @@
     "adoptKeep": "Die Datei im Vorschläge-Ordner bleibt unverändert; sie ist danach eine weitere Version des Songs.",
     "adopted": "„{{title}}“ steht jetzt in der Songliste",
     "adoptConfirm": "Übernehmen"
+  },
+  "detail": {
+    "tabs": "Bereiche des Songs",
+    "info": "Infos"
   }
 }

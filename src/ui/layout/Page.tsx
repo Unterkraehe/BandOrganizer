@@ -15,11 +15,13 @@ interface PageProps {
   wide?: boolean;
   /** false: no ← back even on a sub-screen (e.g. a form with its own Abbrechen) */
   back?: boolean;
+  /** the title as a large heading below the top bar (may wrap) – for screens whose title is the main information (song page) */
+  titleBelow?: boolean;
   children: ReactNode;
 }
 
 /** Standard screen frame: sticky top bar with the screen title (F3 §4.4) + content column. */
-export function Page({ title, hideTitle, actions, wide, back = true, children }: PageProps) {
+export function Page({ title, hideTitle, actions, wide, back = true, titleBelow, children }: PageProps) {
   const { t } = useTranslation();
   const extra = useContext(TopBarExtraContext);
   const nav = useBack();
@@ -28,7 +30,7 @@ export function Page({ title, hideTitle, actions, wide, back = true, children }:
       <header className={styles.topBar} data-hidden-title={hideTitle || undefined} data-no-print>
         <div className={styles.topBarInner}>
           {back && nav.show && <IconButton className={styles.back} label={t('actions.back')} icon={<ArrowLeft size={22} />} onClick={nav.goBack} />}
-          <h1 className={hideTitle ? 'visually-hidden' : styles.title}>{title}</h1>
+          {titleBelow ? <span className={styles.title} aria-hidden="true" /> : <h1 className={hideTitle ? 'visually-hidden' : styles.title}>{title}</h1>}
           {(actions || extra) && (
             <div className={styles.actions}>
               {actions}
@@ -37,7 +39,10 @@ export function Page({ title, hideTitle, actions, wide, back = true, children }:
           )}
         </div>
       </header>
-      <div className={wide ? `${styles.content} ${styles.wide}` : styles.content}>{children}</div>
+      <div className={wide ? `${styles.content} ${styles.wide}` : styles.content}>
+        {titleBelow && <h1 className={styles.titleBelow}>{title}</h1>}
+        {children}
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { enterDemo } from '@/test/demo';
@@ -23,7 +23,8 @@ describe('Lyrics, uploads and folder view (M3b in demo mode)', () => {
     await enterDemo(user, '/songs');
     await screen.findByText('6 Songs');
     await user.click(screen.getByRole('link', { name: /^Rust and Thunder/ }));
-    await user.click(await screen.findByRole('button', { name: 'Songtext eintippen' }));
+    await user.click(await screen.findByRole('button', { name: 'Songtext hinzufügen' }));
+    await user.click(within(screen.getByRole('dialog', { name: 'Songtext hinzufügen' })).getByRole('button', { name: 'Songtext eintippen' }));
     await user.type(await screen.findByRole('textbox', { name: 'Songtext' }), 'Rost und Donner');
     expect(screen.getByText('Band-App Uploads')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Speichern' }));
@@ -42,6 +43,7 @@ describe('Lyrics, uploads and folder view (M3b in demo mode)', () => {
     expect(screen.getByText('Band-App Uploads')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Song anlegen' }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Neuer Hit' })).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: /Versionen/ }));
     expect(await screen.findByText(/Band-App Uploads/)).toBeInTheDocument();
     await user.click(screen.getByRole('link', { name: 'Songs' }));
     expect(await screen.findByText('7 Songs')).toBeInTheDocument();

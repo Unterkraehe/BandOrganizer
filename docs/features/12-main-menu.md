@@ -108,7 +108,7 @@ Tabs (phone bottom bar: Start · Songs · Kalender · Chat · Mehr; "Mehr" holds
 ```
 Start (/)                       widgets: chat → Chat; next events → Termin (event cards: "Setlist abspielen" → Player)
 Songs (/songs)                  list / folders, search, tags; ⋯ per row
-  Song (/songs/:id)             *from search, chat cards, setlists, mini player*
+  Song (/songs/:id)             *from search, chat cards, setlists, player ⋯ "Zum Song"*; Abspielen · Üben (→ Player); tabs Songtext · Notizen · Versionen · Infos
     Song bearbeiten (/edit) · Songtext (/lyrics) · Zusammenführen (/merge)
   Neuer Song (/songs/new)
 Kalender (/calendar)            list / month (phone: day panel)
@@ -126,11 +126,11 @@ Suche (/search, top bar 🔍)     results open the item's own screen
 Player (/player)                full-screen sheet, grows out of the mini player, ⌄ / back gesture closes (back to where you were)
                                 *from mini player; song page "Üben" (?song=…&view=practice); "Setlist abspielen" on setlist,
                                 setlists list, event, event card, chat card (?view=queue)*; tabs Songtext · Üben · Setlist; ⋯ → Zum Song / Zur Setlist
-Mini player (all screens)       → Player (hidden while the player is open and on the playing song's page)
+Mini player (all screens)       → Player (hidden only while the player is open)
 Old addresses                   /songs/:id/practice → /player?song=:id&view=practice; /songs?setlist=:id → plays nothing, opens the player queue
 ```
 
-Planned (see roadmap "Navigation & clarity"): step 3 calmer song page (no player block; "Abspielen" / "Üben" open the player); step 4 setlists unified; step 5 review of all screens.
+Planned (see roadmap "Navigation & clarity"): step 4 setlists unified; step 5 review of all screens.
 
 ## 5. Setlist Mode (cross-feature)
 

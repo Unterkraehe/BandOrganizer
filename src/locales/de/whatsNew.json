@@ -1,4 +1,8 @@
 {
+  "0.17.0": [
+    "Aufgeräumte Song-Seite: Oben steht der ganze Titel, darunter nur „Abspielen“ und „Üben“. Alles Weitere findest du in den Reitern Songtext, Notizen, Versionen und Infos – Hören und Üben passiert im Player.",
+    "Notizen: „Für alle“ und „Nur für mich“ liegen jetzt zusammen im Reiter Notizen. Ohne Songtext gibt es einen Knopf „Songtext hinzufügen“ mit allen drei Wegen."
+  ],
   "0.16.0": [
     "Der neue Player: Tipp auf den Mini-Player unten – der Player wächst daraus hervor. Dort hast du Songtext, Üben (Tempo, Tonhöhe, Schleife) und bei einer Setlist die Reihenfolge. Mit ⌄ oder der Zurück-Geste geht er wieder zu. Er ersetzt die bisherige Übungsansicht.",
     "Setlists abspielen: „Setlist abspielen“ (bei der Setlist, am Termin oder im Chat) startet sie sofort im Player. Der Songs-Reiter bleibt dabei die normale Songliste."

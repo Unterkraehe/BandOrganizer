@@ -126,6 +126,7 @@ One full-screen player for listening and practising (`features/songs/player/Play
 - **Tabs** (`?view=`): **Songtext** (lyrics with A−/A+, notes as a panel on phones / beside the lyrics on tablets), **Üben** (`PracticeControls`: tempo, pitch, A–B loop, reset – only while this song plays), **Setlist** (only while a setlist plays: `SetlistQueue`).
 - **Header:** ⌄ close · title + one subtitle line (version, or "Setlist · 3 / 12", plus active practice settings – always reserved, R-UI-11) · ⋯ (Zum Song, Zur Setlist).
 - **Bottom:** version choice (only with several versions), seek bar with note markers and loop, transport ⏮ ↺ ⏯ ↻ ⏭ (⏮ ⏭ only in a setlist, otherwise hidden in place). Toasts float above it (`--dock-h` set to the dock height while open).
+- Since v0.17.0 the song page has no player block of its own: "Abspielen" / "Üben" there, everything else here.
 - The screen below does not slide (`overlays` in `NavigationContext`); the mini player is hidden while the player is open. Screen stays on (Wake Lock).
 
 ## 9. Out of Scope / Later
@@ -133,4 +134,4 @@ One full-screen player for listening and practising (`features/songs/player/Play
 - Recording, multitrack/stem mixing
 - Waveform display
 
-> **State slices (v0.11)** – `usePlayer()` returns the full state including the position (~4 updates per second): only the mini player, the song page's player controls and the player (`/player`, ex practice view) use it. Everything else uses `usePlaySong()` or `usePlayerSelect(selector)` (shallow-compared slice), so lists and providers don't re-render while music plays. `PlayerState.ended` counts finished tracks (setlist mode advances on it).
+> **State slices (v0.11)** – `usePlayer()` returns the full state including the position (~4 updates per second): only the mini player and the player (`/player`) use it. Everything else uses `usePlaySong()` or `usePlayerSelect(selector)` (shallow-compared slice), so lists and providers don't re-render while music plays. `PlayerState.ended` counts finished tracks (setlist mode advances on it).

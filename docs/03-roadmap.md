@@ -1,6 +1,6 @@
 # Implementation Roadmap
 
-> **Status:** M0–M9 built · v0.16.0 = release candidate: the band test phase decides when it becomes **1.0.0** · open tests: S1/S2 (file IDs, ETag), S4 (share link as calendar subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with keyboard on iPhone/Android, push notifications and event reminders on real devices (needs KV + Cron Trigger in the token helper), HiDrive copy (`POST /file/copy`)
+> **Status:** M0–M9 built · v0.17.0 = release candidate: the band test phase decides when it becomes **1.0.0** · open tests: S1/S2 (file IDs, ETag), S4 (share link as calendar subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with keyboard on iPhone/Android, push notifications and event reminders on real devices (needs KV + Cron Trigger in the token helper), HiDrive copy (`POST /file/copy`)
 > Order and scope of the build, from an empty repository to v1.0. Each milestone ends with a **deployed version the band can use and test**.
 
 ## 1. Principles
@@ -215,6 +215,7 @@ Done when: the band uses the app for a full rehearsal-and-gig cycle without fall
 | 0.14.5 | Practice view fits phones with a version dropdown; rule R-UI-14 (no sideways scrolling) + `overflow-check.py` |
 | 0.15.0 | Navigation & clarity step 1: rule R-UX-09, navigation map, ← back on every sub-screen, screen motion (push / back / tab) |
 | 0.16.0 | Navigation & clarity step 2: full-screen player out of the mini player (replaces practice view), setlists play in the player queue |
+| 0.17.0 | Navigation & clarity step 3: calm song page (title below the bar, Abspielen + Üben, tabs Songtext / Notizen / Versionen / Infos) |
 
 Details per change: feature files (status blocks) and the "Was ist neu" texts in `src/locales/de/whatsNew.json`.
 
@@ -226,7 +227,7 @@ Band feedback: navigation is confusing (no way back, mini player opens the song 
 |---|---|---|
 | 1 | Rule R-UX-09, navigation map, ← back everywhere (`Page` + `useBack`), screen motion | ✅ v0.15.0 |
 | 2 | One full-screen player growing out of the mini player (replaces the practice view); setlist playback as the player's queue instead of `/songs?setlist=` | ✅ v0.16.0 |
-| 3 | Calmer song page: info page with one "Abspielen", tabs Songtext / Notizen / Versionen / Infos, rare actions in ⋯ | open |
+| 3 | Calmer song page: info page with one "Abspielen", tabs Songtext / Notizen / Versionen / Infos, rare actions in ⋯ | ✅ v0.17.0 |
 | 4 | Setlists unified: one setlist page from every entry point, event page with compact setlist card, actions in ⋯ | open |
 | 5 | Review of all remaining screens against R-UX-09 | open |
 

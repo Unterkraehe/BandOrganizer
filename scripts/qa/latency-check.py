@@ -8,6 +8,7 @@ with session(query='?demo-latency=250') as s:
     pg.wait_for_timeout(2500)
     nav(pg, 'songs'); pg.wait_for_selector('text=Midnight Engine', timeout=30000); pg.wait_for_timeout(1500)
     pg.get_by_role('link', name='Midnight Engine', exact=False).first.click(timeout=30000); pg.wait_for_timeout(2500)
+    pg.get_by_role('tab', name='Versionen').click(); pg.wait_for_timeout(500)  # song page tabs (v0.17.0)
     ms = pg.evaluate("""async () => {
       const b = [...document.querySelectorAll('button')].find(x => x.textContent.includes('Als Version hinzufügen'));
       if (!b) return -1;
