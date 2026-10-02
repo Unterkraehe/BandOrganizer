@@ -27,8 +27,8 @@ export function SetlistModeBar({ songId }: { songId: string }) {
         </span>
       )}
       <span style={{ marginLeft: 'auto', display: 'flex' }}>
-        <IconButton label={t('mode.previous')} icon={<SkipBack size={18} />} onClick={mode.previous} />
-        <IconButton label={t('mode.next')} icon={<SkipForward size={18} />} onClick={mode.next} />
+        <IconButton label={t('mode.previous')} icon={<SkipBack size={18} />} onClick={mode.previous} disabled={!mode.hasPrevious} />
+        <IconButton label={t('mode.next')} icon={<SkipForward size={18} />} onClick={mode.next} disabled={!mode.hasNext} />
       </span>
     </div>
   );

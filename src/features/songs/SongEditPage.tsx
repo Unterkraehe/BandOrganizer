@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { useNotify } from '@/app/notify/NotifyProvider';
@@ -54,6 +54,10 @@ function SongEditForm({ song }: { song: Song }) {
   const [error, setError] = useState<string | null>(null);
   const [tagOpen, setTagOpen] = useState(false);
   const taps = useRef<number[]>([]);
+  // the tempo needs three taps – the first two are counted on the button (R-UX-10)
+  const [tapCount, setTapCount] = useState(0);
+  const tapReset = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(tapReset.current), []);
 
   const bpmNumber = bpm.trim() ? Number(bpm) : null;
   const bpmInvalid = bpmNumber !== null && (!Number.isInteger(bpmNumber) || bpmNumber < 20 || bpmNumber > 300);
@@ -62,6 +66,9 @@ function SongEditForm({ song }: { song: Song }) {
   const tap = () => {
     const now = performance.now();
     taps.current = [...taps.current.filter((x) => now - x < 3000), now].slice(-8);
+    setTapCount(taps.current.length);
+    clearTimeout(tapReset.current);
+    tapReset.current = setTimeout(() => setTapCount(0), 3000);
     if (taps.current.length >= 3) {
       const intervals = taps.current.slice(1).map((x, i) => x - taps.current[i]!);
       const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length;
@@ -136,8 +143,8 @@ function SongEditForm({ song }: { song: Song }) {
             error={bpmInvalid ? t('edit.bpmInvalid') : undefined}
             maxLength={3}
           />
-          <Button onClick={tap} aria-label={t('edit.tapHint')} title={t('edit.tapHint')}>
-            {t('edit.tap')}
+          <Button className={styles.tapButton} onClick={tap} aria-label={t('edit.tapHint')} title={t('edit.tapHint')}>
+            {tapCount > 0 && tapCount < 3 ? t('edit.tapCount', { count: tapCount }) : t('edit.tap')}
           </Button>
         </div>
 

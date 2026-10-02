@@ -17,6 +17,7 @@ export function NotificationSettings() {
   const [loaded, setLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
   const support = pushSupport();
   const memberId = currentMember?.id ?? '';
 
@@ -69,10 +70,14 @@ export function NotificationSettings() {
     });
   };
 
-  const test = () =>
+  // takes a second or two (device list from HiDrive + token helper): show it, and send only once (R-UX-10)
+  const test = () => {
+    setTesting(true);
     void sendPush(storage, appRoot, memberId, 'chat', { title: t('testTitle'), body: t('testBody'), url: 'settings', tag: 'test' }, device ?? undefined)
       .then((n) => notify({ message: n > 0 ? t('testSent') : t('testFailed') }))
-      .catch((error) => (error instanceof PushNotConfiguredError ? setMessage(t('notConfigured')) : notify({ message: t('testFailed') })));
+      .catch((error) => (error instanceof PushNotConfiguredError ? setMessage(t('notConfigured')) : notify({ message: t('testFailed') })))
+      .finally(() => setTesting(false));
+  };
 
   let content;
   if (mode === 'demo') content = <p className={styles.hint}>{t('demo')}</p>;
@@ -100,8 +105,8 @@ export function NotificationSettings() {
           </label>
         ))}
         <div className={styles.row}>
-          <Button icon={<Send size={18} />} onClick={test}>
-            {t('test')}
+          <Button icon={<Send size={18} />} onClick={test} disabled={testing}>
+            {testing ? t('testSending') : t('test')}
           </Button>
           <Button variant="ghost" icon={<BellOff size={18} />} disabled={busy} onClick={() => void turnOff()}>
             {t('disable')}

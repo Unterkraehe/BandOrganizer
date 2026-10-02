@@ -108,6 +108,8 @@ Read view (default for everyone):
 - Blocks: "+ Block", rename, reorder, delete (only when empty, or with confirmation that its songs are removed)
 - Between blocks: "Pause" with minutes (default 20)
 - Per entry (swipe or ⋯ menu): drag handle, remove, "Notiz", "Direkt weiter ↓" toggle, move to block …
+  - ⏮ / ⏭ (mini player, player, setlist bar) are disabled when no playable song precedes / follows (v0.19.5, R-UX-10).
+  - A tap (or Enter) on the drag handle without dragging explains how: "Zum Verschieben gedrückt halten und ziehen – oder im ⋯-Menü …" (v0.19.5, R-UX-10).
 - "+ Zwischenpunkt" between any two entries (text, optional minutes)
 - Live durations per block and total; songs without known duration show "?" and a hint "Dauer unbekannt – einmal abspielen"
 - Undo/redo for every change (R-UX-04)

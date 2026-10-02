@@ -69,6 +69,7 @@
     "moveTo": "In „{{name}}“ verschieben",
     "remove": "Entfernen",
     "drag": "Ziehen zum Verschieben",
+    "dragHint": "Zum Verschieben gedrückt halten und ziehen – oder im ⋯-Menü „Nach oben“ / „Nach unten“.",
     "entryMenu": "Aktionen",
     "save": "Speichern",
     "saved": "Setlist gespeichert",

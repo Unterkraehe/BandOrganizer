@@ -193,12 +193,15 @@ function Editor({ initial, version: initialVersion }: { initial: Draft; version:
       setDropBefore(`end:${block.dataset.blockId}`);
     }
   };
-  const onHandleUp = () => {
+  // a tap (or Enter) on the handle doesn't move anything – say how it works instead of doing nothing (R-UX-10)
+  const dragHint = () => notify({ message: t('editor.dragHint') });
+  const onHandleUp = (event: ReactPointerEvent) => {
     const current = drag.current;
     drag.current = null;
     setDragId(null);
     setDropBefore(null);
     if (current?.target) change(moveEntry(s, current.id, current.target));
+    else if (current && event.type === 'pointerup') dragHint();
   };
 
   const picker = <SongPicker inSetlist={inSetlist} onAdd={addSongs} rehearsal={s.kind === 'rehearsal'} targetLabel={target?.name ?? ''} />;
@@ -257,6 +260,7 @@ function Editor({ initial, version: initialVersion }: { initial: Draft; version:
                         onPointerMove={onHandleMove}
                         onPointerUp={onHandleUp}
                         onPointerCancel={onHandleUp}
+                        onClick={(e) => e.detail === 0 && dragHint()}
                       >
                         <GripVertical size={18} />
                       </button>

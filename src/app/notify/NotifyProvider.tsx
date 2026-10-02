@@ -8,9 +8,10 @@ interface Notice {
   onAction?: () => void;
 }
 
-type Notify = (notice: Omit<Notice, 'id'>) => void;
+/** Shows a toast; the returned function closes it early (e.g. a "… wird geladen" notice once done). */
+type Notify = (notice: Omit<Notice, 'id'>) => () => void;
 
-const NotifyContext = createContext<Notify>(() => undefined);
+const NotifyContext = createContext<Notify>(() => () => undefined);
 
 /** Short confirmation toasts with optional undo (R-UX-04). */
 export function NotifyProvider({ children }: { children: ReactNode }) {
@@ -19,7 +20,9 @@ export function NotifyProvider({ children }: { children: ReactNode }) {
 
   const notify = useCallback<Notify>((next) => {
     counter.current += 1;
-    setNotice({ ...next, id: counter.current });
+    const id = counter.current;
+    setNotice({ ...next, id });
+    return () => setNotice((current) => (current?.id === id ? null : current));
   }, []);
 
   useEffect(() => {

@@ -34,6 +34,29 @@ describe('ChatStore (F6)', () => {
     expect(lisa.unread()).toHaveLength(0); // own messages are never unread
   });
 
+  it('shows edits, deletions and reactions at once and takes them back if saving fails (R-UX-10)', async () => {
+    const lisa = make('m_lisa');
+    await lisa.load();
+    const msg = await lisa.send('Hallo');
+    let finish!: () => void;
+    const write = vi.spyOn(storage, 'writeJson').mockImplementationOnce(() => new Promise((resolve) => (finish = () => resolve({ version: 'v2' } as never))));
+    const editing = lisa.edit(msg, 'Hallo zusammen');
+    expect(lisa.getState().messages[0]!.text).toBe('Hallo zusammen'); // before HiDrive answered
+    finish();
+    await editing;
+
+    write.mockRejectedValueOnce(new Error('offline'));
+    await expect(lisa.remove(lisa.getState().messages[0]!)).rejects.toThrow('offline');
+    expect(lisa.getState().messages[0]!.deletedAt).toBeNull(); // back as it was
+
+    write.mockRejectedValueOnce(new Error('offline'));
+    const reacting = lisa.react(msg, '👍');
+    expect(lisa.getState().reactions[msg.id]).toEqual({ m_lisa: '👍' });
+    await expect(reacting).rejects.toThrow('offline');
+    expect(lisa.getState().reactions[msg.id]).toEqual({});
+    write.mockRestore();
+  });
+
   it('edits, deletes softly and picks up the change when polling', async () => {
     const lisa = make('m_lisa');
     const tom = make('m_tom');

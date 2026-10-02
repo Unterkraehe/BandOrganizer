@@ -9,3 +9,11 @@ export function practiceSummary(state: Pick<PlayerState, 'tempo' | 'semitones' |
   if (state.loop?.enabled) parts.push(t('songs:practice.loopShort'));
   return parts.length ? parts.join(' · ') : null;
 }
+
+/** Why the current track doesn't play – shown in the mini player and the player, never silent (R-UX-10). */
+export function playbackProblem(state: Pick<PlayerState, 'error'>, t: TFunction): string | null {
+  if (state.error === 'load') return t('songs:player.loadError');
+  if (state.error === 'decode') return t('songs:player.decodeError');
+  if (state.error === 'blocked') return t('songs:player.blocked');
+  return null;
+}

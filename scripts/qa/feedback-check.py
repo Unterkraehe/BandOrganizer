@@ -174,9 +174,9 @@ def seed(pg):
     pg.wait_for_url(re.compile(r'/setlists/s_[^/]+$'), timeout=10000)
     setlist = here(pg)
     nav(pg, 'chat', 800)
-    pg.get_by_role('textbox').last.fill('Hallo Band')
-    pg.keyboard.press('Enter')
-    pg.wait_for_timeout(LATENCY + 500)
+    pg.get_by_role('textbox', name='Nachricht an die Band …').fill('Hallo Band')
+    pg.get_by_role('button', name='Senden').click()  # Enter adds a line on phones
+    pg.wait_for_timeout(4 * LATENCY + 500)
     return event, song, setlist
 
 

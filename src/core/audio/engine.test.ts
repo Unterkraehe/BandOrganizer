@@ -48,6 +48,79 @@ describe('AudioEngine (F9 v0)', () => {
   });
 });
 
+/** Every tap answers at once, and a failure is never silent (R-UX-10, v0.19.5). */
+describe('feedback while loading and after failures', () => {
+  it('shows "loading" at once while the remembered settings are still being read', async () => {
+    Object.assign(URL, { createObjectURL: () => 'blob:x', revokeObjectURL: () => undefined });
+    const engine = new AudioEngine({ loadBlob: async () => new Blob(['x']), createAudio: fakeAudio });
+    let resolveSettings!: (s: { tempo: number }) => void;
+    const settings = new Promise<{ tempo: number }>((resolve) => (resolveSettings = resolve));
+    const done = engine.playTrack({ id: 'r1', title: 'A', path: '/a.mp3' }, undefined, settings);
+    expect(engine.getState()).toMatchObject({ status: 'loading', track: { id: 'r1' } });
+    resolveSettings({ tempo: 0.9 });
+    await done;
+    expect(engine.getState()).toMatchObject({ status: 'playing', tempo: 0.9 });
+  });
+
+  it('keeps showing "loading" while the silent unlock clip (iOS) plays and pauses', async () => {
+    Object.assign(URL, { createObjectURL: () => 'blob:x', revokeObjectURL: () => undefined });
+    // like a browser: play/pause events arrive a moment later, after loading has started
+    const audio = fakeAudio();
+    audio.play = vi.fn(() => new Promise<void>((resolve) => setTimeout(() => (audio.dispatchEvent(new Event('play')), resolve()), 1)));
+    audio.pause = vi.fn(() => void setTimeout(() => audio.dispatchEvent(new Event('pause')), 1));
+    const engine = new AudioEngine({ loadBlob: async () => new Blob(['x']), createAudio: () => audio });
+    engine.unlock(); // inside the tap, before loading starts
+    const done = engine.playTrack({ id: 'r1', title: 'A', path: '/a.mp3' }, undefined, new Promise((r) => setTimeout(() => r(null), 20)));
+    await new Promise((r) => setTimeout(r, 5)); // the clip's play/pause events have fired
+    expect(engine.getState().status).toBe('loading');
+    await done;
+    await new Promise((r) => setTimeout(r, 5));
+    expect(engine.getState().status).toBe('playing');
+  });
+
+  it('"Pause" while loading stops the start, and "Abspielen" loads the song again', async () => {
+    Object.assign(URL, { createObjectURL: () => 'blob:x', revokeObjectURL: () => undefined });
+    const loadBlob = vi.fn(() => new Promise<Blob>((resolve) => setTimeout(() => resolve(new Blob(['x'])), 10)));
+    const engine = new AudioEngine({ loadBlob, createAudio: fakeAudio });
+    const first = engine.playTrack({ id: 'r1', title: 'A', path: '/a.mp3' });
+    engine.toggle(); // the button shows "Pause" while loading
+    expect(engine.getState().status).toBe('paused');
+    await first;
+    expect(engine.getState().status).toBe('paused'); // the cancelled load doesn't start playing
+    engine.toggle();
+    expect(engine.getState().status).toBe('loading');
+    await new Promise((r) => setTimeout(r, 30));
+    expect(engine.getState().status).toBe('playing');
+  });
+
+  it('plays with default settings when reading them fails', async () => {
+    Object.assign(URL, { createObjectURL: () => 'blob:x', revokeObjectURL: () => undefined });
+    const engine = new AudioEngine({ loadBlob: async () => new Blob(['x']), createAudio: fakeAudio });
+    await engine.playTrack({ id: 'r1', title: 'A', path: '/a.mp3' }, undefined, Promise.reject(new Error('offline')));
+    expect(engine.getState()).toMatchObject({ status: 'playing', tempo: 1 });
+  });
+
+  it('says why a file does not play, and "Abspielen" loads it again', async () => {
+    Object.assign(URL, { createObjectURL: () => 'blob:x', revokeObjectURL: () => undefined });
+    const audio = fakeAudio();
+    audio.play = vi.fn(async () => Promise.reject(Object.assign(new Error('unsupported'), { name: 'NotSupportedError' })));
+    const loadBlob = vi.fn(async () => new Blob(['x']));
+    const engine = new AudioEngine({ loadBlob, createAudio: () => audio });
+    await engine.playTrack({ id: 'r1', title: 'A', path: '/a.wav' });
+    expect(engine.getState()).toMatchObject({ status: 'paused', error: 'decode' }); // not a silent "paused"
+    engine.toggle(); // "Abspielen" again: downloads the file again instead of reusing the broken copy
+    expect(engine.getState().status).toBe('loading');
+    await new Promise((r) => setTimeout(r, 0));
+    expect(loadBlob).toHaveBeenCalledTimes(2);
+
+    const failing = new AudioEngine({ loadBlob: async () => Promise.reject(new Error('offline')), createAudio: fakeAudio });
+    await failing.playTrack({ id: 'r2', title: 'B', path: '/b.mp3' });
+    expect(failing.getState().error).toBe('load');
+    failing.toggle(); // "Abspielen" after a failure: try again, visibly
+    expect(failing.getState().status).toBe('loading');
+  });
+});
+
 describe('practice features (F9)', () => {
   it('loops A–B in element mode and remembers settings changes', async () => {
     const audio = fakeAudio();

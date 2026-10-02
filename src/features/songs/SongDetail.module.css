@@ -353,6 +353,11 @@ span.versionMain {
   flex: 0 1 200px;
 }
 
+/* keeps its width while it counts "1 …", "2 …" (R-UI-11) */
+.tapButton {
+  min-width: 7.5rem;
+}
+
 .dropArea {
   position: relative;
   display: grid;

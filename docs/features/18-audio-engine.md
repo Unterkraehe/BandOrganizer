@@ -75,6 +75,7 @@ HiDrive ──fetch (with auth header)──► audio file bytes
 - **Loading:** the file is downloaded with `fetch` + auth header (solves the "audio element can't send auth headers" problem from F1). Bytes are kept in a small in-memory/Cache-Storage cache, which later becomes the basis for offline mode (L1).
 - **Memory:** a decoded 5-minute stereo song is roughly 100 MB of PCM data. Only the current (and maybe the next) song stays decoded.
 - **Start delay:** the file must be downloaded before playback starts. At ~100 songs of typical MP3 size this is a few seconds on mobile; show a clear loading state (R-UX-03). Chunked streaming into the worklet is a possible later optimization.
+  - **v0.19.5 (R-UX-10):** every play tap shows "Wird geladen …" at once – the member's remembered tempo/pitch/loop are read from HiDrive *while* the file loads (`playTrack` takes them as a promise). A track that can't be loaded, decoded or started is never silent: the mini player and the player show "Die Datei konnte nicht geladen werden …", "Diese Datei kann hier nicht abgespielt werden." or "Tippe auf Abspielen, um zu starten." (`playbackProblem`), and "Abspielen" then downloads the file again (not the cached copy – a real retry, with "Wird geladen …" visible). "Pause" while a song is still loading stops it from starting; the next "Abspielen" loads it again (same position and settings).
 - **API for features (draft):**
 
 ```ts

@@ -42,6 +42,10 @@
   text-overflow: ellipsis;
 }
 
+.status[data-problem] {
+  color: var(--danger);
+}
+
 .button {
   color: var(--text);
 }

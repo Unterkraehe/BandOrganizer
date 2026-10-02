@@ -19,7 +19,7 @@ import { AudioNote } from '../AudioNote';
 import { usePlaySong } from '../usePlaySong';
 import { useSongNotes } from '../useSongNotes';
 import { PracticeControls } from '../practice/PracticeControls';
-import { practiceSummary } from '../practice/summary';
+import { playbackProblem, practiceSummary } from '../practice/summary';
 import styles from './Player.module.css';
 
 const SIZE_KEY = 'bandapp.practice.size';
@@ -104,6 +104,7 @@ function Player({ song, view, setView, close }: { song: Song; view: View; setVie
   const playing = current && state.status === 'playing';
   const loading = current && state.status === 'loading';
   const summary = current ? practiceSummary(state, t) : '';
+  const problem = current && !loading ? playbackProblem(state, t) : null;
 
   // setlist: position of this song in the queue (prefer the current one if a song is in it twice)
   const queueIndex = !mode.setlist
@@ -243,7 +244,7 @@ function Player({ song, view, setView, close }: { song: Song; view: View; setVie
         />
         <div className={styles.transport}>
           {/* setlist buttons keep their place when no setlist plays (hidden, not removed – R-UI-11) */}
-          <IconButton label={t('setlists:mode.previous')} icon={<SkipBack size={22} />} onClick={mode.previous} disabled={!inSetlist} style={{ visibility: inSetlist ? 'visible' : 'hidden' }} />
+          <IconButton label={t('setlists:mode.previous')} icon={<SkipBack size={22} />} onClick={mode.previous} disabled={!inSetlist || !mode.hasPrevious} style={{ visibility: inSetlist ? 'visible' : 'hidden' }} />
           <IconButton label={t('player.back10')} icon={<RotateCcw size={24} />} onClick={() => engine.skip(-10)} disabled={!current} />
           <button
             type="button"
@@ -255,8 +256,17 @@ function Player({ song, view, setView, close }: { song: Song; view: View; setVie
             {loading ? <Loader2 size={28} className={styles.spin} /> : playing ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" style={{ marginLeft: 3 }} />}
           </button>
           <IconButton label={t('player.forward10')} icon={<RotateCw size={24} />} onClick={() => engine.skip(10)} disabled={!current} />
-          <IconButton label={t('setlists:mode.next')} icon={<SkipForward size={22} />} onClick={mode.next} disabled={!inSetlist} style={{ visibility: inSetlist ? 'visible' : 'hidden' }} />
+          <IconButton label={t('setlists:mode.next')} icon={<SkipForward size={22} />} onClick={mode.next} disabled={!inSetlist || !mode.hasNext} style={{ visibility: inSetlist ? 'visible' : 'hidden' }} />
         </div>
+        {/* below the buttons, so nothing moves under the finger (R-UI-11); never a silent failure (R-UX-10) */}
+        {problem && (
+          <p className={styles.problem} aria-hidden="true">
+            {problem}
+          </p>
+        )}
+        <span className="visually-hidden" role="status">
+          {problem}
+        </span>
       </div>
 
       {!wide && notesOpen && (

@@ -5,7 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { usePlayer } from '@/core/audio/PlayerProvider';
 import { formatDuration } from '@/core/i18n/format';
 import { IconButton } from '@/ui';
-import { practiceSummary } from './practice/summary';
+import { playbackProblem, practiceSummary } from './practice/summary';
 import { useSetlistMode } from '@/features/setlists/SetlistModeProvider';
 import styles from './MiniPlayer.module.css';
 
@@ -31,8 +31,11 @@ export function MiniPlayer() {
   const loading = state.status === 'loading';
   const progress = state.duration > 0 ? (state.position / state.duration) * 100 : 0;
   const summary = practiceSummary(state, t);
+  const problem = loading ? null : playbackProblem(state, t);
   const status = loading
     ? t('player.loading')
+    : problem
+      ? problem
     : state.duration > 0
       ? `${formatDuration(state.position)} / ${formatDuration(state.duration)}${summary ? ` · ${summary}` : ''}`
       : (track.subtitle ?? '');
@@ -43,11 +46,14 @@ export function MiniPlayer() {
       <div className={styles.progress} style={{ width: `${progress}%` }} aria-hidden="true" />
       <Link to="/player" className={styles.info} aria-label={`${t('player.open')}: ${track.title}`}>
         <span className={styles.title}>{track.title}</span>
-        <span className={styles.status}>
+        <span className={styles.status} data-problem={problem ? '' : undefined}>
           {inQueue >= 0 ? `${t('setlists:mode.position', { n: setlistMode.index + 1, total: setlistMode.queue.length })} · ` : ''}
           {status}
         </span>
       </Link>
+      <span className="visually-hidden" role="status">
+        {problem}
+      </span>
       <IconButton
         className={styles.button}
         label={playing ? t('player.pause') : t('player.play')}
@@ -65,7 +71,7 @@ export function MiniPlayer() {
           engine.toggle();
         }}
       />
-      {inQueue >= 0 && <IconButton className={styles.button} label={t('setlists:mode.next')} icon={<SkipForward size={20} />} onClick={setlistMode.next} />}
+      {inQueue >= 0 && <IconButton className={styles.button} label={t('setlists:mode.next')} icon={<SkipForward size={20} />} onClick={setlistMode.next} disabled={!setlistMode.hasNext} />}
     </div>
   );
 }

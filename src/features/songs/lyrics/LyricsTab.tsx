@@ -42,20 +42,39 @@ export function LyricsTab({ song, find }: { song: Song; find?: string | null }) 
     localStorage.setItem(SIZE_KEY, String(next));
   };
 
-  const openFile = async () => {
-    if (!lyrics) return;
-    const url = URL.createObjectURL(await store.storage.readBlob(lyrics.path));
-    const a = Object.assign(document.createElement('a'), { href: url, download: lyrics.fileName, target: '_blank' });
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  // Both can take a while (download from HiDrive, reading a PDF): a notice right away, one run at a
+  // time, and a message if it fails (R-UX-10).
+  const [working, setWorking] = useState(false);
+  const withNotice = async (message: string, job: () => Promise<void>) => {
+    if (working) return;
+    setWorking(true);
+    const close = notify({ message });
+    try {
+      await job();
+      close();
+    } catch {
+      notify({ message: t('lyrics.openFailed') });
+    } finally {
+      setWorking(false);
+    }
   };
 
-  const takeOverText = async () => {
-    if (!content) return;
-    const text = await extractText(content).catch(() => null);
-    if (!text) return notify({ message: t('lyrics.noText') });
-    navigate(`/songs/${song.id}/lyrics`, { state: { text } });
-  };
+  const openFile = () =>
+    withNotice(t('lyrics.opening'), async () => {
+      if (!lyrics) return;
+      const url = URL.createObjectURL(await store.storage.readBlob(lyrics.path));
+      const a = Object.assign(document.createElement('a'), { href: url, download: lyrics.fileName, target: '_blank' });
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    });
+
+  const takeOverText = () =>
+    withNotice(t('lyrics.readingText'), async () => {
+      if (!content) return;
+      const text = await extractText(content).catch(() => null);
+      if (!text) return void notify({ message: t('lyrics.noText') });
+      navigate(`/songs/${song.id}/lyrics`, { state: { text } });
+    });
 
   const suggestions = lyrics ? [] : lyricsSuggestions(song, state.documents, store.linkedLyricsPaths());
 
@@ -117,7 +136,9 @@ export function LyricsTab({ song, find }: { song: Song; find?: string | null }) 
           {content?.kind === 'unsupported' && (
             <div className={styles.empty}>
               <p>{t('lyrics.unsupported')}</p>
-              <Button onClick={() => void openFile()}>{t('lyrics.open')}</Button>
+              <Button onClick={() => void openFile()} disabled={working}>
+                {t('lyrics.open')}
+              </Button>
             </div>
           )}
         </>

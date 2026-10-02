@@ -224,10 +224,19 @@ export class ChatStore {
     return msg;
   }
 
+  /** Edit / delete: visible at once, back to the previous text if saving fails (R-UX-07, R-UX-10). */
   private async save(next: ChatMessage) {
     const name = this.fileName(next);
-    const entry = await this.options.storage.writeJson(joinPath(this.monthDir(monthOf(next.createdAt)), name), next, { expectedVersion: this.state.versions[name] });
-    this.set({ messages: this.state.messages.map((m) => (m.id === next.id ? next : m)), versions: { ...this.state.versions, [name]: entry.version } });
+    const previous = this.state.messages.find((m) => m.id === next.id);
+    this.set({ messages: this.state.messages.map((m) => (m.id === next.id ? next : m)) });
+    try {
+      const entry = await this.options.storage.writeJson(joinPath(this.monthDir(monthOf(next.createdAt)), name), next, { expectedVersion: this.state.versions[name] });
+      // again after saving: a poll meanwhile may have brought the old file back
+      this.set({ messages: this.state.messages.map((m) => (m.id === next.id ? next : m)), versions: { ...this.state.versions, [name]: entry.version } });
+    } catch (error) {
+      if (previous) this.set({ messages: this.state.messages.map((m) => (m.id === next.id ? previous : m)) });
+      throw error;
+    }
   }
 
   edit(msg: ChatMessage, text: string) {
@@ -243,11 +252,17 @@ export class ChatStore {
   /** One file per member and message – no conflicts (F6 §5). null removes the reaction. */
   async react(msg: ChatMessage, emoji: Reaction | null) {
     const me = this.options.memberId();
-    await this.options.storage.writeJson(joinPath(this.root, 'reactions', msg.id, `${me}.json`), { schemaVersion: 1, emoji, updatedAt: nowIso() });
-    const current = { ...(this.state.reactions[msg.id] ?? {}) };
+    const previous = this.state.reactions[msg.id];
+    const current = { ...(previous ?? {}) };
     if (emoji) current[me] = emoji;
     else delete current[me];
-    this.set({ reactions: { ...this.state.reactions, [msg.id]: current } });
+    this.set({ reactions: { ...this.state.reactions, [msg.id]: current } }); // optimistic (R-UX-10)
+    try {
+      await this.options.storage.writeJson(joinPath(this.root, 'reactions', msg.id, `${me}.json`), { schemaVersion: 1, emoji, updatedAt: nowIso() });
+    } catch (error) {
+      this.set({ reactions: { ...this.state.reactions, [msg.id]: previous ?? {} } });
+      throw error;
+    }
   }
 
   /** Written at most every few seconds (F6 §4.4). */

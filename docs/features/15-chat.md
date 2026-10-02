@@ -56,6 +56,7 @@ Consequences for the design:
 - **Info lines** (system): small, centered, grey ("Lisa hat die Probe am Do, 15. Okt. abgesagt"), tap → item.
 - **Input bar:** text field (multi-line, grows), "+" → "Song teilen", "Termin teilen", "Setlist teilen" (pickers with search), send button. Enter sends on desktop, Shift+Enter = new line.
 - Long press / hover menu on a message: "Antworten", Reaktion, "Bearbeiten" / "Löschen" (own only), "Zum Element" (if context).
+  - Edit, delete and reactions show at once and go back with a message if saving fails (v0.19.5, R-UX-10) – like sending.
 
 ### 3.2 Item discussions (in F4, F5, F7 detail screens)
 
@@ -92,7 +93,7 @@ Created by the device that performs the action, stored like messages with `type:
 
 ### 4.6 Push notifications (v0.13)
 
-- **Opt-in per device** in Einstellungen → Benachrichtigungen ("Einschalten" → the phone's permission prompt). Two switches: *Chat-Nachrichten* and *Termin-Änderungen und Absagen* (both on by default). "Test-Benachrichtigung senden" sends one to this device only.
+- **Opt-in per device** in Einstellungen → Benachrichtigungen ("Einschalten" → the phone's permission prompt). Two switches: *Chat-Nachrichten* and *Termin-Änderungen und Absagen* (both on by default). "Test-Benachrichtigung senden" sends one to this device only (shows "Wird gesendet …" and can't be sent twice meanwhile, v0.19.5).
 - **What notifies (decided):** every chat message (incl. item discussions) and the info lines for new (v0.14.3) / changed / cancelled / re-scheduled events – device switch "Neue Termine, Änderungen und Absagen". Not: absences, answers, Band-Version or design changes. Your own messages never notify you.
 - **Content (decided):** title "<Sender> · <Band>", text = the message (max. ~180 characters; shared items as "📎 Termin" etc.). Event changes: "Termin abgesagt" + the info line. Tapping opens the message (`chat?message=`) or the event.
 - **How:** each device stores its Web Push subscription in `_BandApp/push/<memberId>/<deviceId>.json`. The app of whoever writes the message asks the token helper (`POST /push`, with its HiDrive login) to deliver to all *other* members' devices; the worker encrypts per device (RFC 8291) and signs with VAPID (RFC 8292). Push services only see encrypted data. Devices reported as gone (404/410) are switched off automatically.

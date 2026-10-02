@@ -105,6 +105,8 @@ export class AudioEngine {
   private listeners = new Set<() => void>();
   private cache = new Map<string, { url: string; blob: Blob }>(); // path → blob (small LRU)
   private loadToken = 0;
+  /** track whose audio is ready to play (element src set or effects decoded) */
+  private loadedId: string | null = null;
   private unlocked = false;
   private pendingSeek: number | null = null;
   private loopFrame: number | null = null;
@@ -122,9 +124,11 @@ export class AudioEngine {
     a.addEventListener('timeupdate', () => this.state.mode === 'element' && this.onElementTime());
     a.addEventListener('durationchange', () => this.onElementDuration());
     a.addEventListener('loadedmetadata', () => this.onElementDuration());
-    a.addEventListener('play', () => this.state.mode === 'element' && this.set({ status: 'playing' }));
-    a.addEventListener('playing', () => this.state.mode === 'element' && this.set({ status: 'playing' }));
-    a.addEventListener('pause', () => this.state.mode === 'element' && this.state.status !== 'loading' && this.set({ status: 'paused' }));
+    // the silent unlock clip (iOS) plays and pauses inside the tap – its events must not overwrite "loading"
+    const song = () => this.state.mode === 'element' && a.src !== SILENCE;
+    a.addEventListener('play', () => song() && this.set({ status: 'playing', error: this.keptError() }));
+    a.addEventListener('playing', () => song() && this.set({ status: 'playing', error: this.keptError() }));
+    a.addEventListener('pause', () => song() && this.state.status !== 'loading' && this.set({ status: 'paused' }));
     a.addEventListener('ended', () => this.state.mode === 'element' && this.set({ status: 'paused', position: a.duration || 0, ended: this.state.ended + 1 }));
     a.addEventListener('error', () => this.state.track && this.state.mode === 'element' && this.set({ status: 'error', error: 'decode' }));
     this.setupMediaSession();
@@ -156,28 +160,37 @@ export class AudioEngine {
     }
   }
 
-  /** Load a track and start playing. Toggling the current track pauses/resumes instead. */
-  async playTrack(track: Track, startAt?: number, settings?: Partial<PracticeSettings> | null): Promise<void> {
-    if (this.state.track?.id === track.id && this.state.status !== 'error') {
+  /**
+   * Load a track and start playing. Toggling the current track pauses/resumes instead; a track that
+   * failed to load is loaded again. `settings` may still be on its way (read from HiDrive): the
+   * player shows "loading" at once and applies them before the audio starts (R-UX-10).
+   */
+  async playTrack(track: Track, startAt?: number, settings?: Partial<PracticeSettings> | null | Promise<Partial<PracticeSettings> | null>): Promise<void> {
+    if (this.state.track?.id === track.id && this.loadedId === track.id && !this.failed()) {
       if (startAt !== undefined) {
         this.seek(startAt);
         this.play();
       } else this.toggle();
       return;
     }
+    // trying a failed song again downloads it again – a real retry, and "Wird geladen …" is visible
+    if (this.state.track?.id === track.id && this.failed()) this.forget(track.path);
     const token = ++this.loadToken;
-    const next = normalizeSettings(settings);
+    const pending = settings instanceof Promise;
     this.pauseAll();
     this.decoded = null;
-    this.set({ track, status: 'loading', position: startAt ?? 0, duration: 0, error: null, ...next });
+    this.loadedId = null;
+    this.set({ track, status: 'loading', position: startAt ?? 0, duration: 0, error: null, ...normalizeSettings(pending ? null : settings) });
     this.updateMediaMetadata(track);
     try {
-      const { url } = await this.fileFor(track.path);
+      const [{ url }, resolved] = await Promise.all([this.fileFor(track.path), pending ? settings.catch(() => null) : null]);
       if (token !== this.loadToken) return; // another song was chosen meanwhile
+      if (pending) this.set(normalizeSettings(resolved));
       if (this.needsEffects()) {
         const ok = await this.loadEffects(token);
         if (token !== this.loadToken) return;
         if (ok) {
+          this.loadedId = track.id;
           this.fxStart(startAt ?? 0);
           return;
         }
@@ -185,6 +198,7 @@ export class AudioEngine {
       this.set({ mode: 'element' });
       this.pendingSeek = startAt ?? null;
       this.audio.src = url;
+      this.loadedId = track.id;
       this.applyElementRate();
       await this.startElement();
     } catch (error) {
@@ -207,8 +221,30 @@ export class AudioEngine {
   }
 
   toggle() {
+    const track = this.state.track;
     if (this.state.status === 'playing') this.pause();
+    else if (this.state.status === 'loading') this.cancelLoading();
+    else if (track && (this.failed() || this.loadedId !== track.id)) void this.playTrack(track, this.state.position || undefined, this.currentSettings());
     else this.play();
+  }
+
+  /** "Pause" while a song is still loading: it doesn't start; "Abspielen" loads it again (R-UX-10). */
+  private cancelLoading() {
+    this.loadToken++;
+    this.pauseAll();
+    this.decoded = null;
+    this.loadedId = null;
+    this.set({ status: 'paused', mode: 'element' });
+  }
+
+  /** The current track could not be loaded or played – "Abspielen" loads it again. */
+  private failed() {
+    return this.state.status === 'error' || this.state.error === 'load' || this.state.error === 'decode';
+  }
+
+  /** Errors that playing clears; the practice-effects notice stays. */
+  private keptError(): PlayerState['error'] {
+    return this.state.error === 'effects' ? 'effects' : null;
   }
 
   seek(seconds: number) {
@@ -265,6 +301,7 @@ export class AudioEngine {
 
   stop() {
     this.loadToken++;
+    this.loadedId = null;
     this.pauseAll();
     this.audio.removeAttribute('src');
     this.decoded = null;
@@ -288,8 +325,10 @@ export class AudioEngine {
     try {
       await this.audio.play();
     } catch (error) {
-      if ((error as Error).name === 'NotAllowedError') this.set({ status: 'paused', error: 'blocked' });
-      else if ((error as Error).name !== 'AbortError') this.set({ status: 'paused' });
+      const name = (error as Error).name;
+      // never a silent failure (R-UX-10): the player shows why it doesn't play
+      if (name === 'NotAllowedError') this.set({ status: 'paused', error: 'blocked' });
+      else if (name !== 'AbortError') this.set({ status: 'paused', error: this.state.error ?? 'decode' });
     }
     this.updateElementLoopWatch();
   }
@@ -475,6 +514,13 @@ export class AudioEngine {
 
   private notifySettings() {
     if (this.state.track) this.options.onSettingsChange?.(this.state.track, this.currentSettings());
+  }
+
+  private forget(path: string) {
+    const cached = this.cache.get(path);
+    if (!cached) return;
+    URL.revokeObjectURL(cached.url);
+    this.cache.delete(path);
   }
 
   private async fileFor(path: string): Promise<{ url: string; blob: Blob }> {

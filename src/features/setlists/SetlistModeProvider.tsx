@@ -31,6 +31,9 @@ interface ModeValue {
   playAt: (index: number) => void;
   next: () => void;
   previous: () => void;
+  /** a playable song follows / precedes – otherwise ⏭ / ⏮ are disabled, never a silent tap (R-UX-10) */
+  hasNext: boolean;
+  hasPrevious: boolean;
 }
 
 const Ctx = createContext<ModeValue | null>(null);
@@ -88,14 +91,14 @@ export function SetlistModeProvider({ children }: { children: ReactNode }) {
     [queue, play],
   );
 
-  const step = useCallback(
-    (dir: 1 | -1) => {
-      for (let i = mode.index + dir; i >= 0 && i < queue.length; i += dir) {
-        if (queue[i]!.playable) return playAt(i);
-      }
-    },
-    [mode.index, queue, playAt],
-  );
+  const target = (dir: 1 | -1) => {
+    for (let i = mode.index + dir; i >= 0 && i < queue.length; i += dir) if (queue[i]!.playable) return i;
+    return -1;
+  };
+  const step = (dir: 1 | -1) => {
+    const i = target(dir);
+    if (i >= 0) playAt(i);
+  };
 
   // auto-advance; a direct transition (red arrow) always continues (F7 §6.2)
   const lastEnded = useRef(player.ended);
@@ -127,6 +130,8 @@ export function SetlistModeProvider({ children }: { children: ReactNode }) {
     playAt,
     next: () => step(1),
     previous: () => step(-1),
+    hasNext: target(1) >= 0,
+    hasPrevious: target(-1) >= 0,
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

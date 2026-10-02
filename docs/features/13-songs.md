@@ -24,7 +24,7 @@
 
 > **M3b implementation notes (v0.5.0)**
 > - Detail tabs: **Songtext · Notizen für alle · Meine Notizen** (last tab remembered per device).
-> - Lyrics renderers in `src/core/lyrics/renderers.ts`: TXT (UTF-8, fallback Windows-1252), DOCX (mammoth, HTML sanitised to simple formatting), PDF (pdf.js **v4 legacy build**, works on older iOS Safari; v5+ needs very new JS features). Other formats: "Datei öffnen".
+> - Lyrics renderers in `src/core/lyrics/renderers.ts`: TXT (UTF-8, fallback Windows-1252), DOCX (mammoth, HTML sanitised to simple formatting), PDF (pdf.js **v4 legacy build**, works on older iOS Safari; v5+ needs very new JS features). Other formats: "Datei öffnen". "Datei öffnen" and "Als Text übernehmen" show a notice while the file downloads / the text is read, and a message if it fails (v0.19.5, R-UX-10).
 > - The scan also collects lyrics documents (pdf, docx, txt, doc, odt, rtf, pages); unlinked documents whose name matches the song title are suggested ("Songtext gefunden – Verknüpfen").
 > - Songs created in the app get a random `song_…` id; files listed in a song's `meta.json` belong to that song, even though their deterministic id differs.
 > - Folder view: phone = step into folders (`?folder=` in the URL), tablet/desktop = tree (expanded folders remembered). Songs in folders not reachable by the scan are not shown.
@@ -179,7 +179,7 @@ Distraction-free view for practicing at home and in rehearsals. Works in portrai
 |---|---|
 | Titel | Pre-filled with the cleaned file name (§6.2); changing it never renames the file |
 | Tonart | Picker: C … B, Dur/Moll (e.g. "Am", "F#") |
-| BPM | Number 20–300, optional "Tap"-button to tap the tempo |
+| BPM | Number 20–300, optional "Tap"-button to tap the tempo (from the 3rd tap; the first two are counted on the button "1 …", "2 …", v0.19.5) |
 | Stimmung | Free text with suggestions: Standard, Drop D, Eb-Standard, … |
 | Tags | Chips; type to pick an existing tag or create a new one (§6.11) |
 | Songtext-Datei | Linked file, "Ändern" / "Entfernen" (removing only removes the link, never the file) |

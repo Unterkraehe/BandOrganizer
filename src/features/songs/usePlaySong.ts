@@ -26,8 +26,9 @@ export function usePlaySong() {
         void engine.playTrack(track, startAt);
         return;
       }
-      // remembered tempo / pitch / loop of this member for this version (F4 §7.4)
-      void store.practice.settingsFor(song.id, recording.id).then((settings) => engine.playTrack(track, startAt, settings));
+      // remembered tempo / pitch / loop of this member for this version (F4 §7.4) – read while the
+      // file loads, so "Wird geladen …" shows at once (R-UX-10)
+      void engine.playTrack(track, startAt, store.practice.settingsFor(song.id, recording.id));
     },
     [engine, store],
   );

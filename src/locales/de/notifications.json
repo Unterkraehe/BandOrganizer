@@ -16,6 +16,7 @@
     "reminders": "Erinnerungen an Termine"
   },
   "test": "Test-Benachrichtigung senden",
+  "testSending": "Wird gesendet …",
   "testTitle": "Test",
   "testBody": "So sehen Benachrichtigungen der Band-App aus.",
   "testSent": "Test gesendet – gleich sollte die Benachrichtigung erscheinen.",
