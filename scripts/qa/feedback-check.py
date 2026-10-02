@@ -7,13 +7,14 @@ demo mode with simulated HiDrive latency) and measures when the page first chang
 
 Also lists controls the global touch pressed state (`base.css`, `:active`) doesn't reach.
 Rows that repeat (song list, cards) are sampled. Skipped: Demo beenden, Abmelden, printing, microphone; file pickers are
-listed as "manual" (a script can't open them). Usage: `feedback-check.py [latency_ms]` (default 400)."""
+listed as "manual" (a script can't open them). Usage: `feedback-check.py [latency_ms] [path filter]` (default 400, all screens)."""
 import re
 import sys
 
 from common import log, nav, session
 
 LATENCY = int(sys.argv[1]) if len(sys.argv) > 1 else 400
+ONLY = sys.argv[2] if len(sys.argv) > 2 else ''  # e.g. "chat": only screens whose path contains it
 FAST_MS, WAIT_MS = 150, 1500
 SKIP = re.compile(r'Demo beenden|Abmelden|Verbindung trennen|Drucken|Sprachnotiz aufnehmen|Aufnahme', re.I)
 MANUAL = re.compile(r'hochladen|Datei|Aus HiDrive wählen|Foto|Bild wählen|importieren', re.I)
@@ -70,7 +71,9 @@ PROBE = """async ({ i, label, wait }) => {
   });
   mo.disconnect();
   const t = first ?? (location.href !== url || el.checked !== checked ? performance.now() - t0 : null);
-  return { status: t === null ? 'dead' : t <= %d ? 'ok' : 'late', ms: t === null ? null : Math.round(t) };
+  const around = el.closest('[role=region], li, section, form, main');  // what the user saw, for dead/late taps
+  return { status: t === null ? 'dead' : t <= %d ? 'ok' : 'late', ms: t === null ? null : Math.round(t),
+    context: around ? around.innerText.replace(/\\s+/g, ' ').trim().slice(0, 90) : '' };
 }""" % FAST_MS
 
 results = {'ok': 0, 'current': 0, 'late': [], 'dead': [], 'manual': [], 'nopress': []}
@@ -135,7 +138,7 @@ def probe_all(pg, path, label, opener=None):
             if not opener and pg.locator(OVERLAY).count():
                 openers.append(c['label'])
         elif r['status'] in ('late', 'dead'):
-            entry = f"{where}: {c['label']!r}" + (f" ({r['ms']} ms)" if r['ms'] else '')
+            entry = f"{where}: {c['label']!r}" + (f" ({r['ms']} ms)" if r['ms'] else '') + (f" – shown: {r['context']!r}" if r.get('context') else '')
             results[r['status']].append(entry)
             log(r['status'].upper(), entry)
         pg.wait_for_timeout(LATENCY + 100)  # let a running save finish before the next tap
@@ -187,7 +190,8 @@ with session(query=f'?demo-songs=12&demo-latency={LATENCY}') as s:
                  f'{song}/lyrics', 'songs/new', 'calendar', 'calendar/new', event, f'{event}/edit', 'chat', 'setlists', setlist,
                  f'{setlist}/edit', f'{setlist}/stage', 'more', 'settings', 'settings/band', 'settings/tags', 'members',
                  'profile', 'calendar/subscribe', 'search']:
-        check_screen(pg, path)
+        if ONLY in path:
+            check_screen(pg, path)
     # the player opens from the mini player
     nav(pg, song, 900)
     pg.get_by_role('button', name='Abspielen').first.click()

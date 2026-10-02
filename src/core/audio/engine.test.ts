@@ -113,6 +113,11 @@ describe('feedback while loading and after failures', () => {
     await new Promise((r) => setTimeout(r, 0));
     expect(loadBlob).toHaveBeenCalledTimes(2);
 
+    // with practice settings the effects fail first ("effects" notice) – the reason shown is still the file
+    const withTempo = new AudioEngine({ loadBlob, createAudio: () => audio });
+    await withTempo.playTrack({ id: 'r3', title: 'C', path: '/c.wav' }, undefined, { tempo: 0.8 });
+    expect(withTempo.getState()).toMatchObject({ status: 'paused', error: 'decode' });
+
     const failing = new AudioEngine({ loadBlob: async () => Promise.reject(new Error('offline')), createAudio: fakeAudio });
     await failing.playTrack({ id: 'r2', title: 'B', path: '/b.mp3' });
     expect(failing.getState().error).toBe('load');

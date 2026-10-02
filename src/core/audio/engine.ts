@@ -328,7 +328,8 @@ export class AudioEngine {
       const name = (error as Error).name;
       // never a silent failure (R-UX-10): the player shows why it doesn't play
       if (name === 'NotAllowedError') this.set({ status: 'paused', error: 'blocked' });
-      else if (name !== 'AbortError') this.set({ status: 'paused', error: this.state.error ?? 'decode' });
+      // 'decode' also replaces the practice-effects notice: the file itself doesn't play
+      else if (name !== 'AbortError') this.set({ status: 'paused', error: 'decode' });
     }
     this.updateElementLoopWatch();
   }
