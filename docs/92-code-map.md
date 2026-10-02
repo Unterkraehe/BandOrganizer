@@ -145,6 +145,7 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 - `npm run check` needs `node_modules` (`npm ci`) and `npm`/`npx` on the PATH; it stops with a clear message otherwise. `npm run map` (`node scripts/gen-code-index.mjs`) needs only Node.
 - Don't bundle `signalsmith-stretch` – it builds its AudioWorklet from its own source text; it is vendored in `public/vendor/` and loaded with a dynamic import.
 - pdf.js must stay on the v4 **legacy** build (v5 needs very new JS features).
+- Every control answers at once (R-UX-10): show the result optimistically or a busy state ("Wird …", disabled) before awaiting HiDrive; never `await` a read before the first visible change (e.g. settings before playback). Check: `python3 scripts/qa/feedback-check.py`.
 - No sideways scrolling on phones (R-UI-14): a `<select>` is as wide as its longest option – always `width: 100%; min-width: 0`; grid containers `grid-template-columns: minmax(0, 1fr)`; intentional sideways rows carry `data-scroll-x`. Check: `python3 scripts/qa/overflow-check.py [320]`.
 - A page that scrolls itself when it opens (chat) must do it after React Router's `<ScrollRestoration>` (`app/routes.tsx`), which resets to the top in a layout effect of the root route – i.e. in `requestAnimationFrame`, not in the page's own `useLayoutEffect`.
 - `<ScrollRestoration>` also scrolls to the top on every `setSearchParams` / `navigate` that only changes the query (each is a new location). Selections kept in the URL (calendar month/day) pass `{ replace: true, preventScrollReset: true }`.

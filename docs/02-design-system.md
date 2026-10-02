@@ -158,7 +158,7 @@ Built once in `src/ui/`, documented with examples in both themes:
 | Overlays | Dialog, bottom sheet, menu, toast (with undo), command palette (search) |
 | Media | Mini player, full player controls, seek bar with markers and A–B range |
 
-**States** for every interactive component: default, hover, pressed, focus (visible ring), disabled, loading.
+**States** for every interactive component: default, hover, pressed, focus (visible ring), disabled, loading. The pressed state must also work on touch (`:active`), and every tap gets immediate feedback (R-UX-10).
 
 ## 8. Band Branding (configurable per band)
 

@@ -17,6 +17,7 @@ python3 scripts/qa/<script>.py                          # exit code 0 = fine
 | `menu-overlay-check.py` | ⋯ menus fully on screen and on top (also last row in the archive), both themes | `on screen: True on top: True` |
 | `overflow-check.py [width]` | No screen or scroll area wider than a 360 px (or given) phone, with long texts injected; incl. song page and player (Üben, Songtext) with a version dropdown | `problems: 0` (R-UI-14) |
 | `voice-note-check.py` | Records a voice note with Chromium's fake microphone, listens, saves, plays it, plays it again after reopening the song; no sideways scrolling at 320 px | `RESULT: ok` |
+| `feedback-check.py [latency_ms]` | Taps every control on every screen, in ⋯ menus and dialogs (phone, 400 ms per storage call) and measures when the page first changes; lists late and dead taps and controls without the touch pressed state. ~12 min | `late: 0 dead: 0` except the known items in the output (R-UX-10) |
 | `latency-check.py` | With 250 ms per storage call the UI still reacts at once (optimistic updates); no sideways scrolling | < 300 ms |
 | `axe-audit.py` | axe-core accessibility audit, phone dark + desktop light | only the intentional zoom finding |
 | `push-sw-check.py` | A push message reaches the service worker and shows the notification (needs Chromium's new headless mode) | notification title/body/tag/url as sent |

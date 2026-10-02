@@ -12,6 +12,7 @@ Band PWA ("Overload App") on top of HiDrive. UI language **German**, code/commen
 - The app never modifies or deletes files it did not create. All writes go through `SafeStorage` (`src/core/storage/guard.ts`).
 - Visible texts are German i18n keys (`src/locales/de/`). No hard-coded strings.
 - New features and screens must be integrated intuitively (R-UX-09): one home reachable in context, ← back everywhere, one primary action, motion that explains where things are, no hidden modes, entry in the navigation map (`docs/features/12-main-menu.md` §4.5).
+- Every control answers at once (R-UX-10): pressed state on touch, then the result or visible progress right away, success or failure confirmed – never a tap that seems to do nothing.
 - Phones never scroll sideways (R-UI-14): nothing may be wider than a 360 px screen; check UI changes with `scripts/qa/overflow-check.py`.
 - Never commit secrets (R-CODE-04): HiDrive client secret and VAPID private key live only in the Cloudflare worker. Don't read, print or ask for `.env*` / `.dev.vars`.
 - `src/config.ts` holds the band's HiDrive client ID – don't change it unless asked.

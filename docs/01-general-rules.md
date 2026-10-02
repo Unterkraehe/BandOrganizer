@@ -142,6 +142,14 @@ A feature is only done when a band member who has never seen it finds it and fin
 5. **No hidden modes.** Nothing changes what another tab shows (e.g. a setlist must not turn the Songs tab into something else); state that follows the user (playing setlist) lives in the player / mini player.
 6. **Documented in the navigation map** (`features/12-main-menu.md` §4.5): where it lives, how to get there, where back leads.
 
+**R-UX-10 — Every control answers at once.**
+Every tap, click or key press on a control (button, icon button, link, chip, row, card, tab, switch, menu item, slider) gives visible feedback **immediately** – within about 100 ms, before any HiDrive or network work has finished. Nobody should wonder "did that work?" or tap twice.
+1. **Pressed state on touch.** The control visibly reacts while the finger is on it (`:active`, not only `:hover` – phones have no hover), and shows a focus ring for the keyboard (design system §7: default, hover, pressed, focus, disabled, loading).
+2. **Result or progress right away.** Either the result appears at once (optimistic update, R-UX-07), or the control shows that it is working ("Wird gespeichert …", spinner) and ignores a second tap until it is done. Anything that can take longer than about a second shows progress.
+3. **Outcome confirmed.** Success is visible – on the screen itself, or as a toast when the change isn't visible where the user is (e.g. "Link kopiert"). Failure always shows a message in plain German and restores the control (R-UX-02, R-UX-03).
+4. **No dead taps.** A control that can't act right now is shown disabled (with the reason when it isn't obvious) or hidden – it never looks active and then silently does nothing, e.g. offline or while another action is running.
+5. **Feedback without moving things under the finger** (R-UI-11): highlight, change, or show progress in place.
+
 ## 5. Architecture & Code (R-CODE)
 
 **R-CODE-01 — Storage only via `StorageProvider`.**
