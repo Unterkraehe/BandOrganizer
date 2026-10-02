@@ -26,7 +26,7 @@ export function Page({ title, hideTitle, actions, wide, back = true, titleBelow,
   const extra = useContext(TopBarExtraContext);
   const nav = useBack();
   return (
-    <div className={styles.page}>
+    <div className={styles.page} data-wide={wide || undefined}>
       <header className={styles.topBar} data-hidden-title={hideTitle || undefined} data-no-print>
         <div className={styles.topBarInner}>
           {back && nav.show && <IconButton className={styles.back} label={t('actions.back')} icon={<ArrowLeft size={22} />} onClick={nav.goBack} />}

@@ -147,6 +147,8 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 - pdf.js must stay on the v4 **legacy** build (v5 needs very new JS features).
 - No sideways scrolling on phones (R-UI-14): a `<select>` is as wide as its longest option – always `width: 100%; min-width: 0`; grid containers `grid-template-columns: minmax(0, 1fr)`; intentional sideways rows carry `data-scroll-x`. Check: `python3 scripts/qa/overflow-check.py [320]`.
 - A page that scrolls itself when it opens (chat) must do it after React Router's `<ScrollRestoration>` (`app/routes.tsx`), which resets to the top in a layout effect of the root route – i.e. in `requestAnimationFrame`, not in the page's own `useLayoutEffect`.
+- `<ScrollRestoration>` also scrolls to the top on every `setSearchParams` / `navigate` that only changes the query (each is a new location). Selections kept in the URL (calendar month/day) pass `{ replace: true, preventScrollReset: true }`.
+- Breakpoints (R-UI-02) in code: `useIsWide()` (≥ 768 px) and `useIsDesktop()` (≥ 1200 px) from `ui/useMediaQuery`. `Page wide` widens content **and** top bar to 1200 px (from 1024 px).
 - `usePwaUpdate()` registers the service worker – call it only in `UpdateToast`; elsewhere use `checkForUpdate()` / `applyUpdate()` (`core/pwa/usePwa.ts`).
 - `usePlayer()` in a list screen = full re-render ~4×/s while music plays (see §5).
 

@@ -14,3 +14,6 @@ export function useMediaQuery(query: string): boolean {
 
 /** Tablet and desktop (design system breakpoints, R-UI-02) */
 export const useIsWide = () => useMediaQuery('(min-width: 768px)');
+
+/** Desktop (design system breakpoint, R-UI-02) */
+export const useIsDesktop = () => useMediaQuery('(min-width: 1200px)');

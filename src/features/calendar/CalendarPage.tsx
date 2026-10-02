@@ -6,7 +6,7 @@ import { useNotify } from '@/app/notify/NotifyProvider';
 import { formatDate } from '@/core/i18n/format';
 import { useSession } from '@/core/session/BandSession';
 import { Button, Chip, Dialog, EmptyState, IconButton, Menu, Page, SegmentedControl } from '@/ui';
-import { useIsWide } from '@/ui/useMediaQuery';
+import { useIsDesktop, useIsWide } from '@/ui/useMediaQuery';
 import { useCalendar, useWatchCalendar } from './CalendarProvider';
 import { EventCard } from './EventCard';
 import { occurrenceTitle, TYPE_ICON_COLOR } from './format';
@@ -25,6 +25,7 @@ export function CalendarPage() {
   const navigate = useNavigate();
   const notify = useNotify();
   const wide = useIsWide();
+  const desktop = useIsDesktop();
   const { store, state } = useCalendar();
   useWatchCalendar();
   const { band } = useSession();
@@ -57,6 +58,7 @@ export function CalendarPage() {
   return (
     <Page
       title={t('title')}
+      wide={view === 'month' && desktop}
       actions={
         <>
           <Menu label={t('menu')} items={[{ label: t('subscription.menu'), onSelect: () => navigate('/calendar/subscribe') }, { label: t('exportAll'), onSelect: exportAll }]} />
@@ -178,9 +180,11 @@ function MonthView({ types, today }: { types: Set<EventType>; today: string }) {
   const onDay = (d: string) => occs.filter((o) => o.startDate <= d && o.endDate >= d);
   const selectedOccs = onDay(selected);
   const dataFor = useOccurrenceData(selectedOccs);
-  const go = (patch: Record<string, string>) => setParams({ month, day: selected, ...patch }, { replace: true });
-  // Phones: the day's events are below the fold – a tap opens them in a panel from the bottom (v0.14.4)
-  const wide = useIsWide();
+  // preventScrollReset: picking a day or month is not a new screen – <ScrollRestoration> would jump to the top
+  const go = (patch: Record<string, string>) => setParams({ month, day: selected, ...patch }, { replace: true, preventScrollReset: true });
+  // Desktop: the day's events sit beside the grid. Phones and tablets: they are below the fold –
+  // a tap opens them in a panel (v0.14.4, tablets v0.19.3)
+  const beside = useIsDesktop();
   const [sheet, setSheet] = useState(false);
   const dayLabel = formatDate(`${selected}T12:00:00Z`);
   const dayEvents = (
@@ -200,60 +204,62 @@ function MonthView({ types, today }: { types: Set<EventType>; today: string }) {
   );
 
   return (
-    <>
-      <div className={styles.monthNav}>
-        <IconButton label={t('prevMonth')} icon={<ChevronLeft size={20} />} onClick={() => go({ month: addMonths(first, -1).slice(0, 7) })} />
-        <h2 className={styles.monthTitle}>{monthLabel(month)}</h2>
-        <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
-          <Button variant="ghost" onClick={() => go({ month: today.slice(0, 7), day: today })}>
-            {t('today')}
-          </Button>
-          <IconButton label={t('nextMonth')} icon={<ChevronRight size={20} />} onClick={() => go({ month: addMonths(first, 1).slice(0, 7) })} />
+    <div className={styles.monthLayout}>
+      <div className={styles.monthMain}>
+        <div className={styles.monthNav}>
+          <IconButton label={t('prevMonth')} icon={<ChevronLeft size={20} />} onClick={() => go({ month: addMonths(first, -1).slice(0, 7) })} />
+          <h2 className={styles.monthTitle}>{monthLabel(month)}</h2>
+          <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
+            <Button variant="ghost" onClick={() => go({ month: today.slice(0, 7), day: today })}>
+              {t('today')}
+            </Button>
+            <IconButton label={t('nextMonth')} icon={<ChevronRight size={20} />} onClick={() => go({ month: addMonths(first, 1).slice(0, 7) })} />
+          </div>
+        </div>
+        <div className={styles.grid} role="group" aria-label={monthLabel(month)}>
+          {(['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const).map((d) => (
+            <div key={d} className={styles.dow} aria-hidden="true">
+              {t(`weekdaysShort.${d}`)}
+            </div>
+          ))}
+          {days.map((d) => {
+            const list = onDay(d);
+            return (
+              <button
+                key={d}
+                type="button"
+                className={styles.day}
+                data-other={d.slice(0, 7) !== month || undefined}
+                data-today={d === today || undefined}
+                data-selected={d === selected || undefined}
+                aria-label={`${formatDate(`${d}T12:00:00Z`)}${list.length ? `, ${list.length}` : ''}`}
+                onClick={() => {
+                  go({ day: d, month: d.slice(0, 7) });
+                  if (!beside) setSheet(true);
+                }}
+              >
+                <span className={styles.dayNumber}>{Number(d.slice(8))}</span>
+                {list.slice(0, 3).map((o) => (
+                  <span key={occurrenceId(o)} aria-hidden="true">
+                    <span className={styles.dot} style={{ background: TYPE_ICON_COLOR[o.type], opacity: o.cancelled ? 0.4 : 1 }} />
+                    <span className={styles.chip} style={{ background: TYPE_ICON_COLOR[o.type], color: `var(--event-${o.type}-on)`, textDecoration: o.cancelled ? 'line-through' : undefined }}>
+                      {occurrenceTitle(o, t, members)}
+                    </span>
+                  </span>
+                ))}
+                {list.length > 3 && <span className={styles.more}>{t('moreOnDay', { count: list.length - 3 })}</span>}
+              </button>
+            );
+          })}
         </div>
       </div>
-      <div className={styles.grid} role="group" aria-label={monthLabel(month)}>
-        {(['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const).map((d) => (
-          <div key={d} className={styles.dow} aria-hidden="true">
-            {t(`weekdaysShort.${d}`)}
-          </div>
-        ))}
-        {days.map((d) => {
-          const list = onDay(d);
-          return (
-            <button
-              key={d}
-              type="button"
-              className={styles.day}
-              data-other={d.slice(0, 7) !== month || undefined}
-              data-today={d === today || undefined}
-              data-selected={d === selected || undefined}
-              aria-label={`${formatDate(`${d}T12:00:00Z`)}${list.length ? `, ${list.length}` : ''}`}
-              onClick={() => {
-                go({ day: d, month: d.slice(0, 7) });
-                if (!wide) setSheet(true);
-              }}
-            >
-              <span className={styles.dayNumber}>{Number(d.slice(8))}</span>
-              {list.slice(0, 3).map((o) => (
-                <span key={occurrenceId(o)} aria-hidden="true">
-                  <span className={styles.dot} style={{ background: TYPE_ICON_COLOR[o.type], opacity: o.cancelled ? 0.4 : 1 }} />
-                  <span className={styles.chip} style={{ background: TYPE_ICON_COLOR[o.type], color: `var(--event-${o.type}-on)`, textDecoration: o.cancelled ? 'line-through' : undefined }}>
-                    {occurrenceTitle(o, t, members)}
-                  </span>
-                </span>
-              ))}
-              {list.length > 3 && <span className={styles.more}>{t('moreOnDay', { count: list.length - 3 })}</span>}
-            </button>
-          );
-        })}
-      </div>
-      <section className={styles.month}>
+      <section className={`${styles.month} ${styles.dayPane}`}>
         <h2 className={styles.monthTitle}>{dayLabel}</h2>
-        {!sheet && dayEvents}
+        {!(sheet && !beside) && dayEvents}
       </section>
-      <Dialog open={sheet && !wide} title={dayLabel} closeLabel={t('common:actions.close')} onClose={() => setSheet(false)}>
+      <Dialog open={sheet && !beside} title={dayLabel} closeLabel={t('common:actions.close')} onClose={() => setSheet(false)}>
         {dayEvents}
       </Dialog>
-    </>
+    </div>
   );
 }

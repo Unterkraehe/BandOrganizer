@@ -1,4 +1,8 @@
 {
+  "0.19.3": [
+    "Kalender am Computer: Ein Klick auf einen Tag springt nicht mehr nach oben. Die Termine des Tages stehen jetzt direkt neben dem Monat. Auf Tablets öffnen sie sich wie am Handy in einem Fenster.",
+    "Lange Terminnamen bleiben in der Monatsansicht in ihrem Tag, statt in den nächsten Tag zu ragen."
+  ],
   "0.19.2": [
     "Band-Logo repariert: Hochgeladene Logos (vor allem SVG) werden jetzt angezeigt. Auch SVGs aus Illustrator oder Inkscape werden erkannt.",
     "Neu: Einstellungen → Band → „Aus HiDrive wählen“ – ein Logo, das schon in eurem HiDrive liegt, direkt übernehmen. Die App legt eine Kopie an, das Original bleibt unverändert."

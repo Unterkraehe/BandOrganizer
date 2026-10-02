@@ -100,4 +100,8 @@
   .content.wide {
     max-width: calc(1200px + 2 * var(--space-8));
   }
+  /* title and actions line up with the wider content */
+  .page[data-wide] .topBarInner {
+    max-width: 1200px;
+  }
 }

@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { enterDemo } from '@/test/demo';
 import { formatDate } from '@/core/i18n/format';
 import { addDays, todayLocal } from '@/features/calendar/time';
@@ -134,6 +134,45 @@ describe('Month view on a phone (v0.14.4)', () => {
     const otherLabel = formatDate(`${other}T12:00:00Z`);
     await user.click(screen.getByRole('button', { name: otherLabel }));
     expect(within(await screen.findByRole('dialog', { name: otherLabel })).getByText('Keine Termine an diesem Tag.')).toBeInTheDocument();
+  });
+});
+
+describe('Month view on desktop (v0.19.3)', () => {
+  beforeEach(() => localStorage.clear());
+  afterEach(() => vi.restoreAllMocks());
+
+  it("clicking a day shows its events beside the grid and doesn't scroll to the top", async () => {
+    // a 1366 px window: tablet and desktop breakpoints match
+    vi.spyOn(window, 'matchMedia').mockImplementation(
+      (query: string) =>
+        ({ matches: /min-width: (768|1200)px/.test(query), media: query, onchange: null, addEventListener: () => {}, removeEventListener: () => {}, addListener: () => {}, removeListener: () => {}, dispatchEvent: () => false }) as MediaQueryList,
+    );
+    const today = todayLocal();
+    const user = userEvent.setup();
+    await enterDemo(user, `/calendar/new?date=${today}`);
+    await user.click(await screen.findByRole('button', { name: 'Auftritt' }));
+    await user.type(screen.getByLabelText('Titel'), 'Stadtfest');
+    await user.click(screen.getByRole('button', { name: 'Speichern' }));
+    await screen.findByRole('heading', { level: 1, name: 'Stadtfest' });
+
+    await user.click(screen.getByRole('link', { name: 'Kalender' }));
+    const dayLabel = formatDate(`${today}T12:00:00Z`);
+    await user.click(await screen.findByRole('button', { name: `${dayLabel}, 1` }));
+    const other = addDays(today, today.endsWith('-01') ? 1 : -1);
+    const otherLabel = formatDate(`${other}T12:00:00Z`);
+    const scrollTo = vi.spyOn(window, 'scrollTo');
+    await user.click(screen.getByRole('button', { name: otherLabel }));
+
+    // no panel: the day's events replace the list beside the grid
+    expect(await screen.findByRole('heading', { level: 2, name: otherLabel })).toBeInTheDocument();
+    expect(screen.getByText('Keine Termine an diesem Tag.')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    // picking a day is not a new screen: <ScrollRestoration> must not jump to the top
+    expect(scrollTo).not.toHaveBeenCalledWith(0, 0);
+
+    await user.click(screen.getByRole('button', { name: `${dayLabel}, 1` }));
+    expect(await screen.findByRole('heading', { level: 2, name: dayLabel })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: `Termin am ${dayLabel} anlegen` })).toBeInTheDocument();
   });
 });
 

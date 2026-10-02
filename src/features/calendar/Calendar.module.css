@@ -28,6 +28,31 @@
   gap: var(--space-3);
 }
 
+/* Month view: grid + the selected day's events, side by side on desktop (R-UI-02) */
+.monthLayout,
+.monthMain {
+  display: grid;
+  gap: var(--space-8);
+  min-width: 0;
+}
+
+@media (min-width: 1200px) {
+  .monthLayout {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+  }
+  /* stays in view below the top bar while the grid scrolls; scrolls inside on busy days.
+     Never taller than the room between the top bar and the page's bottom space (Page content
+     padding + the shell's mini player room) – otherwise its top slides under the top bar. */
+  .dayPane {
+    position: sticky;
+    top: calc(env(safe-area-inset-top) + 72px + var(--space-6));
+    max-height: calc(100dvh - env(safe-area-inset-top) - 72px - 2 * var(--space-6) - var(--mini-player-h) - env(safe-area-inset-bottom));
+    overflow-y: auto;
+    align-content: start;
+  }
+}
+
 .monthTitle {
   font-family: var(--font-display);
   font-weight: 500;
@@ -202,6 +227,11 @@
   align-content: start;
   gap: 2px;
   cursor: pointer;
+  min-width: 0;
+}
+
+/* long titles end in "…" inside the cell instead of spilling into the next day */
+.day > span {
   min-width: 0;
 }
 
