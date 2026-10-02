@@ -58,7 +58,8 @@ describe('keeping the token helper current (F6 §4.7)', () => {
     calendarState = { ...calendarState }; // the store's state after loading from HiDrive
     view.rerender(<ReminderProvider>{' '}</ReminderProvider>);
     await settle();
-    expect(uploads).toHaveLength(1);
+    // the checksum (crypto.subtle) doesn't run on the fake clock – on a slow CI runner the upload can lag behind
+    await vi.waitFor(() => expect(uploads).toHaveLength(1));
     expect(uploads[0]!.members.m_lisa!.jobs).toHaveLength(1); // rehearsal default: 2 h before
     expect(uploads[0]!.members.m_lisa!.jobs[0]!.payload.title).toBe('Probe');
 
