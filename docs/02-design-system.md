@@ -166,7 +166,7 @@ Built once in `src/ui/`, documented with examples in both themes:
 |---|---|---|
 | Band name | First-time setup (F1), Einstellungen → Band | – (required) |
 | Band color (accent) | First-time setup, Einstellungen → Band: palette of ~12 suggestions + custom hex color | neutral palette suggestion; Overload: `#E30613` |
-| Band logo (optional) | Einstellungen → Band: upload | none → band name in Oswald |
+| Band logo (optional) | Einstellungen → Band: upload from the device, or "Aus HiDrive wählen" (v0.19.2) | none → band name in Oswald |
 
 **Logo details (decided: optional upload)**
 - Formats: SVG (preferred) or PNG with transparency, max. 2 MB.
@@ -177,6 +177,7 @@ Built once in `src/ui/`, documented with examples in both themes:
 - Upload preview on light and dark background before saving.
 - Shown in: sidebar header (desktop), start screen header, welcome/login screens, setlist print header, installable app splash (where the platform allows).
 - Stored as app-created files in `_BandApp/branding/` (e.g. `logo-dark.svg`, `logo-light.png`); replacing a logo creates a new file, the old one is kept (R-DATA-05).
+- **"Aus HiDrive wählen"** (v0.19.2): a picker shows the folders of the home (without `_BandApp` and hidden folders) and their SVG/PNG files; the chosen image is previewed on the variant's background, then **copied** into `_BandApp/branding/` (same type/size check as an upload). The original is only read, never changed, and the logo keeps working if someone later moves or renames it.
 - **App icon** (home screen) stays the app's own neutral icon in v1; band-specific app icons would require per-band builds (future plans).
 
 - All branding is stored in `_BandApp/app.json` (`branding: { color, logoDark, logoLight }`), so all members see the same look. Anyone can change it (no roles), with a chat info line "Lisa hat das Band-Design geändert".

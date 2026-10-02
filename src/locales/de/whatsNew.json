@@ -1,4 +1,8 @@
 {
+  "0.19.2": [
+    "Band-Logo repariert: Hochgeladene Logos (vor allem SVG) werden jetzt angezeigt. Auch SVGs aus Illustrator oder Inkscape werden erkannt.",
+    "Neu: Einstellungen → Band → „Aus HiDrive wählen“ – ein Logo, das schon in eurem HiDrive liegt, direkt übernehmen. Die App legt eine Kopie an, das Original bleibt unverändert."
+  ],
   "0.19.1": [
     "Kalender-Abo repariert: Der Abo-Link funktioniert jetzt dauerhaft (bisher liefen die HiDrive-Freigaben ab). Wer das Abo schon hatte: Kalender → ⋯ → Kalender abonnieren → „Abo-Link erstellen“ und den neuen Link im Kalender neu abonnieren, den alten dort entfernen."
   ],

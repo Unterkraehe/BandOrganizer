@@ -11,6 +11,7 @@
 - [ ] **S6 – large uploads:** upload a WAV > 50 MB, ideally over mobile data; interrupt the connection once → retries / "Erneut versuchen" work (F10 §5.6).
 - [ ] **Copy:** "In die Songliste übernehmen" on a suggestion → the copy is in the chosen folder, the original is still in "Vorschläge" (`POST /file/copy`, F4).
 - [ ] **Calendar subscription (v0.19.1, via the token helper):** deploy the new `worker.js` (KV `REMINDERS` bound). Kalender → ⋯ → Kalender abonnieren → "Abo-Link erstellen" (an old HiDrive link shows the "funktioniert nicht mehr" notice). Open the link in a browser: a `.ics` download or text starting with `BEGIN:VCALENDAR`. Subscribe in Google Calendar (calendar.google.com → Weitere Kalender → + → Per URL) and on an iPhone; the events appear (Google: minutes to hours). Change an event → it shows up after the calendar app refreshes. ~~S4: HiDrive share link~~ – answered: unsuitable (expires, download limit).
+- [ ] **Band logo (v0.19.2):** Einstellungen → Band → upload an SVG and a PNG (one per variant) → both previews show the logo, the header/start screen shows it in the matching theme. Then "Aus HiDrive wählen" → pick an SVG/PNG from a band folder → it appears; the original file in that folder is unchanged and a copy sits in `_BandApp/branding/`. Reload → the logos are still there.
 - [ ] **S5 – .ics export:** "Zum Kalender hinzufügen" on an event on iPhone and Android → arrives in the calendar with the right time.
 
 ## B. Phones

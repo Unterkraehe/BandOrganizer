@@ -61,3 +61,36 @@ describe('Lyrics, uploads and folder view (M3b in demo mode)', () => {
     expect(await screen.findByRole('button', { name: /Proben \/ 2026-09-17/ })).toBeInTheDocument();
   });
 });
+
+describe('Band logo (design system §8, F10)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('uploads a logo from the device', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/settings/band');
+    await screen.findByRole('heading', { level: 1, name: 'Band bearbeiten' });
+    const input = document.querySelector<HTMLInputElement>('input[type="file"]')!;
+    await user.upload(input, new File(['<svg xmlns="http://www.w3.org/2000/svg"/>'], 'logo.svg', { type: 'image/svg+xml' }));
+    expect(await screen.findByRole('button', { name: 'Entfernen' })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('picks an existing logo from the HiDrive', async () => {
+    const user = userEvent.setup();
+    await enterDemo(user, '/settings/band');
+    await screen.findByRole('heading', { level: 1, name: 'Band bearbeiten' });
+    await user.click(screen.getAllByRole('button', { name: 'Aus HiDrive wählen' })[1]!);
+    const dialog = await screen.findByRole('dialog', { name: 'Logo aus HiDrive wählen' });
+    const fotos = await within(dialog).findByRole('button', { name: 'Fotos' });
+    expect(within(dialog).queryByRole('button', { name: '_BandApp' })).not.toBeInTheDocument();
+    await user.click(fotos);
+    expect(await within(dialog).findByRole('button', { name: 'Band-Logo.svg' })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Proberaum.jpg' })).not.toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Als Logo verwenden' })).toBeDisabled();
+    await user.click(within(dialog).getByRole('button', { name: 'Band-Logo.svg' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Als Logo verwenden' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Entfernen' })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+});

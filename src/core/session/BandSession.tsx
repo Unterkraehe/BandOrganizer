@@ -3,10 +3,10 @@ import { config, isHiDriveConfigured } from '@/config';
 import { completeLoginIfPending, startLogin, type CallbackResult } from '@/core/auth/login';
 import { clearTokens, getAccessToken, loadTokens, refreshTokens, AuthError } from '@/core/auth/tokens';
 import { appRootFor, loadBand, setupBand, updateBand, type BandConfig, type BandSetupInput, type Versioned } from '@/core/band/band';
-import { storeLogo, type LogoVariant } from '@/core/band/logo';
+import { adoptLogo, readLogo, storeLogo, type LogoVariant } from '@/core/band/logo';
 import { applyBandTheme } from '@/core/color/bandTheme';
 import { HiDriveProvider } from '@/core/storage/hidrive/HiDriveProvider';
-import { SafeStorage, type StorageProvider } from '@/core/storage';
+import { ConflictError, SafeStorage, type StorageProvider } from '@/core/storage';
 import type { Member } from '@/features/members/model';
 import {
   createMember,
@@ -66,6 +66,8 @@ interface SessionContextValue {
   setMemberActiveState: (memberId: string, active: boolean) => Promise<void>;
   updateBandSettings: (changes: Partial<Pick<BandConfig, 'bandName' | 'branding' | 'uploads' | 'scan'>>) => Promise<void>;
   uploadLogo: (variant: LogoVariant, file: File) => Promise<void>;
+  /** Uses an image from the HiDrive (copied into `_BandApp/branding/`, the original stays untouched). */
+  pickLogo: (variant: LogoVariant, path: string) => Promise<void>;
   removeLogo: (variant: LogoVariant) => Promise<void>;
 }
 
@@ -201,10 +203,11 @@ export function SessionProvider({ children, autoStart = true }: { children: Reac
     const load = async (path: string | null) => {
       if (!path) return null;
       try {
-        const url = URL.createObjectURL(await storage.readBlob(path));
+        const url = URL.createObjectURL(await readLogo(storage, path));
         urls.push(url);
         return url;
-      } catch {
+      } catch (error) {
+        console.warn('Loading the band logo failed', path, error);
         return null;
       }
     };
@@ -220,6 +223,25 @@ export function SessionProvider({ children, autoStart = true }: { children: Reac
   const requireReady = () => {
     if (!storage || !connection || !band) throw new Error('Session not ready');
     return { storage, appRoot: connection.appRoot, band };
+  };
+
+  /**
+   * Links a logo file (or none) in app.json. Only this one field changes, so if app.json changed
+   * meanwhile (another device, or an outdated version here) it is reloaded and the change applied once more.
+   */
+  const setLogoPath = async (variant: LogoVariant, path: string | null) => {
+    const { storage: s, appRoot, band: b } = requireReady();
+    const key = variant === 'dark' ? 'logoDark' : 'logoLight';
+    const apply = (current: Versioned<BandConfig>) =>
+      updateBand(s, appRoot, current, currentMemberId ?? 'setup', { branding: { ...current.value.branding, [key]: path } });
+    try {
+      setBand(await apply(b));
+    } catch (error) {
+      const fresh = error instanceof ConflictError ? await loadBand(s, appRoot) : null;
+      if (!fresh) throw error;
+      setBand(await apply(fresh));
+    }
+    if (path) emitSystemEvent({ key: 'band.branding', params: { actor: currentMemberId ?? '' } });
   };
 
   const value: SessionContextValue = {
@@ -318,19 +340,17 @@ export function SessionProvider({ children, autoStart = true }: { children: Reac
     },
 
     uploadLogo: async (variant, file) => {
-      const { storage: s, appRoot, band: b } = requireReady();
-      const path = await storeLogo(s, appRoot, variant, file);
-      const key = variant === 'dark' ? 'logoDark' : 'logoLight';
-      setBand(await updateBand(s, appRoot, b, currentMemberId ?? 'setup', { branding: { ...b.value.branding, [key]: path } }));
-      emitSystemEvent({ key: 'band.branding', params: { actor: currentMemberId ?? '' } });
+      const { storage: s, appRoot } = requireReady();
+      await setLogoPath(variant, await storeLogo(s, appRoot, variant, file));
     },
 
-    removeLogo: async (variant) => {
-      const { storage: s, appRoot, band: b } = requireReady();
-      const key = variant === 'dark' ? 'logoDark' : 'logoLight';
-      // Only the link is removed; the file stays (R-DATA-05).
-      setBand(await updateBand(s, appRoot, b, currentMemberId ?? 'setup', { branding: { ...b.value.branding, [key]: null } }));
+    pickLogo: async (variant, path) => {
+      const { storage: s, appRoot } = requireReady();
+      await setLogoPath(variant, await adoptLogo(s, appRoot, variant, path));
     },
+
+    // Only the link is removed; the file stays (R-DATA-05).
+    removeLogo: (variant) => setLogoPath(variant, null),
   };
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

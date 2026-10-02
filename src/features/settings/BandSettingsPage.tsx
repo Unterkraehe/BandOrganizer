@@ -1,4 +1,4 @@
-import { ImageUp, Trash2 } from 'lucide-react';
+import { Cloud, ImageUp, Trash2 } from 'lucide-react';
 import { useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { sanitizeFolderName } from '@/core/band/band';
@@ -7,6 +7,7 @@ import { DEFAULT_BAND_COLOR } from '@/core/color/bandTheme';
 import { useSession } from '@/core/session/BandSession';
 import { basename, dirname, joinPath, ConflictError } from '@/core/storage';
 import { BandColorPicker, Button, Page, Section, TextField } from '@/ui';
+import { LogoFilePicker } from './LogoFilePicker';
 import styles from './Settings.module.css';
 import { useBack } from '@/ui/layout/navigation';
 
@@ -81,31 +82,41 @@ export function BandSettingsPage() {
 
 function LogoRow({ variant }: { variant: LogoVariant }) {
   const { t } = useTranslation('band');
-  const { band, logoUrls, uploadLogo, removeLogo } = useSession();
+  const { band, storage, home, appRoot, logoUrls, uploadLogo, pickLogo, removeLogo } = useSession();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [picking, setPicking] = useState(false);
   const url = variant === 'dark' ? logoUrls.dark : logoUrls.light;
   const hasLogo = variant === 'dark' ? Boolean(band?.branding.logoDark) : Boolean(band?.branding.logoLight);
 
-  const onFile = async (file: File | undefined) => {
-    if (!file) return;
+  const run = async (action: () => Promise<void>, failed: string) => {
     setBusy(true);
     setError(null);
     try {
-      await uploadLogo(variant, file);
+      await action();
     } catch (e) {
+      console.warn('Changing the band logo failed', e);
       setError(
         e instanceof LogoFileError
           ? e.reason === 'size'
             ? t('settings.logoTooLarge')
             : t('settings.logoInvalidType')
-          : t('settings.logoFailed'),
+          : failed,
       );
     } finally {
       setBusy(false);
-      if (input.current) input.current.value = '';
     }
+  };
+
+  const onFile = async (file: File | undefined) => {
+    if (input.current) input.current.value = '';
+    if (file) await run(() => uploadLogo(variant, file), t('settings.logoFailed'));
+  };
+
+  const onPick = (path: string) => {
+    setPicking(false);
+    void run(() => pickLogo(variant, path), t('settings.logoPickFailed'));
   };
 
   return (
@@ -130,14 +141,22 @@ function LogoRow({ variant }: { variant: LogoVariant }) {
           onChange={(event) => void onFile(event.target.files?.[0])}
         />
         <Button icon={<ImageUp size={18} />} onClick={() => input.current?.click()} disabled={busy}>
-          {hasLogo ? t('settings.logoReplace') : t('settings.logoUpload')}
+          {t('settings.logoUpload')}
         </Button>
+        {storage && home && appRoot && (
+          <Button icon={<Cloud size={18} />} onClick={() => setPicking(true)} disabled={busy}>
+            {t('settings.logoFromHiDrive')}
+          </Button>
+        )}
         {hasLogo && (
-          <Button variant="ghost" icon={<Trash2 size={18} />} onClick={() => void removeLogo(variant)} disabled={busy}>
+          <Button variant="ghost" icon={<Trash2 size={18} />} onClick={() => void run(() => removeLogo(variant), t('settings.failed'))} disabled={busy}>
             {t('settings.logoRemove')}
           </Button>
         )}
       </div>
+      {picking && storage && home && appRoot && (
+        <LogoFilePicker storage={storage} home={home} appRoot={appRoot} variant={variant} onSelect={onPick} onClose={() => setPicking(false)} />
+      )}
     </div>
   );
 }

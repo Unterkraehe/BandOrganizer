@@ -66,7 +66,7 @@ Full tree with explanations: overview §8. Who reads/writes it:
 
 | Path | Code | Notes |
 |---|---|---|
-| `app.json`, `branding/` | `core/band/band.ts`, `logo.ts` | `BandConfig`: name, color, logos, standard upload folder, `scan.excludedPaths`, `scan.suggestionFolders` |
+| `app.json`, `branding/` | `core/band/band.ts`, `logo.ts` | `BandConfig`: name, color, logos, standard upload folder, `scan.excludedPaths`, `scan.suggestionFolders`. Logos: `storeLogo` (upload), `adoptLogo` (copy from the HiDrive, `features/settings/LogoFilePicker`), `readLogo` (typed blob for `<img>`) |
 | `members/` | `features/members/repository.ts` | |
 | `tags/`, `songs/<id>/meta.json`, `songs/<id>/notes/…` | `features/songs/repository.ts`, `library.ts`, `useSongNotes.ts` | meta is created lazily; field-level update with conflict check; voice notes = `<noteId>.m4a` next to the note JSON (`noteAudioPath`), recorded with `core/audio/recorder.ts`, played by `AudioNote.tsx` |
 | `songs/<id>/practice/<memberId>.json` | `features/songs/practice.ts` | tempo/pitch/loop per member and version |
@@ -124,6 +124,7 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 - Paths are `root/users/<name>/…` (the app uses absolute paths and converts in `HiDriveProvider`: `toApiPath` / `fromApiPath`); names in responses are URL-encoded.
 - `PUT`/`POST /file` address a file by `dir` + `name`, **never `path`** (400). Create-only = `POST` without `on_exist`. `POST /file/copy` for server-side copies. Share links: `POST /sharelink`.
 - `createFolder` creates ONE folder; `SafeStorage` creates missing parents, only inside its zones.
+- A blob from `GET /file` gets its type from the response header – don't rely on it being an image type (not verified on the real HiDrive which type it sends). Raster images show in `<img>` anyway, **SVG only with `image/svg+xml`** – read logos with `readLogo` (`core/band/logo.ts`), which sets the type from the extension. The memory provider keeps the type a file was created with, so the demo can hide this.
 - Not verified on the real HiDrive yet: `/file/copy`, share link as calendar subscription, ETag headers (spikes S1–S6 in `03-roadmap.md`).
 
 **Tests**

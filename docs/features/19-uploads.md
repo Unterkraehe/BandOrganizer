@@ -45,7 +45,7 @@ Content that lives only in the app (events, setlists, notes, chat) was already c
 | Song detail → Songtext (if a `.txt` is linked) | **"Bearbeiten"** (§5.7) |
 | Song detail → Songtext (if one exists) | "Andere Datei hochladen" (replaces the *link*, never the old file) |
 | Desktop | Drag & drop of files onto the song list (→ new song) or onto a song detail (→ version/lyrics, asks which) |
-| Settings → Band | Logo upload (design system §8) – uses the same upload module |
+| Settings → Band | Logo upload (design system §8) – uses the same upload module; or "Aus HiDrive wählen" (copies an existing SVG/PNG into `_BandApp/branding/`, v0.19.2) |
 
 ### 3.1 "Neuer Song" dialog
 

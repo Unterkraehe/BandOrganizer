@@ -18,6 +18,8 @@ export function createDemoProvider(extraSongs = demoSongCountFromUrl()): MemoryS
   provider.seed(`${DEMO_HOME}/Texte/Midnight Engine.txt`, MIDNIGHT_ENGINE);
   provider.seed(`${DEMO_HOME}/Texte/Open Road - Text.pdf`, makePdf('Open Road', OPEN_ROAD.split('\n')));
   provider.seed(`${DEMO_HOME}/Fotos/Proberaum.jpg`, 'demo photo');
+  // An existing logo for "Aus HiDrive wählen" – stored without image type, like HiDrive serves files
+  provider.seed(`${DEMO_HOME}/Fotos/Band-Logo.svg`, DEMO_LOGO);
   // Songs members have suggested (shown in their own "Vorschläge" section, v0.13.2) – reuse demo audio
   const audio = Object.values(createDemoSongs(short));
   provider.seed(`${DEMO_HOME}/Vorschläge/Tom/Velvet Horizon.wav`, audio[0]!, daysAgo(5));
@@ -26,6 +28,9 @@ export function createDemoProvider(extraSongs = demoSongCountFromUrl()): MemoryS
   seedManySongs(provider, extraSongs);
   return provider;
 }
+
+const DEMO_LOGO =
+  '<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60"><text x="0" y="46" font-family="Oswald, sans-serif" font-size="48" font-weight="700" fill="#ffffff">DEMO</text></svg>\n';
 
 /** `?demo-songs=300` fills the demo with many songs – for testing list performance with a realistic repertoire. */
 function demoSongCountFromUrl(): number {

@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it } from 'vitest';
 import { appRootFor, loadBand, setupBand, updateBand } from '@/core/band/band';
-import { detectLogoType, LogoFileError, storeLogo } from '@/core/band/logo';
+import { adoptLogo, detectLogoType, LogoFileError, readLogo, storeLogo } from '@/core/band/logo';
 import { ConflictError, MemoryStorageProvider, SafeStorage } from '@/core/storage';
 import { initials } from './model';
 import { createMember, listMembers, NameTakenError, setMemberActive, updateMember } from './repository';
@@ -50,6 +50,31 @@ describe('band setup (F1 §3)', () => {
     await expect(detectLogoType(new Blob([new Uint8Array(3 * 1024 * 1024)]))).rejects.toMatchObject({ reason: 'size' });
     const path = await storeLogo(storage, APP, 'dark', svg);
     expect(path).toMatch(/^\/users\/band\/_BandApp\/branding\/logo-dark-\d+\.svg$/);
+  });
+
+  it('finds the <svg> tag behind long editor headers', async () => {
+    const header = `<?xml version="1.0"?>\n<!-- Generator: Adobe Illustrator -->\n<!DOCTYPE svg [${'<!ENTITY x "y">'.repeat(200)}]>\n`;
+    await expect(detectLogoType(new Blob([`${header}<svg xmlns="http://www.w3.org/2000/svg"/>`]))).resolves.toBe('svg');
+    await expect(detectLogoType(new Blob([`${header}<svgx/>`]))).rejects.toBeInstanceOf(LogoFileError);
+  });
+
+  it('reads stored logos with their image type, even when the storage serves them untyped (HiDrive)', async () => {
+    provider.seed(`${APP}/branding/logo-dark-1.svg`, '<svg xmlns="http://www.w3.org/2000/svg"/>');
+    provider.seed(`${APP}/branding/logo-light-1.png`, new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+    expect((await readLogo(storage, `${APP}/branding/logo-dark-1.svg`)).type).toBe('image/svg+xml');
+    expect((await readLogo(storage, `${APP}/branding/logo-light-1.png`)).type).toBe('image/png');
+  });
+
+  it('adopts a logo from the HiDrive as a copy and leaves the original untouched', async () => {
+    const home = new SafeStorage(provider, { appRoot: APP, home: HOME });
+    provider.seed(`${HOME}/Fotos/Logo.svg`, '<svg xmlns="http://www.w3.org/2000/svg"/>');
+    const before = await home.stat(`${HOME}/Fotos/Logo.svg`);
+    const path = await adoptLogo(home, APP, 'light', `${HOME}/Fotos/Logo.svg`);
+    expect(path).toMatch(/^\/users\/band\/_BandApp\/branding\/logo-light-\d+\.svg$/);
+    expect(await home.readText(path)).toBe('<svg xmlns="http://www.w3.org/2000/svg"/>');
+    expect(await home.stat(`${HOME}/Fotos/Logo.svg`)).toEqual(before);
+    provider.seed(`${HOME}/Fotos/Kaputt.png`, 'not a png');
+    await expect(adoptLogo(home, APP, 'dark', `${HOME}/Fotos/Kaputt.png`)).rejects.toMatchObject({ reason: 'type' });
   });
 });
 
