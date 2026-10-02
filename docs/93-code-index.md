@@ -7,8 +7,36 @@
 
 | Path | Screen | Registered in |
 |---|---|---|
-| `/more` | MorePage | `src\app\routes.tsx` |
-| `/search` | SearchPage | `src\app\routes.tsx` |
+| `/` | StartPage | `src/features/start/index.ts` |
+| `/calendar` | CalendarPage | `src/features/calendar/index.ts` |
+| `/calendar/:eventId` | EventDetailPage | `src/features/calendar/index.ts` |
+| `/calendar/:eventId/:occurrence` | EventDetailPage | `src/features/calendar/index.ts` |
+| `/calendar/:eventId/:occurrence/edit` | EventFormPage | `src/features/calendar/index.ts` |
+| `/calendar/:eventId/edit` | EventFormPage | `src/features/calendar/index.ts` |
+| `/calendar/new` | EventFormPage | `src/features/calendar/index.ts` |
+| `/calendar/subscribe` | SubscriptionPage | `src/features/calendar/index.ts` |
+| `/chat` | ChatPage | `src/features/chat/index.ts` |
+| `/members` | MembersPage | `src/features/members/index.ts` |
+| `/members/:memberId` | MemberDetailPage | `src/features/members/index.ts` |
+| `/more` | MorePage | `src/app/routes.tsx` |
+| `/player` | PlayerPage | `src/features/songs/index.ts` |
+| `/profile` | ProfilePage | `src/features/settings/index.ts` |
+| `/search` | SearchPage | `src/app/routes.tsx` |
+| `/setlists` | SetlistsPage | `src/features/setlists/index.ts` |
+| `/setlists/:setlistId` | SetlistDetailPage | `src/features/setlists/index.ts` |
+| `/setlists/:setlistId/edit` | SetlistEditorPage | `src/features/setlists/index.ts` |
+| `/setlists/:setlistId/print` | PrintPage | `src/features/setlists/index.ts` |
+| `/setlists/:setlistId/stage` | StagePage | `src/features/setlists/index.ts` |
+| `/settings` | SettingsPage | `src/features/settings/index.ts` |
+| `/settings/band` | BandSettingsPage | `src/features/settings/index.ts` |
+| `/settings/tags` | TagsSettingsPage | `src/features/songs/index.ts` |
+| `/songs` | SongsPage | `src/features/songs/index.ts` |
+| `/songs/:songId` | SongDetailPage | `src/features/songs/index.ts` |
+| `/songs/:songId/edit` | SongEditPage | `src/features/songs/index.ts` |
+| `/songs/:songId/lyrics` | LyricsEditorPage | `src/features/songs/index.ts` |
+| `/songs/:songId/merge` | MergePage | `src/features/songs/index.ts` |
+| `/songs/:songId/practice` | PracticeRedirect | `src/features/songs/index.ts` |
+| `/songs/new` | NewSongPage | `src/features/songs/index.ts` |
 
 ## Texts (German, `src/locales/de/<namespace>.json`)
 
@@ -24,7 +52,7 @@
 | `main.tsx` | App entry: blocks pinch-zoom gestures and mounts <App /> (the service worker is registered in core/pwa/usePwa). |  |
 | `vite-env.d.ts` | Type declarations for Vite (import.meta.env, ?url imports, CSS modules). |  |
 
-### `src\app`
+### `src/app`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -36,12 +64,12 @@
 
 Tests: App.test.tsx (6), release.test.ts (2)
 
-### `src\app\flows`
+### `src/app/flows`
 
 
 Tests: calendar.test.tsx (6), chat.test.tsx (3), player.test.tsx (3), search.test.tsx (2), setlists.test.tsx (2), songs.test.tsx (12), touch.test.tsx (6), uploads-lyrics.test.tsx (6)
 
-### `src\app\gate`
+### `src/app/gate`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -51,20 +79,20 @@ Tests: calendar.test.tsx (6), chat.test.tsx (3), player.test.tsx (3), search.tes
 | `StatusScreens.tsx` | Full-screen loading and error screens shown while the session starts. | LoadingScreen, ConnectionErrorScreen |
 | `WelcomeScreen.tsx` | First screen without a connection: "Mit HiDrive verbinden" or demo mode. | WelcomeScreen |
 
-### `src\app\notify`
+### `src/app/notify`
 
 | File | Purpose | Exports |
 |---|---|---|
 | `NotifyProvider.tsx` | Short confirmation toasts with optional undo (R-UX-04). | NotifyProvider, useNotify |
 
-### `src\core`
+### `src/core`
 
 | File | Purpose | Exports |
 |---|---|---|
 | `events.ts` | App-wide system events (F6 §4.2): stores announce important changes, the chat turns them into small info lines. | emitSystemEvent, onSystemEvent · types: ItemRef, SystemEvent |
 | `resume.ts` | "The app is back": fires when the app returns after a while in the background (v0.12.3). | onAppResume, triggerAppResume |
 
-### `src\core\audio`
+### `src/core/audio`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -75,7 +103,7 @@ Tests: calendar.test.tsx (6), chat.test.tsx (3), player.test.tsx (3), search.tes
 
 Tests: engine.test.ts (5)
 
-### `src\core\auth`
+### `src/core/auth`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -84,14 +112,14 @@ Tests: engine.test.ts (5)
 
 Tests: tokens.test.ts (4)
 
-### `src\core\band`
+### `src/core/band`
 
 | File | Purpose | Exports |
 |---|---|---|
 | `band.ts` | Songs whose files all lie in a folder with this name (anywhere in the path) count as suggestions. | DEFAULT_SUGGESTION_FOLDERS, BAND_SCHEMA_VERSION, SETUP_ACTOR, appRootFor, loadBand, setupBand, updateBand, sanitizeFolderName · types: BandConfig, Versioned, BandSetupInput |
 | `logo.ts` | Band logo upload (design system §8). | LOGO_MAX_BYTES, LogoFileError, isLogoFileName, detectLogoType, storeLogo, adoptLogo, readLogo · types: LogoVariant |
 
-### `src\core\color`
+### `src/core/color`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -100,7 +128,7 @@ Tests: tokens.test.ts (4)
 
 Tests: color.test.ts (4)
 
-### `src\core\data`
+### `src/core/data`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -110,13 +138,13 @@ Tests: color.test.ts (4)
 
 Tests: data.test.ts (5)
 
-### `src\core\features`
+### `src/core/features`
 
 | File | Purpose | Exports |
 |---|---|---|
 | `registry.ts` | Feature registry (R-CODE-02, F3 §6.1). | sortFeatures · types: FeatureRegistration |
 
-### `src\core\files`
+### `src/core/files`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -124,7 +152,7 @@ Tests: data.test.ts (5)
 
 Tests: scan.test.ts (3)
 
-### `src\core\i18n`
+### `src/core/i18n`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -133,7 +161,7 @@ Tests: scan.test.ts (3)
 
 Tests: format.test.ts (4)
 
-### `src\core\lyrics`
+### `src/core/lyrics`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -141,7 +169,7 @@ Tests: format.test.ts (4)
 
 Tests: lyrics.test.ts (3)
 
-### `src\core\pwa`
+### `src/core/pwa`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -149,7 +177,7 @@ Tests: lyrics.test.ts (3)
 
 Tests: usePwa.test.ts (4)
 
-### `src\core\search`
+### `src/core/search`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -157,7 +185,7 @@ Tests: usePwa.test.ts (4)
 
 Tests: normalize.test.ts (3)
 
-### `src\core\session`
+### `src/core/session`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -165,7 +193,7 @@ Tests: normalize.test.ts (3)
 | `demo.ts` | Demo mode: an in-memory HiDrive with generated songs and a few other "existing band files", so the app can be tried without an account. | DEMO_HOME, createDemoProvider, withDemoLatency |
 | `demoAudio.ts` | Generated demo songs (no copyrighted material): short instrumental loops rendered as WAV, so the player and the iPhone lock-screen test (spike S3) … | createDemoSongs |
 
-### `src\core\storage`
+### `src/core/storage`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -177,7 +205,7 @@ Tests: normalize.test.ts (3)
 
 Tests: guard.test.ts (15), paths.test.ts (4)
 
-### `src\core\storage\hidrive`
+### `src/core/storage/hidrive`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -185,7 +213,7 @@ Tests: guard.test.ts (15), paths.test.ts (4)
 
 Tests: HiDriveProvider.test.ts (11)
 
-### `src\core\theme`
+### `src/core/theme`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -195,7 +223,7 @@ Tests: HiDriveProvider.test.ts (11)
 
 Tests: theme.test.ts (2)
 
-### `src\core\uploads`
+### `src/core/uploads`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -205,13 +233,13 @@ Tests: theme.test.ts (2)
 
 Tests: uploads.test.ts (4)
 
-### `src\features`
+### `src/features`
 
 | File | Purpose | Exports |
 |---|---|---|
 | `index.ts` | All registered features. | features |
 
-### `src\features\calendar`
+### `src/features/calendar`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -238,7 +266,7 @@ Tests: uploads.test.ts (4)
 
 Tests: recurrence.test.ts (6), store.test.ts (10)
 
-### `src\features\chat`
+### `src/features/chat`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -257,7 +285,7 @@ Tests: recurrence.test.ts (6), store.test.ts (10)
 
 Tests: chat.test.ts (4)
 
-### `src\features\members`
+### `src/features/members`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -269,13 +297,13 @@ Tests: chat.test.ts (4)
 
 Tests: members.test.ts (11)
 
-### `src\features\more`
+### `src/features/more`
 
 | File | Purpose | Exports |
 |---|---|---|
 | `MorePage.tsx` | "Mehr" (phone only, F3 §4.2): the navigation items that don't fit in the bottom bar. | MorePage |
 
-### `src\features\notifications`
+### `src/features/notifications`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -291,14 +319,14 @@ Tests: members.test.ts (11)
 
 Tests: ReminderProvider.test.tsx (1), notifications.test.ts (3), reminders.test.ts (8)
 
-### `src\features\profile`
+### `src/features/profile`
 
 | File | Purpose | Exports |
 |---|---|---|
 | `ProfileForm.tsx` | Create/edit a member profile (F2 §4.2). | ProfileForm |
 | `ProfilePage.tsx` | Edit own profile (F2 §4.3). | ProfilePage |
 
-### `src\features\search`
+### `src/features/search`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -317,7 +345,7 @@ Tests: ReminderProvider.test.tsx (1), notifications.test.ts (3), reminders.test.
 
 Tests: search.test.ts (4)
 
-### `src\features\setlists`
+### `src/features/setlists`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -346,7 +374,7 @@ Tests: search.test.ts (4)
 
 Tests: PrintSheet.test.tsx (2), setlists.test.ts (5)
 
-### `src\features\settings`
+### `src/features/settings`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -355,7 +383,7 @@ Tests: PrintSheet.test.tsx (2), setlists.test.ts (5)
 | `SettingsPage.tsx` | Settings (F3 §4.3). | SettingsPage |
 | `index.ts` | Feature registration (settingsFeature): settings, band settings and profile routes. | settingsFeature |
 
-### `src\features\songs`
+### `src/features/songs`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -382,7 +410,7 @@ Tests: PrintSheet.test.tsx (2), setlists.test.ts (5)
 
 Tests: songs.test.ts (16)
 
-### `src\features\songs\lyrics`
+### `src/features/songs/lyrics`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -394,13 +422,13 @@ Tests: songs.test.ts (16)
 | `PdfView.tsx` | Renders all pages of a PDF, fit to width, zoomable (F4 §6.3). | PdfView |
 | `useLyrics.ts` | Loads the linked lyrics of a song (F4 §6.3). | useLyrics |
 
-### `src\features\songs\player`
+### `src/features/songs/player`
 
 | File | Purpose | Exports |
 |---|---|---|
 | `PlayerPage.tsx` | The player (F9, v0.16.0): one full-screen view for listening and practising – it grows out of the mini player and closes back into it. | PlayerPage, PracticeRedirect |
 
-### `src\features\songs\practice`
+### `src/features/songs/practice`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -409,7 +437,7 @@ Tests: songs.test.ts (16)
 
 Tests: practice.test.ts (1)
 
-### `src\features\songs\uploads`
+### `src/features/songs/uploads`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -424,14 +452,14 @@ Tests: practice.test.ts (1)
 | `useUploadActions.ts` | Upload helpers (F10): create-only, unique names, background queue. | lastFolder, useUploadActions |
 | `useUploadContext.ts` | Everything the folder field/picker needs + the pre-selected folders (F10 §4.1). | useUploadContext |
 
-### `src\features\start`
+### `src/features/start`
 
 | File | Purpose | Exports |
 |---|---|---|
 | `StartPage.tsx` | Start screen (F3 §4.1). | StartPage |
 | `index.ts` | Feature registration (startFeature): the start screen at "/". | startFeature |
 
-### `src\test`
+### `src/test`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -439,13 +467,13 @@ Tests: practice.test.ts (1)
 | `pwaRegisterMock.ts` | Test stand-in for the service worker registration (virtual:pwa-register). | useRegisterSW |
 | `setup.ts` | Global test setup: jest-dom matchers and jsdom stand-ins (matchMedia, audio play/pause, URL.createObjectURL, scrolling). |  |
 
-### `src\types`
+### `src/types`
 
 | File | Purpose | Exports |
 |---|---|---|
 | `http_ece.d.ts` | Type stub for the http_ece test dependency (decrypts push messages in worker tests). |  |
 
-### `src\ui`
+### `src/ui`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -453,7 +481,7 @@ Tests: practice.test.ts (1)
 | `swipe.ts` | True if the element (or a parent) scrolls horizontally or should own horizontal gestures. | ownsHorizontalGestures, useSwipe · types: SwipeOptions |
 | `useMediaQuery.ts` | Tablet and desktop (design system breakpoints, R-UI-02) | useMediaQuery, useIsWide |
 
-### `src\ui\components`
+### `src/ui/components`
 
 | File | Purpose | Exports |
 |---|---|---|
@@ -476,7 +504,7 @@ Tests: practice.test.ts (1)
 | `Toast.tsx` | Floating message at the bottom (above the bottom bar on phones). | Toast |
 | `VirtualList.tsx` | List of rows that only renders the rows around the viewport, scrolling with the page (window). | VirtualList |
 
-### `src\ui\layout`
+### `src/ui/layout`
 
 | File | Purpose | Exports |
 |---|---|---|
