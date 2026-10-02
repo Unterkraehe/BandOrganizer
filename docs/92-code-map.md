@@ -150,6 +150,7 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 - `<ScrollRestoration>` also scrolls to the top on every `setSearchParams` / `navigate` that only changes the query (each is a new location). Selections kept in the URL (calendar month/day) pass `{ replace: true, preventScrollReset: true }`.
 - Breakpoints (R-UI-02) in code: `useIsWide()` (≥ 768 px) and `useIsDesktop()` (≥ 1200 px) from `ui/useMediaQuery`. `Page wide` widens content **and** top bar to 1200 px (from 1024 px).
 - `usePwaUpdate()` registers the service worker – call it only in `UpdateToast`; elsewhere use `checkForUpdate()` / `applyUpdate()` (`core/pwa/usePwa.ts`).
+- The update toast only offers a service worker that answers `GET_VERSION` with a newer version (`sw-version-<version>.js`, generated in `vite.config.ts`); the app shell is precached as `index.html?v=<version>`. Both guard against the CDN serving old and new files for ~10 min after a deploy (F3 §6.4, v0.19.4).
 - `usePlayer()` in a list screen = full re-render ~4×/s while music plays (see §5).
 
 ## 8. Open items (as of v0.19.1)

@@ -1,4 +1,7 @@
 {
+  "0.19.4": [
+    "Updates: Direkt nach einer neuen Version konnte „Aktualisieren“ in einer Schleife hängen – die Meldung kam nach jedem Neuladen wieder. Die App bietet jetzt nur noch Versionen an, die wirklich neuer sind."
+  ],
   "0.19.3": [
     "Kalender am Computer: Ein Klick auf einen Tag springt nicht mehr nach oben. Die Termine des Tages stehen jetzt direkt neben dem Monat. Auf Tablets öffnen sie sich wie am Handy in einem Fenster.",
     "Lange Terminnamen bleiben in der Monatsansicht in ihrem Tag, statt in den nächsten Tag zu ragen."

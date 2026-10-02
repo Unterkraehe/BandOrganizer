@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { applyUpdate, type UpdateDeps } from './usePwa';
+import { applyUpdate, askVersion, isNewerVersion, type UpdateDeps } from './usePwa';
 
 /** "Aktualisieren" must always end in a reload (v0.14.2). */
 class FakeWorker extends EventTarget {
@@ -70,5 +70,30 @@ describe('applying an update', () => {
     await vi.advanceTimersByTimeAsync(3000);
     await Promise.all([first, second]);
     expect(reload).toHaveBeenCalledTimes(1);
+  });
+});
+
+/** Only a newer waiting version is offered (v0.19.4): right after a deploy the CDN may hand out the old one. */
+describe('offering an update', () => {
+  it('compares versions number by number', () => {
+    expect(isNewerVersion('0.19.4', '0.19.3')).toBe(true);
+    expect(isNewerVersion('0.19.10', '0.19.9')).toBe(true);
+    expect(isNewerVersion('1.0.0', '0.19.9')).toBe(true);
+    expect(isNewerVersion('0.19.3', '0.19.3')).toBe(false);
+    expect(isNewerVersion('0.19.2', '0.19.3')).toBe(false);
+  });
+
+  it('asks the waiting service worker for its version', async () => {
+    const worker = {
+      postMessage: (message: { type: string }, ports: MessagePort[]) => {
+        if (message.type === 'GET_VERSION') ports[0]!.postMessage({ version: '0.19.4' });
+      },
+    } as unknown as ServiceWorker;
+    expect(await askVersion(worker)).toBe('0.19.4');
+  });
+
+  it('treats a service worker without an answer (built before v0.19.4) as unknown', async () => {
+    const silent = { postMessage: () => {} } as unknown as ServiceWorker;
+    expect(await askVersion(silent, 50)).toBeNull();
   });
 });
