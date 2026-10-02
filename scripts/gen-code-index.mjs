@@ -8,16 +8,19 @@
 //
 // `npm run check` regenerates it automatically.
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { basename, dirname, extname, join, relative } from 'node:path';
+import { basename, dirname, extname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { pkg, ROOT } from './lib.mjs';
 
 const OUT = 'docs/93-code-index.md';
 
+/** Forward slashes on every OS – Windows paths (`src\app`) broke the route search and the output. */
+const posix = (path) => path.split(sep).join('/');
+
 function walk(dir) {
   const out = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const path = join(dir, entry.name);
+    const path = posix(join(dir, entry.name));
     if (entry.isDirectory()) out.push(...walk(path));
     else out.push(path);
   }
@@ -80,17 +83,17 @@ function exportsOf(text) {
 
 function routes() {
   const rows = [];
-  const files = walk(join(ROOT, 'src/features')).filter((f) => /\/index\.ts$/.test(f)).concat(join(ROOT, 'src/app/routes.tsx'));
+  const files = walk(join(ROOT, 'src/features')).filter((f) => /\/index\.ts$/.test(f)).concat(posix(join(ROOT, 'src/app/routes.tsx')));
   for (const file of files) {
     const text = readFileSync(file, 'utf8');
-    const rel = relative(ROOT, file);
+    const rel = posix(relative(ROOT, file));
     for (const m of text.matchAll(/path:\s*'(\/[^']*)'[^}]*?createElement\((\w+)\)/g)) rows.push([m[1], m[2], rel]);
     for (const m of text.matchAll(/path:\s*'(\/[^']*)'[^\n]*element:\s*<(\w+)/g)) rows.push([m[1], m[2], rel]);
   }
   const seen = new Set();
   return rows
     .filter(([p, c]) => !seen.has(`${p}|${c}`) && seen.add(`${p}|${c}`))
-    .sort((a, b) => a[0].localeCompare(b[0], 'en'));
+    .sort((a, b) => a[0].localeCompare(b[0], 'en') || a[1].localeCompare(b[1], 'en')); // same order whatever the file system lists first
 }
 
 function namespaces() {
@@ -106,7 +109,7 @@ function build() {
   const files = walk(join(ROOT, 'src')).filter((f) => /\.tsx?$/.test(f));
   const byDir = new Map();
   for (const file of files) {
-    const dir = relative(ROOT, dirname(file));
+    const dir = posix(relative(ROOT, dirname(file)));
     if (!byDir.has(dir)) byDir.set(dir, { sources: [], tests: [] });
     (isTest(file) ? byDir.get(dir).tests : byDir.get(dir).sources).push(file);
   }
@@ -159,7 +162,8 @@ export function generateIndex({ write = true } = {}) {
   } catch {
     // first run
   }
-  if (current === next) return `${OUT} up to date`;
+  // a Windows checkout may have CRLF line endings – same content, not stale
+  if (current.replace(/\r\n/g, '\n') === next) return `${OUT} up to date`;
   if (write) writeFileSync(join(ROOT, OUT), next);
   return write ? `${OUT} updated` : `${OUT} is STALE – run npm run map`;
 }
