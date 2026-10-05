@@ -3,11 +3,13 @@
 | | |
 |---|---|
 | **ID** | F13 (first step of future plan L3 "other cloud providers") |
-| **Status** | Planned (2026-10-05) – milestone M12, after spike S7 and prerequisites P5/P6 |
+| **Status** | Option, on hold until the band decides: second band on a second HiDrive (no new provider needed) or on OneDrive (2026-10-05). If OneDrive: milestone M12, after spike S7 and prerequisites P5/P6 |
 | **Depends on** | F1 (storage provider interface, guard, token helper), F12 (several bands) |
 | **Used by** | The second band |
 
 ## 1. Goal & Positioning
+
+> **Not decided yet:** the second band may also use a second **HiDrive** account – then this feature isn't needed and F12 alone is enough. The maintainer settles it with the band first; this file is the worked-out plan in case they choose OneDrive.
 
 A second band uses the app with **OneDrive** instead of HiDrive. It has no cloud yet; the free 5 GB of a Microsoft account are enough for its music (maintainer, 2026-10-05).
 
@@ -100,7 +102,7 @@ None – search works on app data, independent of the provider.
 
 | Date | Decision |
 |---|---|
-| 2026-10-05 | Second band's storage: OneDrive with a band-only Microsoft account, shared login (maintainer). |
+| 2026-10-05 | If the second band doesn't use HiDrive: OneDrive with a band-only Microsoft account, shared login. Final choice (HiDrive or OneDrive) is the band's (maintainer). |
 | 2026-10-05 | Login through the token helper (Web registration, 90-day rolling refresh), not browser-only (24 h). |
 
 ## 12. Steps (each a release)

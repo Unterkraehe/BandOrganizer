@@ -5,11 +5,11 @@
 | **ID** | F12 (was future plan L2) |
 | **Status** | Planned (2026-10-05) – milestone M11 |
 | **Depends on** | F1 (session, login, token helper), F2 (profiles), F3 (shell), F11 (device data per band) |
-| **Used by** | F13 OneDrive (the second band's storage) |
+| **Used by** | F13 OneDrive (only if the second band chooses OneDrive) |
 
 ## 1. Goal & Positioning
 
-One installed app for several bands. A second band is starting to use the app, with its own members and its own cloud storage (F13: OneDrive). Some people – like the maintainer – play in both and switch between them on one phone; most members only ever see their one band.
+One installed app for several bands. A second band is starting to use the app, with its own members and its own cloud storage – a second HiDrive account or OneDrive (F13), still to be decided by the band. This feature works with HiDrive alone. Some people – like the maintainer – play in both and switch between them on one phone; most members only ever see their one band.
 
 Each band stays completely separate: own storage account, own members, own name/color/logo, own data. Nothing is shared between bands.
 
@@ -28,7 +28,7 @@ Each band stays completely separate: own storage account, own members, own name/
 - **Band switcher:** tapping the band logo/name on the start screen (phone) or in the sidebar header (desktop) opens a sheet "Band wechseln": one row per band on this device (logo, name, "als Lisa"), the active one checked, at the bottom "Band hinzufügen". Shown only when the device has more than one band; with one band the logo does nothing (as today) and "Band hinzufügen" lives in the settings.
 - **Switching:** short transition in the new band's color, then the new band's start screen (R-UX-09: motion explains where you are). Playback stops – no music of band A while looking at band B.
 - **Einstellungen → "Bands"** (`/settings/bands`): list of the bands on this device, "Band hinzufügen", per band "Von diesem Gerät entfernen" (confirm; data on the cloud stays untouched).
-- **"Band hinzufügen":** the existing first-start flow – choose storage (HiDrive / OneDrive, F13) → login → band setup or join → profile. "Abbrechen" returns to the previous band.
+- **"Band hinzufügen":** the existing first-start flow – choose storage (only once a second provider exists, F13; with HiDrive only this step is skipped) → login → band setup or join → profile. "Abbrechen" returns to the previous band.
 - Navigation map (F3 §4.5): switcher sheet from Start; Einstellungen → Bands.
 
 ## 4. Behaviour & Rules
