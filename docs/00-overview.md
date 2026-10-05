@@ -258,6 +258,7 @@ This list grows with the feature plans. Consistent wording is a rule (R-I18N-05)
 | 2026-09-28 | Token helper deployed at `bandorganizer-auth.ostworkers.workers.dev` | Cloudflare subdomain `ostworkers` |
 | 2026-09-24 | App name: "Overload App" | May change later, kept in config only |
 | 2026-09-24 | Target band size: 3–12 members | Drives UI for member lists, chat, availability |
+| 2026-10-05 | Rule R-CODE-13: every change is made on a branch; merged into `main` only when the maintainer says so | A push to `main` deploys to the band right away; branches keep unfinished or unreviewed work away from the live app |
 
 ## 11. Open Questions (project-wide)
 

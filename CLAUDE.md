@@ -15,6 +15,7 @@ Band PWA ("Overload App") on top of HiDrive. UI language **German**, code/commen
 - Every control answers at once (R-UX-10): pressed state on touch, then the result or visible progress right away, success or failure confirmed – never a tap that seems to do nothing.
 - Phones never scroll sideways (R-UI-14): nothing may be wider than a 360 px screen; check UI changes with `scripts/qa/overflow-check.py`.
 - Never commit secrets (R-CODE-04): HiDrive client secret and VAPID private key live only in the Cloudflare worker. Don't read, print or ask for `.env*` / `.dev.vars`.
+- Work on a branch, never commit directly on `main`; merge into `main` only when the maintainer says so (R-CODE-13) – a push to `main` deploys.
 - `src/config.ts` holds the band's HiDrive client ID – don't change it unless asked.
 - Don't change appearance or behaviour when the task is only structure/docs/tooling. If in doubt, compare the build output before/after (content hashes of `dist/`).
 
@@ -23,7 +24,7 @@ Band PWA ("Overload App") on top of HiDrive. UI language **German**, code/commen
 2. While working: `npm run check -- --quick` (types + lint + index, seconds) and `npm run check -- flows/<feature> --no-build` (only that feature's flow tests).
 3. Before committing: `npm run check` (types, lint, index, all tests, build = what CI does).
 4. App change → bump `version` in `package.json` and add the German entry as the **first** key in `src/locales/de/whatsNew.json` (a test enforces it); update the feature file / roadmap; structure change → update `docs/92-code-map.md` (R-CODE-12). Docs/tooling-only change → no version bump. `/release` does the routine, `/doc-sync` checks docs against your diff.
-5. Commit on a branch, English message referencing the feature ID (`F4: add song list sorting`). **A push to `main` deploys to GitHub Pages** – push only when asked; prefer a branch + pull request (CI runs lint, tests and build on pull requests).
+5. Commit on a branch (R-CODE-13), English message referencing the feature ID (`F4: add song list sorting`). **A push to `main` deploys to GitHub Pages** – merge into `main` only when asked; push only when asked; prefer a pull request (CI runs lint, tests and build on pull requests).
 
 ## What you can't test here (say so in your summary, list what the band should try)
 Real HiDrive (login only works on the deployed site: redirect URI + worker `ALLOWED_ORIGINS`), real phones (iOS audio on the lock screen, keyboard behaviour, push delivery, install as PWA). The open device tests are in `docs/94-device-test-checklist.md`. Demo mode (`?demo-songs=300`, `?demo-latency=250`) and `scripts/qa/` cover everything else.
