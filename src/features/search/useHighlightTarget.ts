@@ -12,12 +12,13 @@ export function flashElement(el: Element | null) {
   return true;
 }
 
-export function useHighlightElement(id: string | null, ready: boolean) {
+/** `again` (e.g. the location key): highlight once more when it changes, even for the same element. */
+export function useHighlightElement(id: string | null, ready: boolean, again?: string) {
   useEffect(() => {
     if (!id || !ready) return;
     const timer = setTimeout(() => flashElement(document.getElementById(id)), 150);
     return () => clearTimeout(timer);
-  }, [id, ready]);
+  }, [id, ready, again]);
 }
 
 /** Finds the element inside `root` whose text contains `text` (lyrics line) and highlights it. */

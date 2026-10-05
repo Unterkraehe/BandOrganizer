@@ -5,6 +5,8 @@
 | **ID** | F6 |
 | **Status** | Implemented (v0.9.0); push notifications since v0.13.0 (§4.6); reminders before events since v0.14.0 (§4.7) |
 
+> **v0.19.6:** the jump also happens when the chat is opened from a notification (`chat?message=<id>`) whose message is not loaded yet – the cached messages show first and the push is faster than polling, so the page used to stay at the top. It happens on every arrival (each navigation, also a tapped notification while the chat is already open); only a linked message that is already there is scrolled to directly.
+>
 > **v0.13.5:** opening the chat jumps to the "Neue Nachrichten" divider, or to the newest message when nothing is unread. The jump runs one animation frame after mounting, because React Router's `<ScrollRestoration>` (root route) resets the page to the top after the page's own layout effects.
 >
 > **v0.11.0:** the input bar is `position: fixed` above the bottom bar / mini player / keyboard and never scrolls away; the list keeps room for it (spacer). Your own message always jumps into view; incoming messages follow only when you are near the bottom.
