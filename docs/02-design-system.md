@@ -175,7 +175,7 @@ Built once in `src/ui/`, documented with examples in both themes:
   - "Logo für hellen Hintergrund" (optional) – used in light theme and print
   - If only one variant exists, the app shows the band name as text where the logo wouldn't be readable.
 - Upload preview on light and dark background before saving.
-- Shown in: sidebar header (desktop), start screen header, welcome/login screens, setlist print header, installable app splash (where the platform allows).
+- Shown in: sidebar header (desktop), start screen header (centred above the left-aligned date and greeting, v0.19.8), welcome/login screens, setlist print header, installable app splash (where the platform allows).
 - Stored as app-created files in `_BandApp/branding/` (e.g. `logo-dark.svg`, `logo-light.png`); replacing a logo creates a new file, the old one is kept (R-DATA-05).
 - **"Aus HiDrive wählen"** (v0.19.2): a picker shows the folders of the home (without `_BandApp` and hidden folders) and their SVG/PNG files; the chosen image is previewed on the variant's background, then **copied** into `_BandApp/branding/` (same type/size check as an upload). The original is only read, never changed, and the logo keeps working if someone later moves or renames it.
 - **App icon** (home screen) stays the app's own neutral icon in v1; band-specific app icons would require per-band builds (future plans).
