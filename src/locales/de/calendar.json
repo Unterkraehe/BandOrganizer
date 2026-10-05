@@ -190,7 +190,7 @@
     "iphone": "iPhone / iPad",
     "iphoneSteps": "„In Kalender-App öffnen“ tippen und „Abonnieren“ bestätigen. Oder: Einstellungen → Kalender → Accounts → Account hinzufügen → Andere → Kalenderabo hinzufügen → Link einfügen.",
     "android": "Android / Google Kalender",
-    "androidSteps": "Google Kalender im Browser am Computer öffnen (calendar.google.com) → links „Weitere Kalender“ → „+“ → „Per URL“ → Link einfügen. Danach erscheint das Abo auch in der Kalender-App auf dem Handy.",
+    "androidSteps": "Google Kalender im Browser am Computer öffnen (calendar.google.com) → links „Weitere Kalender“ → „+“ → „Per URL“ → Link einfügen. Auf dem Handy dann einmal einschalten: Google-Kalender-App → Menü ☰ → Einstellungen → Band-Kalender antippen (evtl. erst „Mehr anzeigen“) → „Synchronisieren“ an. Sonst bleibt er auf dem Handy leer.",
     "outlook": "Outlook",
     "outlookSteps": "Kalender → „Kalender hinzufügen“ → „Aus dem Internet abonnieren“ → Link einfügen.",
     "failed": "Das hat nicht geklappt. Bitte prüfe deine Verbindung.",
