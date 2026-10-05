@@ -197,5 +197,5 @@ Willkommen ─► Mit HiDrive verbinden ─► [Band einrichten]* ─► Wer bis
 - Roles and permissions
 - Profile photos
 - Optional PIN (field reserved in the data model)
-- Per-member notification settings (with push notifications, see future plans)
+- ~~Per-member notification settings~~ – built: notification kinds per device (v0.13.0, F6 §4.6), reminders per member (v0.14.0, F6 §4.7)
 - "Zuletzt aktiv" / online status

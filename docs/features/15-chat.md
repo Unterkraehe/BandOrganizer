@@ -189,7 +189,7 @@ Message text, author, date, context item ("Nachrichten zum Stadtfest"). Deleted 
 
 ## 10. Out of Scope / Later
 
-- Push notifications (future plans)
+- ~~Push notifications~~ – built in v0.13.0 (§4.6); still later: muting the chat
 - Photos, files, voice messages (stay in WhatsApp)
 - Several channels
 - Read receipts per member ("gelesen von …")

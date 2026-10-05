@@ -1,7 +1,7 @@
 # Device test checklist
 
-> Things automated tests and the demo mode cannot prove: real HiDrive, real phones, real band use. Tick them off in the band test phase
-> (`03-roadmap.md` M9); put findings into the roadmap or a GitHub issue. Spike names (S1–S6) are explained in `00-overview.md` §12.
+> Things automated tests and the demo mode cannot prove: real HiDrive, real phones, real band use. Tick them off when tried on a real device
+> (none confirmed here yet); put findings into the roadmap or a GitHub issue. Spike names (S1–S6) are explained in `00-overview.md` §12.
 
 ## A. Real HiDrive (one person, any device)
 
@@ -36,7 +36,9 @@
 - [ ] **Voice notes (v0.19.0):** record a voice note on an iPhone and on an Android phone (the microphone prompt appears once), listen before saving, save; the other phone plays both (MP4/AAC from both – if an Android phone records WebM, note the browser version: older iPhones can't play it). A song that plays pauses while recording and while a voice note plays. Denying the microphone shows the explanation.
 - [ ] **Back after a long time:** leave the app in the background for an hour (or overnight), open it → new chat messages / events appear without a manual reload.
 
-## C. Band test phase (1–2 weeks, decides 1.0.0)
+## C. Band test phase (done)
+
+> 2026-10-05: the band tested the release candidate and found it good → 1.0.0 released. The plan below stays as the routine for testing bigger changes.
 
 1. Everyone installs the app, creates a profile, switches on the calendar subscription and notifications.
 2. Enter the next rehearsals and the next gig; everybody answers.

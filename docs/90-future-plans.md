@@ -43,11 +43,11 @@
 - Equipment / backline list and "who brings what"
 - Contacts: venues, organizers, sound engineers
 - Tasks / to-do list for the band
-- Upload new song ideas/voice memos from the phone
+- Upload new song ideas/voice memos from the phone – partly done: uploading files from the phone (F10, v0.5.0), voice notes on a song (v0.19.0). Still open: recording a new idea that becomes its own song
 - Chord sheets and more song attachments (tabs, sheet music PDFs) via F10 uploads
 - Setlist print/stage view: optional key, tuning and duration per song
 - More lyrics formats (.doc, .odt, .rtf, .pages, photos with OCR) via the pluggable renderers from F4
-- Calendar export (ICS) for personal calendars
+- Calendar export (ICS) for personal calendars – ✅ done: single export (F5, M5) and band calendar subscription (v0.12.0, via the token helper since v0.19.1)
 - Additional UI languages (e.g. English)
 - Band-specific app icon on the home screen (needs per-band manifest/icon generation)
 - Profile photos and optional profile PIN (F2 keeps the data model ready)

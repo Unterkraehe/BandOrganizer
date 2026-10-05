@@ -3,7 +3,7 @@
 A Progressive Web App for band organization: songs, lyrics, notes, practice tools, calendar, setlists and a band chat – all stored on the band's own HiDrive.
 
 - **Live:** https://unterkraehe.github.io/BandOrganizer/
-- **Status:** v0.13.4 – release candidate for 1.0 (all planned features built; the band test phase decides 1.0.0). See [`docs/03-roadmap.md`](docs/03-roadmap.md).
+- **Status:** v1.0.0 released (2026-10-05) – all planned features built; open device tests in [`docs/94-device-test-checklist.md`](docs/94-device-test-checklist.md), plans after 1.0 in [`docs/90-future-plans.md`](docs/90-future-plans.md). See [`docs/03-roadmap.md`](docs/03-roadmap.md).
 - **UI language:** German. Code, comments and docs: English.
 
 ## Documentation
@@ -20,7 +20,7 @@ Everything is planned in `docs/` – read these before changing anything:
 | [`docs/90-future-plans.md`](docs/90-future-plans.md) | Ideas after v1 |
 | [`docs/92-code-map.md`](docs/92-code-map.md) | **Code map** – layers, data layout, shared mechanisms, recipes, gotchas (start here to change code) |
 | [`docs/93-code-index.md`](docs/93-code-index.md) | Generated index of every source file, route, text namespace and test |
-| [`docs/94-device-test-checklist.md`](docs/94-device-test-checklist.md) | Open tests that need real HiDrive / real phones, and the band test phase |
+| [`docs/94-device-test-checklist.md`](docs/94-device-test-checklist.md) | Open tests that need real HiDrive / real phones |
 | [`CLAUDE.md`](CLAUDE.md) | Short instructions for Claude / developers (reading order, workflow) |
 
 The most important rule: **the app never modifies or deletes files it did not create.** All writes go through the safety guard in `src/core/storage/guard.ts` (R-DATA-04).

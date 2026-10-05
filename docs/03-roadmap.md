@@ -41,9 +41,9 @@ M0 can start **before** the HiDrive registration is approved.
 
 | # | Task | Needed for |
 |---|---|---|
-| P1 | HiDrive developer registration: type "server", redirect `https://unterkraehe.github.io/BandOrganizer/callback.html` (can take up to 72 h) | M1 |
-| P2 | GitHub repository `Unterkraehe/BandOrganizer` (public), Pages enabled via GitHub Actions | M0 |
-| P3 | Free Cloudflare account | M1 |
+| P1 ✅ | HiDrive developer registration: type "server", redirect `https://unterkraehe.github.io/BandOrganizer/callback.html` (can take up to 72 h) | M1 |
+| P2 ✅ | GitHub repository `Unterkraehe/BandOrganizer` (public), Pages enabled via GitHub Actions | M0 |
+| P3 ✅ | Free Cloudflare account | M1 |
 | P4 | One band member with an iPhone and one with Android available as testers | M2, M4 |
 
 ## 4. Milestones in Detail
@@ -191,7 +191,7 @@ Scope:
 - Performance review (start time, list sizes, memory during playback).
 - Error/empty/loading states reviewed on every screen (R-UX-03).
 - E2E tests for main flows (connect, play, note, event answer, setlist print).
-- Band test phase (1–2 weeks of real use), bug fixing, docs update, version 1.0.0.
+- Band test phase (1–2 weeks of real use), bug fixing, docs update, version 1.0.0. ✅ 1.0.0 released 2026-10-05 after the band test.
 
 Done when: the band uses the app for a full rehearsal-and-gig cycle without falling back to the old way.
 

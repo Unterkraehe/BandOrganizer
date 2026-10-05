@@ -221,7 +221,7 @@ None of its own; new songs/lyrics are indexed by F4/F8 as usual.
 
 ## 10. Out of Scope / Later
 
-- Recording audio directly in the app (e.g. voice memo of a new idea)
+- Recording audio directly in the app as a new song idea (recording on an existing song is built: voice notes, v0.19.0, F4 §6.4a)
 - Uploads that continue after the app is closed (background sync)
 - Deleting uploaded files from the app
 - Other attachments for songs (tabs, chord sheets, sheet music PDFs) – decided: not in v1 (future plans)

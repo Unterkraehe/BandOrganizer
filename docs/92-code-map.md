@@ -159,6 +159,6 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 - The update toast only offers a service worker that answers `GET_VERSION` with a newer version (`sw-version-<version>.js`, generated in `vite.config.ts`); the app shell is precached as `index.html?v=<version>`. Both guard against the CDN serving old and new files for ~10 min after a deploy (F3 §6.4, v0.19.4).
 - `usePlayer()` in a list screen = full re-render ~4×/s while music plays (see §5).
 
-## 8. Open items (as of v0.19.1)
+## 8. Open items (as of v1.0.0)
 
-Device tests still open: S1/S2 (ETag, file IDs after rename), S4 (share link works as subscription), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with the keyboard on iPhone/Android, push notifications on real devices, `POST /file/copy`. Everything else planned is built; the band test phase decides 1.0.0 (`03-roadmap.md`).
+Device tests still open (`94-device-test-checklist.md`): S1/S2 (ETag, file IDs after rename), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with the keyboard on iPhone/Android, push notifications and reminders on real devices, `POST /file/copy`. S4 is answered (share links unsuitable → token helper, v0.19.1). Everything planned for v1 is built; what comes next is in `90-future-plans.md`.

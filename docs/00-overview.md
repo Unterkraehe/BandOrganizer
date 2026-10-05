@@ -259,18 +259,19 @@ This list grows with the feature plans. Consistent wording is a rule (R-I18N-05)
 | 2026-09-24 | App name: "Overload App" | May change later, kept in config only |
 | 2026-09-24 | Target band size: 3–12 members | Drives UI for member lists, chat, availability |
 | 2026-10-05 | Rule R-CODE-13: every change is made on a branch; merged into `main` only when the maintainer says so | A push to `main` deploys to the band right away; branches keep unfinished or unreviewed work away from the live app |
-| 2026-10-05 | Version 1.0.0: the maintainer declared the release candidate (v0.19.x) ready; the last fixes (chat notification scroll, Android calendar sync hint, centred logo) went into 1.0.0 instead of separate 0.19.x releases | Maintainer's decision: all planned features are built; what is still open are device tests (`94-device-test-checklist.md`), not missing features |
+| 2026-10-05 | Version 1.0.0: the maintainer declared the release candidate (v0.19.x) ready; the last fixes (chat notification scroll, Android calendar sync hint, centred logo) went into 1.0.0 instead of separate 0.19.x releases | Maintainer's decision, confirmed by the band test before going live: all planned features are built; what is still open are device tests (`94-device-test-checklist.md`), not missing features |
 
 ## 11. Open Questions (project-wide)
 
 ### Open
 
-1. **HiDrive developer registration:** in progress on your side. App type **"server"**, redirect URL `https://unterkraehe.github.io/BandOrganizer/callback.html`.
+None.
 
 ### Resolved
 
 | # | Question | Answer |
 |---|---|---|
+| – | HiDrive developer registration | Done: app type "server", redirect URL `https://unterkraehe.github.io/BandOrganizer/callback.html`; real login works since v0.4.2 |
 | – | Hosting | GitHub Pages |
 | – | HiDrive login type | Option B: "server" app type + token helper |
 | – | Tech stack | Proposal accepted (works on GitHub Pages) |
@@ -285,12 +286,12 @@ This list grows with the feature plans. Consistent wording is a rule (R-I18N-05)
 
 | # | Item | Who | Blocks |
 |---|---|---|---|
-| P1 | Register the app at the HiDrive developer portal: type **"server"**, redirect URL `https://unterkraehe.github.io/BandOrganizer/callback.html` | Band | F1 and everything else |
-| P2 | Create GitHub repo `Unterkraehe/BandOrganizer` (public) and enable GitHub Pages | Band | Deployment |
+| P1 | ✅ Register the app at the HiDrive developer portal: type **"server"**, redirect URL `https://unterkraehe.github.io/BandOrganizer/callback.html` | Band | F1 and everything else |
+| P2 | ✅ Create GitHub repo `Unterkraehe/BandOrganizer` (public) and enable GitHub Pages | Band | Deployment |
 | P3 | ✅ Cloudflare account (`ostworkers.workers.dev`) – deploy token helper via dashboard (`token-helper/README.md`) | Band | F1 login |
 | S1 | Real-token API check: `ETag`/`Access-Control-Expose-Headers`, file metadata for conflict checks | Dev | F1, R-DATA-07 |
 | S2 | Are HiDrive file IDs stable across rename/move? | Dev | F4 song identity |
 | S3 | ✅ Playback on a real iPhone (installed PWA) incl. lock screen – passed 2026-09-28. Pitch/tempo CPU + background with Web Audio → retest in M4 | Dev + band member with iPhone | F9, F4 |
-| S4 | HiDrive share link as calendar subscription (raw file, stable after overwrite, works in iOS/Google/Outlook) | Dev | F5 subscription |
+| S4 | ✅ Answered: unsuitable (links expire, download limit) → subscription served by the token helper since v0.19.1. Was: HiDrive share link as calendar subscription (raw file, stable after overwrite, works in iOS/Google/Outlook) | Dev | F5 subscription |
 | S5 | `.ics` single export from installed PWA on iPhone and Android | Dev | F5 export |
 | S6 | HiDrive upload of large files: size limits, chunked/resumable upload, behaviour on abort | Dev | F10 |

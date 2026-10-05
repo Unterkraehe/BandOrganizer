@@ -279,5 +279,5 @@ Navigation items and settings entries (e.g. "Dunkelmodus", "HiDrive", "Mitgliede
 ## 12. Out of Scope / Later
 
 - Customizable dashboard/menu
-- Push notifications
+- ~~Push notifications~~ – built in v0.13.0 (F6 §4.6)
 - Additional dashboard widgets
