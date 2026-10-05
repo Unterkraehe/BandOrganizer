@@ -1,4 +1,7 @@
 {
+  "0.19.8": [
+    "Startseite: Das Band-Logo steht jetzt in der Mitte."
+  ],
   "0.19.5": [
     "Jeder Tipp zeigt sofort etwas: „Abspielen“ zeigt gleich „Wird geladen …“, und wenn ein Song nicht abgespielt werden kann, steht jetzt dabei, warum. Ein weiterer Tipp auf „Abspielen“ versucht es noch einmal.",
     "Chat: Bearbeiten, Löschen und Reaktionen sind sofort sichtbar. Dazu zeigen „Test-Benachrichtigung senden“, „Datei öffnen“ und das Tempo-Tippen jetzt, dass sie arbeiten."
