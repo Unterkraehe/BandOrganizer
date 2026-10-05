@@ -272,13 +272,13 @@ This list grows with the feature plans. Consistent wording is a rule (R-I18N-05)
 | 2026-10-05 | Offline step 1 = read and play; changes need internet (except own practice settings and read status, sent later). Kept on the device: songs of upcoming setlists, chosen songs/setlists, recently played songs – each switchable | Covers rehearsal room and stage with little risk; an offline change queue needs conflict handling for every record type (later, "L1b") |
 | 2026-10-05 | Second band's storage – **open, the band decides: a second HiDrive or OneDrive**. If OneDrive: a band-only Microsoft account and shared login (like HiDrive); 5 GB free are enough. Login through the token helper (90-day rolling refresh, not the 24 h browser-only login) | Rejected: **Google Drive** (no folder paths; shared band account: "unverified app" warning or 7-day logins in testing mode; members' own accounts + shared folder: uploads count against the uploader, files vanish when a member deletes their account, consent for the whole Drive), **MEGA** (no official login for other apps – passwords in our app, unofficial library, decryption on the phone, download limits), **Dropbox** (2 GB free too small). A second HiDrive (from about €3.50/month) needs no new provider at all |
 | 2026-10-05 | Several bands (F12): one band = one storage account owned by the band; one active band, switching remounts everything below the session and stops playback; one token helper for all bands (reminders per band, `BAND_ACCOUNTS`) – extends R-CODE-10 | Keeps bands strictly apart with the least change to features |
+| 2026-10-05 | App name becomes **"Band App"** (home screen, browser tab, start screen title, `app.name`); inside the app each band keeps its own name, color and logo | With a second band, "Overload App" no longer fits everyone; the name on the home screen comes from one manifest for all installs |
 
 ## 11. Open Questions (project-wide)
 
 ### Open
 
-1. **App name on the home screen with two bands** (F12 §4.6): "Overload App" is the same for every installed app. Keep it, or a band-neutral name (inside the app each band keeps its own name, color and logo)? Needed before M11 is released to the second band.
-2. **Second band's storage:** a second HiDrive account (no new provider, F12 is enough) or OneDrive (F13, free 5 GB)? The maintainer settles it with the band.
+1. **Second band's storage:** a second HiDrive account (no new provider, F12 is enough) or OneDrive (F13, free 5 GB)? The maintainer settles it with the band.
 
 ### Resolved
 
@@ -289,7 +289,7 @@ This list grows with the feature plans. Consistent wording is a rule (R-I18N-05)
 | – | HiDrive login type | Option B: "server" app type + token helper |
 | – | Tech stack | Proposal accepted (works on GitHub Pages) |
 | – | HiDrive folder structure | Ignored for songs: all audio files are found automatically |
-| – | App name | Overload App (for now) |
+| – | App name | Overload App (for now) → **"Band App"** from F12 on (decision 2026-10-05) |
 | – | Band size | 3–12 members |
 | – | GitHub | User `Unterkraehe`, repo `BandOrganizer` |
 | – | First-time setup | Anyone, as long as the band was never set up |

@@ -59,7 +59,9 @@ Everything band-related on the device is keyed by band: F11's IndexedDB data and
 - R-CODE-10 grows by "several bands": needs a decision-log entry (done 2026-10-05).
 
 ### 4.6 Branding and app name
-Name, color and logo inside the app follow the active band (already per band). The **name on the home screen** comes from the web app manifest and is the same for everyone – with a second band, "Overload App" no longer fits everyone. Open question (overview §11).
+Name, color and logo inside the app follow the active band (already per band). The **name on the home screen** comes from the web app manifest and is the same for everyone. Decision 2026-10-05: the app is renamed **"Band App"** – manifest `name`/`short_name` (`vite.config.ts`), `app.name` (`locales/de/common.json`, also the start screen title), `index.html` `<title>`, the `_BandApp/README.txt` text (`core/band/band.ts`) and the docs that name it (R-I18N-07, design system §8, F3 §4.1). Part of step 1; can also be released earlier on its own.
+
+Phones: Android updates the installed app's name by itself after a while; on an iPhone the old name stays until the app is removed from the home screen and added again (to verify, device checklist).
 
 ## 5. Data Model & Storage
 
@@ -108,6 +110,7 @@ Search covers the active band only (it is remounted with it).
 | Date | Decision |
 |---|---|
 | 2026-10-05 | Both kinds of users: members of one band, and people in both bands who switch on one phone (maintainer). |
+| 2026-10-05 | App name "Band App" instead of "Overload App" (maintainer). |
 | 2026-10-05 | One band = one storage account owned by the band; switching remounts everything below the session; playback stops on switch. |
 
 ## 12. Steps (each a release)
