@@ -65,6 +65,21 @@ describe('Chat (M7 in demo mode)', () => {
       scrollTo.mockRestore();
     }
   });
+
+  it('opened from a notification whose message has not arrived yet: starts at the newest message (v1.0.0)', async () => {
+    const user = userEvent.setup();
+    const scrollTo = vi.spyOn(window, 'scrollTo');
+    try {
+      await enterDemo(user, '/chat?message=still-on-its-way');
+      await user.type(await screen.findByRole('textbox', { name: 'Nachricht an die Band …' }), 'Probe am Freitag?');
+      scrollTo.mockClear();
+      await user.click(screen.getByRole('button', { name: 'Senden' }));
+      await screen.findByText('Probe am Freitag?');
+      await waitFor(() => expect(scrollTo.mock.calls.at(-1)?.[0]).toEqual({ top: expect.any(Number) }));
+    } finally {
+      scrollTo.mockRestore();
+    }
+  });
 });
 
 describe('Notifications settings (v0.13)', () => {

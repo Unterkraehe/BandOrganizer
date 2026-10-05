@@ -1,8 +1,8 @@
 # Overload App – Project Overview
 
 > **App name:** Overload App (may change later – the name is only set in config/translations, see R-I18N-07)
-> **Status:** Implementation – v0.19.1: release candidate for 1.0 – all planned features are built; the band test phase decides when it becomes 1.0.0. Working on the code? Start with [`92-code-map.md`](92-code-map.md).
-> **Last updated:** 2026-09-24
+> **Status:** v1.0.0 released (2026-10-05) – all planned features are built; open device tests in [`94-device-test-checklist.md`](94-device-test-checklist.md). Working on the code? Start with [`92-code-map.md`](92-code-map.md).
+> **Last updated:** 2026-10-05
 
 This file is the entry point for the whole project. Read it first, then `01-general-rules.md` and `02-design-system.md`, then the feature file you are working on. The build order is defined in `03-roadmap.md`.
 
@@ -258,6 +258,8 @@ This list grows with the feature plans. Consistent wording is a rule (R-I18N-05)
 | 2026-09-28 | Token helper deployed at `bandorganizer-auth.ostworkers.workers.dev` | Cloudflare subdomain `ostworkers` |
 | 2026-09-24 | App name: "Overload App" | May change later, kept in config only |
 | 2026-09-24 | Target band size: 3–12 members | Drives UI for member lists, chat, availability |
+| 2026-10-05 | Rule R-CODE-13: every change is made on a branch; merged into `main` only when the maintainer says so | A push to `main` deploys to the band right away; branches keep unfinished or unreviewed work away from the live app |
+| 2026-10-05 | Version 1.0.0: the maintainer declared the release candidate (v0.19.x) ready; the last fixes (chat notification scroll, Android calendar sync hint, centred logo) went into 1.0.0 instead of separate 0.19.x releases | Maintainer's decision: all planned features are built; what is still open are device tests (`94-device-test-checklist.md`), not missing features |
 
 ## 11. Open Questions (project-wide)
 

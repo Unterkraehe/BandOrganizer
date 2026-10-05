@@ -182,6 +182,9 @@ Before implementing or changing a feature, its feature file is updated. The feat
 **R-CODE-08 — Small, reviewable changes.**
 One feature or sub-feature per change; commit messages in English, referencing feature IDs (e.g. `F4: add song list sorting`).
 
+**R-CODE-13 — Changes go on a branch; `main` only when asked.**
+Every change (app, docs or tooling) is made and committed on its own branch, never directly on `main`. It is merged into `main` – and pushed there – only when the maintainer explicitly says so, because a push to `main` deploys the app to GitHub Pages. Pushing the branch itself and opening a pull request (CI runs lint, tests and build) is fine.
+
 **R-CODE-12 — Code map first.**
 Before changing code, read `docs/92-code-map.md` (concepts, data layout, recipes, gotchas) and look files up in `docs/93-code-index.md` (generated). Work in this order: find the files → change → run the relevant tests (`npm run check -- <filter>`) → `npm run check` before anything is delivered. Deliveries are made with `npm run pack`, which never includes `src/config.ts` (it holds the band's own HiDrive client ID).
 

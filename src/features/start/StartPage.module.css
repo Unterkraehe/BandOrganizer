@@ -20,9 +20,19 @@
   letter-spacing: 0.01em;
 }
 
+/* the band logo (or name) sits centred above the left-aligned date and greeting */
 .band {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
   margin-bottom: var(--space-4);
   color: var(--accent);
+  text-align: center;
+}
+
+/* a logo wider than the screen is scaled down inside its box – keep it centred there too */
+.band img {
+  object-position: center;
 }
 
 .card {

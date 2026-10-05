@@ -1,6 +1,6 @@
 # Implementation Roadmap
 
-> **Status:** M0–M9 built · v0.19.5 = release candidate: the band test phase decides when it becomes **1.0.0** · open tests: S1/S2 (file IDs, ETag), calendar subscription via the token helper (S4 answered: share links unsuitable), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with keyboard on iPhone/Android, push notifications and event reminders on real devices (needs KV + Cron Trigger in the token helper), HiDrive copy (`POST /file/copy`)
+> **Status:** M0–M9 built · **v1.0.0 released (2026-10-05)** · open device tests: S1/S2 (file IDs, ETag), calendar subscription via the token helper (S4 answered: share links unsuitable), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with keyboard on iPhone/Android, push notifications and event reminders on real devices (needs KV + Cron Trigger in the token helper), HiDrive copy (`POST /file/copy`)
 > Order and scope of the build, from an empty repository to v1.0. Each milestone ends with a **deployed version the band can use and test**.
 
 ## 1. Principles
@@ -24,7 +24,7 @@
 | M6 ✅ | **Setlists** | Setlist editor, print, stage view, setlist mode, suggestions | Build setlists, print them, use them on stage and for practice | L |
 | M7 ✅ | **Austauschen** | Chat, item discussions, cards, info lines, unread badges | Discuss app topics in context | M |
 | M8 ✅ | **Finden** | Global search incl. lyrics lines and date search | Find anything in the app from anywhere | M |
-| M9 🟡 | **v1.0** | Calendar subscription, polish, accessibility and performance review, band test | Everything in v1, stable | M |
+| M9 ✅ | **v1.0** | Calendar subscription, polish, accessibility and performance review, band test | Everything in v1, stable | M |
 
 Sizes are relative (S/M/L), not time estimates.
 
@@ -224,6 +224,7 @@ Done when: the band uses the app for a full rehearsal-and-gig cycle without fall
 | 0.19.3 | Calendar month view: no jump to the top when picking a day; desktop shows the day's events beside the grid, tablets in the panel; long titles stay in their cell |
 | 0.19.4 | No update loop right after a deploy: only a newer service worker is offered (version file in the worker), app shell precached under a versioned address |
 | 0.19.5 | Every control answers at once (R-UX-10): play shows loading at once and says why a song doesn't play; chat edit/delete/reactions optimistic; busy states for test notification and opening lyrics files; tap tempo counts; drag handle explains itself; ⏮/⏭ disabled at the ends of a setlist |
+| 1.0.0 | **Version 1.0.** Tapping a chat notification opens the chat at the newest messages (also when the message is not loaded yet); Android steps for the calendar subscription mention "Synchronisieren"; band logo centred on the start screen; rule R-CODE-13 (changes on branches) |
 
 Details per change: feature files (status blocks) and the "Was ist neu" texts in `src/locales/de/whatsNew.json`.
 

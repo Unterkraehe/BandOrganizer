@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { useHighlightElement } from '@/features/search/useHighlightTarget';
 import { Button, EmptyState, Page } from '@/ui';
 import { useChat } from './ChatProvider';
@@ -37,18 +37,26 @@ export function ChatPage() {
     if (ready && last && document.visibilityState === 'visible') store.markRead(last.createdAt);
   }, [last, store, ready]);
 
-  // first open: jump to the unread divider (or the newest message), later: follow new messages
-  const initial = useRef(true);
-  const initialFrame = useRef(0);
-  useEffect(() => () => cancelAnimationFrame(initialFrame.current), []);
+  // every arrival (opening the chat, a tapped notification while the chat is open): jump to the unread divider
+  // (or the newest message); later: follow new messages
+  const { key } = useLocation();
+  const targetLoaded = !!target && state.messages.some((m) => m.id === target);
+  const arrived = useRef<string | null>(null);
+  const jumpFrame = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(jumpFrame.current), []);
   useLayoutEffect(() => {
     if (!state.messages.length) return;
-    if (initial.current) {
-      initial.current = false;
-      if (target) return; // opened from a search result: the message is scrolled into view instead
+    if (arrived.current !== key) {
+      arrived.current = key;
+      sentByMe.current = false;
+      // A linked message (search result, notification) that is already there is scrolled into view by
+      // useHighlightElement. One that isn't there yet – a push is faster than polling, the cached messages
+      // show first – would leave the page at the top until it arrives; start at the newest messages instead.
+      if (targetLoaded) return;
       // One frame later: the router's <ScrollRestoration> (a layout effect of the root route, which runs
       // after this one) resets the page to the top on every navigation and would undo the jump.
-      initialFrame.current = requestAnimationFrame(() => {
+      cancelAnimationFrame(jumpFrame.current);
+      jumpFrame.current = requestAnimationFrame(() => {
         const divider = document.getElementById('chat-unread');
         if (divider) divider.scrollIntoView({ block: 'center' });
         else window.scrollTo({ top: document.documentElement.scrollHeight });
@@ -60,10 +68,10 @@ export function ChatPage() {
     const nearBottom = window.innerHeight + window.scrollY > height - 400;
     if (sentByMe.current || nearBottom) window.scrollTo({ top: height, behavior: sentByMe.current ? 'auto' : 'smooth' });
     sentByMe.current = false;
-  }, [state.messages.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [state.messages.length, key]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const messages = useMemo(() => state.messages, [state.messages]);
-  useHighlightElement(target ? `msg-${target}` : null, state.messages.some((m) => m.id === target));
+  useHighlightElement(target ? `msg-${target}` : null, targetLoaded, key);
 
   return (
     <Page title={t('title')}>
