@@ -66,7 +66,7 @@ describe('Chat (M7 in demo mode)', () => {
     }
   });
 
-  it('opened from a notification whose message has not arrived yet: starts at the newest message (v0.19.6)', async () => {
+  it('opened from a notification whose message has not arrived yet: starts at the newest message (v1.0.0)', async () => {
     const user = userEvent.setup();
     const scrollTo = vi.spyOn(window, 'scrollTo');
     try {

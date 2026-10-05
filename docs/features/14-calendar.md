@@ -13,7 +13,7 @@
 > - While a subscription exists, every app rewrites `band.ics` a few seconds after calendar changes – only when the content actually changed (compared per device).
 > - "Neuen Link erstellen" deletes the old share link first (old subscriptions stop working); "Abo beenden" deletes the link and marks the subscription inactive. `band.ics` stays (app file).
 > - The safety guard only allows share links for files inside `_BandApp/` – band files can never be shared by the app.
-> - Buttons: "Kopieren" and "In Kalender-App öffnen" (`webcal://` – iPhone/Outlook subscribe directly). Short instructions for iPhone, Google (via calendar.google.com → Per URL; v0.19.7: then switch on "Synchronisieren" for the calendar in the Android app – a calendar added by URL stays hidden on the phone until then) and Outlook.
+> - Buttons: "Kopieren" and "In Kalender-App öffnen" (`webcal://` – iPhone/Outlook subscribe directly). Short instructions for iPhone, Google (via calendar.google.com → Per URL; v1.0.0: then switch on "Synchronisieren" for the calendar in the Android app – a calendar added by URL stays hidden on the phone until then) and Outlook.
 > - **Spike S4 still open:** whether HiDrive's share URL delivers the raw file (calendar apps need `BEGIN:VCALENDAR…`) or a download page. The page shows a test hint. If it's a download page → implement the documented fallback (token-helper endpoint, R-CODE-10 amendment).
 
 > **Implementation notes (v0.7.0)**

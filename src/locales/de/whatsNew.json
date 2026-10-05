@@ -1,12 +1,9 @@
 {
-  "0.19.8": [
+  "1.0.0": [
+    "Version 1.0 – die Overload App ist fertig für den Band-Alltag. Danke fürs Testen!",
+    "Chat: Wenn du auf eine Benachrichtigung tippst, öffnet sich der Chat jetzt bei den neuesten Nachrichten statt ganz oben.",
+    "Kalender-Abo: Die Anleitung für Android sagt jetzt, dass man den Band-Kalender in der Google-Kalender-App einmal auf „Synchronisieren“ stellen muss – sonst erscheinen die Termine nur am Computer.",
     "Startseite: Das Band-Logo steht jetzt in der Mitte."
-  ],
-  "0.19.7": [
-    "Kalender-Abo: Die Anleitung für Android sagt jetzt, dass man den Band-Kalender in der Google-Kalender-App einmal auf „Synchronisieren“ stellen muss – sonst erscheinen die Termine nur am Computer."
-  ],
-  "0.19.6": [
-    "Chat: Wenn du auf eine Benachrichtigung tippst, öffnet sich der Chat jetzt bei den neuesten Nachrichten statt ganz oben."
   ],
   "0.19.5": [
     "Jeder Tipp zeigt sofort etwas: „Abspielen“ zeigt gleich „Wird geladen …“, und wenn ein Song nicht abgespielt werden kann, steht jetzt dabei, warum. Ein weiterer Tipp auf „Abspielen“ versucht es noch einmal.",
