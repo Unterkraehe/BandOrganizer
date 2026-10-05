@@ -46,13 +46,21 @@ There are no admin roles planned for v1. Every member can do everything (subject
 | F10 | Adding content & uploads (new songs, recordings, lyrics incl. typing, logo) | `features/19-uploads.md` | Implemented (spike S6 pending) |
 | F9 | Audio engine (core module: playback, pitch shift, tempo change, A–B loop) | `features/18-audio-engine.md` | Implemented (iPhone retest with effects pending) |
 
+### After 1.0 (planned 2026-10-05)
+
+| # | Feature | File | Status |
+|---|---|---|---|
+| F11 | Offline mode (read and play without internet) | `features/20-offline.md` | Planned – M10 |
+| F12 | Several bands in one app | `features/21-several-bands.md` | Planned – M11 |
+| F13 | OneDrive as band storage (second band) | `features/22-onedrive.md` | Planned – M12 |
+
 ### Later features
 
-See `90-future-plans.md` (offline caching, multiple bands, other cloud providers, further features).
+See `90-future-plans.md` (lyrics PDF for singers, further providers, ideas backlog).
 
 ### Build order
 
-See `03-roadmap.md` (milestones M0–M9).
+See `03-roadmap.md` (milestones M0–M9, after 1.0: M10–M12).
 
 ## 5. Architecture Overview
 
@@ -260,12 +268,16 @@ This list grows with the feature plans. Consistent wording is a rule (R-I18N-05)
 | 2026-09-24 | Target band size: 3–12 members | Drives UI for member lists, chat, availability |
 | 2026-10-05 | Rule R-CODE-13: every change is made on a branch; merged into `main` only when the maintainer says so | A push to `main` deploys to the band right away; branches keep unfinished or unreviewed work away from the live app |
 | 2026-10-05 | Version 1.0.0: the maintainer declared the release candidate (v0.19.x) ready; the last fixes (chat notification scroll, Android calendar sync hint, centred logo) went into 1.0.0 instead of separate 0.19.x releases | Maintainer's decision, confirmed by the band test before going live: all planned features are built; what is still open are device tests (`94-device-test-checklist.md`), not missing features |
+| 2026-10-05 | After 1.0: offline mode (F11) first, then several bands (F12), then OneDrive (F13) | Offline helps Overload now, needs nothing from Microsoft and builds the per-band device data that several bands need |
+| 2026-10-05 | Offline step 1 = read and play; changes need internet (except own practice settings and read status, sent later). Kept on the device: songs of upcoming setlists, chosen songs/setlists, recently played songs – each switchable | Covers rehearsal room and stage with little risk; an offline change queue needs conflict handling for every record type (later, "L1b") |
+| 2026-10-05 | Second band's storage: **OneDrive** with a band-only Microsoft account and shared login (like HiDrive); 5 GB free are enough. Login through the token helper (90-day rolling refresh, not the 24 h browser-only login) | Rejected: **Google Drive** (no folder paths; shared band account: "unverified app" warning or 7-day logins in testing mode; members' own accounts + shared folder: uploads count against the uploader, files vanish when a member deletes their account, consent for the whole Drive), **MEGA** (no official login for other apps – passwords in our app, unofficial library, decryption on the phone, download limits), **Dropbox** (2 GB free too small). A second HiDrive (from about €3.50/month) stays the fallback |
+| 2026-10-05 | Several bands (F12): one band = one storage account owned by the band; one active band, switching remounts everything below the session and stops playback; one token helper for all bands (reminders per band, `BAND_ACCOUNTS`) – extends R-CODE-10 | Keeps bands strictly apart with the least change to features |
 
 ## 11. Open Questions (project-wide)
 
 ### Open
 
-None.
+1. **App name on the home screen with two bands** (F12 §4.6): "Overload App" is the same for every installed app. Keep it, or a band-neutral name (inside the app each band keeps its own name, color and logo)? Needed before M11 is released to the second band.
 
 ### Resolved
 
@@ -295,3 +307,7 @@ None.
 | S4 | ✅ Answered: unsuitable (links expire, download limit) → subscription served by the token helper since v0.19.1. Was: HiDrive share link as calendar subscription (raw file, stable after overwrite, works in iOS/Google/Outlook) | Dev | F5 subscription |
 | S5 | `.ics` single export from installed PWA on iPhone and Android | Dev | F5 export |
 | S6 | HiDrive upload of large files: size limits, chunked/resumable upload, behaviour on abort | Dev | F10 |
+| P5 | Second band: own Microsoft account (free 5 GB) that receives its security codes | Band | F13 |
+| P6 | OneDrive app registration (personal accounts, "Web" platform, redirect `…/callback.html`, client secret in Cloudflare); may need a free Azure account – S7 finds out | Maintainer | F13 |
+| S7 | OneDrive with a real band account: token helper login, Graph CORS, download address + Range, `If-Match`/412, `conflictBehavior=fail`, ~100 files, upload session | Dev | F13 |
+| S8 | Offline storage on real phones: quota, `storage.persist()`, saved songs kept on iPhone (installed app), 50 MB blobs in IndexedDB | Dev + iPhone user | F11 |

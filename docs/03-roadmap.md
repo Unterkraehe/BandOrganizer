@@ -25,6 +25,9 @@
 | M7 ✅ | **Austauschen** | Chat, item discussions, cards, info lines, unread badges | Discuss app topics in context | M |
 | M8 ✅ | **Finden** | Global search incl. lyrics lines and date search | Find anything in the app from anywhere | M |
 | M9 ✅ | **v1.0** | Calendar subscription, polish, accessibility and performance review, band test | Everything in v1, stable | M |
+| M10 | **Offline** (F11) | Start without internet, data and files kept on the device, "Offline & Speicher" | Practise and play setlists without signal | L |
+| M11 | **Mehrere Bands** (F12) | Several bands on one device, band switcher, notifications per band | People in two bands use one app | M |
+| M12 | **OneDrive** (F13) | OneDrive as second storage provider | The second band uses the app on its OneDrive | M |
 
 Sizes are relative (S/M/L), not time estimates.
 
@@ -33,6 +36,8 @@ P1–P3 (band) ──► M0 ──► M1 ──► M2 ──► M3 ──► M4
                                   │      └──────────► M6 ◄── M5
                                   │                    │
                                   └──► M5              └──► M7 ──► M8 ──► M9
+
+After 1.0:  M9 ──► M10 ──► M11 ──► M12      (S8 before M10 step 3; P5/P6 + S7 before M12 – can run in parallel)
 ```
 
 M0 can start **before** the HiDrive registration is approved.
@@ -242,6 +247,25 @@ Band feedback: navigation is confusing (no way back, mini player opens the song 
 | 5 | Review of all remaining screens against R-UX-09 | ✅ v0.18.1 |
 
 **Step 5 review (2026-10-01, all screens at 360 px, controls counted):** start, calendar list/month, event form, subscription, chat, Mehr, setlists, members, member, band settings, tags, profile, new song, search – fine. Fixed: **event page** 25 → 15 controls (✎ + ⋯ in the top bar instead of four buttons at the bottom – like song and setlist pages; comment field behind "Kommentar hinzufügen" unless you already have one; "Meine Erinnerung" as one line, choices in a dialog); **settings** 35 → 14 controls (reminder defaults one line per type, choices in a dialog); missing inner padding in "Benachrichtigungen" and the suggestion-folders field. Left as is: the calendar's type filters scroll sideways on phones (intentional row), the "Neu in Version" box (dismissible).
+
+## 4c. After 1.0: offline, several bands, OneDrive (plan of 2026-10-05)
+
+Order (decision log 2026-10-05): **offline first** – it helps Overload right away, needs nothing from Microsoft, and builds the per-band device data that several bands need. Then several bands, then OneDrive for the second band. Each step below is its own release.
+
+| Milestone | Steps | Before it |
+|---|---|---|
+| M10 Offline (F11, `features/20-offline.md` §12) | 1 offline start + indicator + "Braucht Internet" on every write control + store caches in IndexedDB · 2 lyrics/logos/voice notes on the device · 3 audio: "Offline speichern", recently played, settings screen · 4 upcoming setlists automatically | S8 before step 3 |
+| M11 Several bands (F12, `features/21-several-bands.md` §12) | 1 connections + band switcher (HiDrive only, demo with two bands) · 2 notifications and token helper per band | M10 step 1 (device data per band) |
+| M12 OneDrive (F13, `features/22-onedrive.md` §12) | 1 login via token helper + reading (browse, play) · 2 writing, uploads, provider-neutral texts | P5, P6, S7 |
+
+Prerequisites and spikes (details in overview §12):
+
+| # | Task | Who | Needed for |
+|---|---|---|---|
+| P5 | Create the second band's **own Microsoft account** (free, 5 GB); someone in the band must receive its security codes | Band | M12 |
+| P6 | **App registration** for OneDrive in the Microsoft portal (personal accounts, platform "Web", redirect `https://unterkraehe.github.io/BandOrganizer/callback.html`, client secret → Cloudflare) | Maintainer (with dev help) | M12 |
+| S7 | OneDrive with a real band account: login through the token helper, Graph from the browser (CORS), download address + Range, `If-Match`/412, `conflictBehavior=fail`, listing ~100 files, upload session | Dev | M12 |
+| S8 | Offline storage on real phones: quota, `storage.persist()`, are saved songs kept (iPhone installed app!), 50 MB blobs in IndexedDB | Dev + band member with iPhone | M10 step 3 |
 
 ## 5. Definition of Done (every milestone)
 

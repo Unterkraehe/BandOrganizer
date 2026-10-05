@@ -6,9 +6,9 @@
 
 | # | Feature | Description | Prepared by |
 |---|---|---|---|
-| L1 | **Offline mode / caching** | Use songs, lyrics, setlists and calendar without internet (e.g. on stage, in the rehearsal room basement). Choose songs/setlists to keep offline; queue changes and upload later. | PWA + service worker, IndexedDB, repositories as single data access point, one file per record (easy to merge queued changes) |
-| L2 | **Multiple bands** | Switch between bands, each with its own storage (HiDrive account/folder). Separate member profiles per band. | R-CODE-03 band-scoped repositories, `app.json` per band folder |
-| L3 | **Other cloud providers** | Google Drive, maybe Dropbox, OneDrive, Nextcloud/WebDAV. | `StorageProvider` interface (R-CODE-01), provider-specific code isolated in `core/storage/<provider>/` |
+| L1 | **Offline mode / caching** → planned as **F11** (`features/20-offline.md`, 2026-10-05); offline *changes* remain here as L1b | Use songs, lyrics, setlists and calendar without internet (e.g. on stage, in the rehearsal room basement). Choose songs/setlists to keep offline; queue changes and upload later. | PWA + service worker, IndexedDB, repositories as single data access point, one file per record (easy to merge queued changes) |
+| L2 | **Multiple bands** → planned as **F12** (`features/21-several-bands.md`, 2026-10-05) | Switch between bands, each with its own storage (HiDrive account/folder). Separate member profiles per band. | R-CODE-03 band-scoped repositories, `app.json` per band folder |
+| L3 | **Other cloud providers** | OneDrive → planned as **F13** (`features/22-onedrive.md`, 2026-10-05). Further: Google Drive, Dropbox, Nextcloud/WebDAV, MEGA – see decision log 2026-10-05 for why not now. | `StorageProvider` interface (R-CODE-01), provider-specific code isolated in `core/storage/<provider>/` |
 | L6 | **Lyrics export for singers** | PDF with the lyrics of all songs of a setlist in setlist order, including setlist notes, plus song notes each member flagged as "setlist-relevant". | F7 setlist structure, F4 lyrics renderers, note IDs |
 | L4 | **Further main features** | New modules added via the feature registry. | R-CODE-02 feature modules + menu registry |
 
@@ -49,6 +49,7 @@
 - More lyrics formats (.doc, .odt, .rtf, .pages, photos with OCR) via the pluggable renderers from F4
 - Calendar export (ICS) for personal calendars – ✅ done: single export (F5, M5) and band calendar subscription (v0.12.0, via the token helper since v0.19.1)
 - Additional UI languages (e.g. English)
+- One calendar across all bands of a member (double bookings), with F12
 - Band-specific app icon on the home screen (needs per-band manifest/icon generation)
 - Profile photos and optional profile PIN (F2 keeps the data model ready)
 
