@@ -120,6 +120,11 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 
 ## 7. Gotchas (learned the hard way)
 
+**Two published versions (beta, roadmap §4d)**
+- `BANDAPP_CHANNEL=beta npm run build` builds the beta (base `/BandOrganizer/beta/`); `core/channel/channel.ts` has `isBeta`, `STABLE_BASE`, `switchChannel`. The redirect between the versions is `scripts/channel-loader.mjs` (inlined into `index.html`), not app code.
+- Use `STABLE_BASE` (not `import.meta.env.BASE_URL`) for anything that must be the same in both versions: the OAuth redirect, the push registration.
+- Beta and released version share `localStorage` / IndexedDB and the HiDrive data – don't change the shape of an existing key or record on `beta` (R-CODE-13).
+
 **HiDrive API**
 - Paths are `root/users/<name>/…` (the app uses absolute paths and converts in `HiDriveProvider`: `toApiPath` / `fromApiPath`); names in responses are URL-encoded.
 - `PUT`/`POST /file` address a file by `dir` + `name`, **never `path`** (400). Create-only = `POST` without `on_exist`. `POST /file/copy` for server-side copies. Share links: `POST /sharelink`.

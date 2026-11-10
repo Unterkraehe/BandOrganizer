@@ -19,7 +19,15 @@
     "checkUpdates": "Nach Updates suchen",
     "checking": "Suche läuft …",
     "upToDate": "Du hast die aktuelle Version.",
-    "offline": "Keine Verbindung – Suche nicht möglich."
+    "offline": "Keine Verbindung – Suche nicht möglich.",
+    "beta": "Beta-Version",
+    "betaHint": "Neue Funktionen vorab testen – nur auf diesem Gerät. Kann Fehler enthalten. Du kannst jederzeit zurück.",
+    "betaOnHint": "Du nutzt die Beta-Version auf diesem Gerät.",
+    "betaUse": "Beta verwenden",
+    "betaLeave": "Zur normalen Version",
+    "betaSwitching": "Wird gewechselt …",
+    "betaUnavailable": "Gerade gibt es keine Beta-Version.",
+    "betaMark": "Beta"
   },
   "hidrive": {
     "title": "HiDrive",

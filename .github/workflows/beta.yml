@@ -1,0 +1,31 @@
+name: Beta – test & publish
+
+# A push to `beta` tests the beta and then asks the deploy workflow on `main` to publish the site again
+# (released app + this beta in beta/). The band's version does not change (docs/03-roadmap.md §4d).
+on:
+  push:
+    branches: [beta]
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+        env:
+          BANDAPP_CHANNEL: beta
+      - name: Publish (deploy workflow on main)
+        run: gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}

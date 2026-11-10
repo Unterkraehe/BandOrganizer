@@ -225,6 +225,7 @@ Done when: the band uses the app for a full rehearsal-and-gig cycle without fall
 | 0.19.4 | No update loop right after a deploy: only a newer service worker is offered (version file in the worker), app shell precached under a versioned address |
 | 0.19.5 | Every control answers at once (R-UX-10): play shows loading at once and says why a song doesn't play; chat edit/delete/reactions optimistic; busy states for test notification and opening lyrics files; tap tempo counts; drag handle explains itself; ⏮/⏭ disabled at the ends of a setlist |
 | 1.0.0 | **Version 1.0.** Tapping a chat notification opens the chat at the newest messages (also when the message is not loaded yet); Android steps for the calendar subscription mention "Synchronisieren"; band logo centred on the start screen; rule R-CODE-13 (changes on branches) |
+| 1.0.1 | **Beta version (release channel):** Einstellungen → Über die App → "Beta-Version" loads the beta published from the `beta` branch on that device; one site, one install, one login (§4d) |
 
 Details per change: feature files (status blocks) and the "Was ist neu" texts in `src/locales/de/whatsNew.json`.
 
@@ -252,6 +253,19 @@ Band feedback: navigation is confusing (no way back, mini player opens the song 
 - [ ] Deployed to GitHub Pages; update prompt works
 - [ ] Docs updated: feature status, decision log, changed details (R-CODE-07)
 - [ ] Short changelog for the band ("Was ist neu")
+
+## 4d. Beta version – release channel (v1.0.1)
+
+**Goal:** the maintainer tests a version with the real band data on real phones before it reaches the band – without a second site, a second install or a second login.
+
+- **One site, two versions:** the deploy workflow publishes `main` at `/BandOrganizer/` and the `beta` branch at `/BandOrganizer/beta/` (`.github/workflows/deploy.yml`; a push to `beta` runs `beta.yml`: tests, then starts the deploy on `main`). Without a `beta` branch there is simply no beta.
+- **Per device:** Einstellungen → Über die App → "Beta verwenden" checks that a beta is published, sets `bandapp.channel = beta` and loads it; "Zur normalen Version" goes back (`src/core/channel/channel.ts`). The version line shows "· Beta".
+- **Loader** (`scripts/channel-loader.mjs`, inlined at the top of `index.html` of both builds, independent of the app bundle): released page + mark → same address under `beta/`; beta page without mark → released version. The installed app always starts at the released address and is passed on.
+- **Ways out:** two beta starts in a row that never show the app → back to the released version by itself; `…/BandOrganizer/?kanal=stabil` ends the beta on that device; no beta published → the mark is cleared.
+- **Shared on purpose:** same origin → same HiDrive login (it returns to the released `callback.html`; `redirectUri()` always uses the released address), same token helper origin, same device storage. Rule: R-CODE-13 (a beta keeps stored data readable for the released version).
+- **Service workers:** each version has its own (scope `/BandOrganizer/` and `/BandOrganizer/beta/`); the released one leaves `beta/` addresses alone (`navigateFallbackDenylist`). The web app manifest of both names the released address as `id` / `start_url` / `scope` – one installed app.
+- **Push:** stays registered with the released version's service worker; from v1.0.2 on the beta uses that registration too, so there is one subscription per device whichever version runs.
+- **Not testable in development:** the real site with both versions, HiDrive login from the beta, push in the beta, installed app on iPhone/Android (checklist B).
 
 ## 6. Versioning & Releases
 

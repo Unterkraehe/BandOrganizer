@@ -21,7 +21,8 @@ export const config = {
 
 /** The OAuth redirect target – a real static file, see public/callback.html. */
 export function redirectUri(): string {
-  return new URL('callback.html', window.location.origin + import.meta.env.BASE_URL).toString();
+  // always the released address, also from the beta (the only redirect registered with HiDrive, roadmap §4d)
+  return new URL('callback.html', window.location.origin + __STABLE_BASE__).toString();
 }
 
 export const isHiDriveConfigured = (): boolean => config.hidrive.clientId.length > 0;

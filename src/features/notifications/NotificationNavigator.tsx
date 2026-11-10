@@ -10,8 +10,9 @@ export function NotificationNavigator() {
       const data = event.data as { type?: string; url?: string } | null;
       if (data?.type !== 'bandapp:navigate' || !data.url) return;
       const url = new URL(data.url);
-      const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-      const path = url.pathname.startsWith(base) ? url.pathname.slice(base.length) || '/' : url.pathname;
+      // own address first; in the beta the notification comes from the released app's service worker (roadmap §4d)
+      const base = [import.meta.env.BASE_URL, __STABLE_BASE__].map((b) => b.replace(/\/$/, '')).find((b) => url.pathname.startsWith(b)) ?? '';
+      const path = url.pathname.slice(base.length) || '/';
       navigate(`${path}${url.search}`);
     };
     navigator.serviceWorker.addEventListener('message', onMessage);
