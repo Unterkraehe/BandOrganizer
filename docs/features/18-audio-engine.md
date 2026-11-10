@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **ID** | F9 |
-| **Status** | Implemented (v0.6.0): playback, tempo, pitch, A–B loop, practice settings. v1.0.1: tempo alone without Web Audio, larger buffers for pitch (Bluetooth on Android). Phone retest with active effects pending |
+| **Status** | Implemented (v0.6.0): playback, tempo, pitch, A–B loop, practice settings. v1.0.2: tempo alone without Web Audio, larger buffers for pitch (Bluetooth on Android). Phone retest with active effects pending |
 
 > **Implementation notes (v0.6.0)**
 > - Two modes, switched seamlessly at the current position: **element** (`<audio>` + blob URL, default) and **effects** (Web Audio + Signalsmith Stretch), the latter only while tempo ≠ 100 % or pitch ≠ 0.
@@ -13,7 +13,7 @@
 > - The AudioContext is created/resumed inside the user's tap (iOS).
 > - Tested in desktop Chromium: tempo 80 % + −2 semitones plays correctly. iPhone test with effects (incl. lock screen) still open.
 
-> **v1.0.1 – smooth playback over Bluetooth (Android)** – with tempo or pitch active, playback stuttered on Android phones with Bluetooth output. Three changes:
+> **v1.0.2 – smooth playback over Bluetooth (Android)** – with tempo or pitch active, playback stuttered on Android phones with Bluetooth output. Three changes:
 > - **Tempo alone stays in element mode:** `<audio>` with `playbackRate` + `preservesPitch` – the browser's own player changes the speed, nothing is computed in the page. So it also survives the lock screen like normal playback. Trade-off: the browser's stretcher sounds a little rougher than Signalsmith at the extremes (50 %).
 > - **Effects mode only while pitch ≠ 0**, and its AudioContext is created with `latencyHint: 'playback'` (larger output buffers instead of the smallest possible ones).
 > - The stretcher is configured with the presets' block sizes but `splitComputation: true`: the work is spread evenly over the audio callbacks instead of one burst per interval.

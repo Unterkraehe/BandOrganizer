@@ -271,28 +271,6 @@ Prerequisites and spikes (details in overview §12):
 | S7 | OneDrive with a real band account: login through the token helper, Graph from the browser (CORS), download address + Range, `If-Match`/412, `conflictBehavior=fail`, listing ~100 files, upload session | Dev | M12 |
 | S8 | Offline storage on real phones: quota, `storage.persist()`, are saved songs kept (iPhone installed app!), 50 MB blobs in IndexedDB | Dev + band member with iPhone | M10 step 3 |
 
-## 4d. Open todo: beta instance (asked for 2026-11-10)
-
-**Goal:** a `beta` branch that deploys its own live instance, so the maintainer can test a version with the real HiDrive data on real phones before it is merged into `main` and reaches the whole band. Not built yet. To clarify and do:
-
-- **Where it runs:** GitHub Pages serves one site per repository, and today the workflow deploys only `main`. Options: (a) the workflow builds `main` and `beta` into one site (`/BandOrganizer/` and `/BandOrganizer/beta/`), or (b) a second repository / second host only for the beta. With (a) both live on the same origin and inside the service worker scope of the main app – the beta then needs its own service worker scope, cache names and device-storage prefix (`bandapp.*` keys, IndexedDB), otherwise the two overwrite each other on a phone.
-- **Login:** HiDrive only accepts registered redirect addresses and the token helper only answers `ALLOWED_ORIGINS` – check whether the beta address can reuse `callback.html` of the main app (same origin) or needs its own entry (maintainer, HiDrive app + Cloudflare).
-- **Same band data:** the beta reads and writes the band's real `_BandApp/` folder. A beta that changes a stored format must stay readable for the released version (schema versions, R-DATA) – or use a separate test folder.
-- **Push:** a beta install registers its own push subscription for the same member; decide whether beta devices should receive notifications twice or the beta keeps push off.
-- **Visible difference:** name/icon badge "Beta" and the version in Einstellungen, so nobody mixes the two installed apps up.
-- **Rules:** extend R-CODE-13 (feature branch → `beta` → `main`), CI on `beta`, and describe the flow in `CLAUDE.md` / `docs/92-code-map.md`.
-
-## 5. Definition of Done (every milestone)
-
-- [ ] All visible texts German via i18n keys (R-I18N-02)
-- [ ] Works and looks right on phone, tablet, desktop – in light and dark theme
-- [ ] Loading, empty, error states present (R-UX-03)
-- [ ] No write outside `_BandApp/` (guard tests green, R-DATA)
-- [ ] Tests for new repositories/migrations; CI green
-- [ ] Deployed to GitHub Pages; update prompt works
-- [ ] Docs updated: feature status, decision log, changed details (R-CODE-07)
-- [ ] Short changelog for the band ("Was ist neu")
-
 ## 4d. Beta version – release channel (v1.0.1)
 
 **Goal:** the maintainer tests a version with the real band data on real phones before it reaches the band – without a second site, a second install or a second login.
@@ -305,6 +283,17 @@ Prerequisites and spikes (details in overview §12):
 - **Service workers:** each version has its own (scope `/BandOrganizer/` and `/BandOrganizer/beta/`); the released one leaves `beta/` addresses alone (`navigateFallbackDenylist`). The web app manifest of both names the released address as `id` / `start_url` / `scope` – one installed app.
 - **Push:** stays registered with the released version's service worker; from v1.0.2 on the beta uses that registration too, so there is one subscription per device whichever version runs.
 - **Not testable in development:** the real site with both versions, HiDrive login from the beta, push in the beta, installed app on iPhone/Android (checklist B).
+
+## 5. Definition of Done (every milestone)
+
+- [ ] All visible texts German via i18n keys (R-I18N-02)
+- [ ] Works and looks right on phone, tablet, desktop – in light and dark theme
+- [ ] Loading, empty, error states present (R-UX-03)
+- [ ] No write outside `_BandApp/` (guard tests green, R-DATA)
+- [ ] Tests for new repositories/migrations; CI green
+- [ ] Deployed to GitHub Pages; update prompt works
+- [ ] Docs updated: feature status, decision log, changed details (R-CODE-07)
+- [ ] Short changelog for the band ("Was ist neu")
 
 ## 6. Versioning & Releases
 

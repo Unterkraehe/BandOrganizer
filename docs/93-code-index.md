@@ -322,7 +322,7 @@ Tests: members.test.ts (11)
 | `ReminderProvider.tsx` | Your reminder settings (F6 §4.7) + keeping the token helper's reminder list current. | ReminderProvider, useReminders |
 | `ReminderSettings.tsx` | Einstellungen → Benachrichtigungen → "Erinnerungen an Termine": your defaults per event type (F6 §4.7). | ReminderSettings |
 | `payload.ts` | What a notification says (decided: sender + message text; chat messages and event changes). | pushPayloadFor |
-| `push.ts` | Keeps this device's notifications alive without the member doing anything (v1.0.1). | pushSupport, PushNotConfiguredError, currentSubscription, repairPush, enablePush, savePrefs, disablePush, thisDevice, … · types: PushKind, PushDevice, PushPayload, PushSupport, … |
+| `push.ts` | Keeps this device's notifications alive without the member doing anything (v1.0.2). | pushSupport, PushNotConfiguredError, currentSubscription, repairPush, enablePush, savePrefs, disablePush, thisDevice, … · types: PushKind, PushDevice, PushPayload, PushSupport, … |
 | `reminders.ts` | Choices in minutes before the event. | REMINDER_TYPES, REMINDER_OFFSETS, DEFAULT_REMINDERS, HORIZON_DAYS, defaultSettings, normalizeSettings, readSettings, writeSettings, … · types: ReminderType, ReminderSettings, ReminderJob, ReminderUpload |
 
 Tests: ReminderProvider.test.tsx (1), notifications.test.ts (6), reminders.test.ts (8)

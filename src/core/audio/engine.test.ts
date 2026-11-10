@@ -165,7 +165,7 @@ describe('practice features (F9)', () => {
     expect(engine.getState()).toMatchObject({ loopStart: 12, loop: null });
   });
 
-  it('changes the tempo alone with the built-in player – no Web Audio (smooth over Bluetooth, v1.0.1)', async () => {
+  it('changes the tempo alone with the built-in player – no Web Audio (smooth over Bluetooth, v1.0.2)', async () => {
     const audio = fakeAudio();
     Object.assign(URL, { createObjectURL: () => 'blob:x', revokeObjectURL: () => undefined });
     const engine = new AudioEngine({ loadBlob: async () => new Blob(['x']), createAudio: () => audio });

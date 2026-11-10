@@ -64,7 +64,7 @@ describe('sending', () => {
   });
 });
 
-describe('this device repairs its registration by itself (v1.0.1)', () => {
+describe('this device repairs its registration by itself (v1.0.2)', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -110,7 +110,7 @@ describe('this device repairs its registration by itself (v1.0.1)', () => {
   it('a device switched off after a failed delivery gets a new address and is on again', async () => {
     const storage = setup();
     const pushManager = browser('https://fcm.googleapis.com/one', ['https://fcm.googleapis.com/two']);
-    // turned on before v1.0.1 (subscription, no local mark), nothing stored yet → registered
+    // turned on before v1.0.2 (subscription, no local mark), nothing stored yet → registered
     expect(await repairPush(storage, APP, 'm_tom')).toBe('repaired');
     expect(await active(storage)).toEqual(['https://fcm.googleapis.com/one']);
     expect(await repairPush(storage, APP, 'm_tom')).toBe('ok');

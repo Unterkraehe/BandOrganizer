@@ -1,3 +1,4 @@
+import { isBeta, STABLE_BASE } from '@/core/channel/channel';
 import { getAccessToken } from '@/core/auth/tokens';
 import { joinPath, NotFoundError, type SafeStorage } from '@/core/storage';
 import { config } from '@/config';
@@ -85,15 +86,30 @@ export class PushNotConfiguredError extends Error {
   }
 }
 
+/**
+ * The service worker that holds this device's push subscription. In the beta version that is the
+ * released version's service worker (it stays installed and keeps showing the notifications): one
+ * subscription per device, whichever version runs – switching never doubles or loses it (roadmap §4d).
+ */
+async function pushRegistration(wait: true): Promise<ServiceWorkerRegistration>;
+async function pushRegistration(wait?: false): Promise<ServiceWorkerRegistration | undefined>;
+async function pushRegistration(wait = false): Promise<ServiceWorkerRegistration | undefined> {
+  if (isBeta) {
+    const released = await navigator.serviceWorker.getRegistration(STABLE_BASE);
+    if (released || !wait) return released;
+  }
+  return wait ? navigator.serviceWorker.ready : navigator.serviceWorker.getRegistration();
+}
+
 export async function currentSubscription(): Promise<PushSubscription | null> {
   if (!('serviceWorker' in navigator)) return null;
-  const reg = await navigator.serviceWorker.getRegistration();
+  const reg = await pushRegistration();
   return (await reg?.pushManager.getSubscription()) ?? null;
 }
 
 /**
  * "Notifications wanted on this device" (per member, device-local) with the last registered push
- * address. Lets the device repair its registration by itself (`repairPush`, v1.0.1).
+ * address. Lets the device repair its registration by itself (`repairPush`, v1.0.2).
  */
 interface Wanted {
   endpoint: string;
@@ -134,7 +150,7 @@ async function register(storage: SafeStorage, appRoot: string, memberId: string,
 export type RepairResult = 'off' | 'ok' | 'repaired';
 
 /**
- * Keeps this device's notifications alive without the member doing anything (v1.0.1). Called when the
+ * Keeps this device's notifications alive without the member doing anything (v1.0.2). Called when the
  * app starts and when it comes back from the background. Notifications used to stop for good when
  * - a sender's app switched this device off after one failed delivery (`sendPush` → 404/410), or
  * - the browser replaced or dropped the push address (the stored one then leads nowhere).
@@ -144,11 +160,11 @@ export type RepairResult = 'off' | 'ok' | 'repaired';
  */
 export async function repairPush(storage: SafeStorage, appRoot: string, memberId: string): Promise<RepairResult> {
   if (!memberId || pushSupport() !== 'available' || Notification.permission !== 'granted') return 'off';
-  const reg = await navigator.serviceWorker.getRegistration();
+  const reg = await pushRegistration();
   if (!reg) return 'off';
   let sub = await reg.pushManager.getSubscription();
   const wanted = readWanted(memberId);
-  // "Ausschalten" removes both; a subscription alone = turned on before v1.0.1
+  // "Ausschalten" removes both; a subscription alone = turned on before v1.0.2
   if (!sub && !wanted) return 'off';
 
   let stored: PushDevice | null = null;
@@ -184,7 +200,7 @@ export async function repairPush(storage: SafeStorage, appRoot: string, memberId
 export async function enablePush(storage: SafeStorage, appRoot: string, memberId: string, prefs: PushDevice['prefs']): Promise<PushDevice> {
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') throw new Error('permission-denied');
-  const reg = await navigator.serviceWorker.ready;
+  const reg = await pushRegistration(true);
   const sub = (await reg.pushManager.getSubscription()) ?? (await subscribe(reg));
   return register(storage, appRoot, memberId, sub, prefs);
 }

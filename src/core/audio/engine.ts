@@ -9,7 +9,7 @@ import { createStretch, type StretchNode } from './stretch';
  *   behaviour on iPhones (spike S3 passed). A–B loops work here too.
  * - "effects": Web Audio + Signalsmith Stretch (WASM/AudioWorklet), only while pitch ≠ 0
  *   (F9 §7 fallback plan). Tempo and pitch are independent of each other.
- * A changed tempo alone stays in element mode (v1.0.1): the browser's own player changes the speed
+ * A changed tempo alone stays in element mode (v1.0.2): the browser's own player changes the speed
  * and keeps the pitch (`playbackRate` + `preservesPitch`) – no real-time computing in the page, so
  * it also plays smoothly over Bluetooth and with the screen locked.
  * The engine switches seamlessly at the current position.
@@ -426,7 +426,7 @@ export class AudioEngine {
     const Ctx = typeof window !== 'undefined' ? (window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext) : undefined;
     if (!Ctx) return null;
     // "playback" = larger output buffers than the default "interactive": the stretcher then survives
-    // the irregular audio callbacks of Android phones with Bluetooth headphones/speakers (v1.0.1)
+    // the irregular audio callbacks of Android phones with Bluetooth headphones/speakers (v1.0.2)
     try {
       this.ctx = new Ctx({ latencyHint: 'playback' });
     } catch {

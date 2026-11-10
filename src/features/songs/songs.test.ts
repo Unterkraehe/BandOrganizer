@@ -145,7 +145,7 @@ describe('LibraryStore actions', () => {
   });
 });
 
-describe('song sync (v1.0.1, F11 §4.7)', () => {
+describe('song sync (v1.0.2, F11 §4.7)', () => {
   it('a second start reads one folder listing each for files and song data, and still sees changes', async () => {
     // this test file runs without a browser: a small stand-in for the device cache
     const cache = new Map<string, string>();

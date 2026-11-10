@@ -116,7 +116,7 @@ export function ReminderProvider({ children }: { children: ReactNode }) {
     [save],
   );
 
-  // Notifications on this device repair themselves (v1.0.1): at the start and whenever the app comes back.
+  // Notifications on this device repair themselves (v1.0.2): at the start and whenever the app comes back.
   useEffect(() => {
     if (mode === 'demo' || !storage || !appRoot || !memberId) return;
     const repair = () => void repairPush(storage, appRoot, memberId).catch((error) => console.warn('Repairing notifications failed', error));

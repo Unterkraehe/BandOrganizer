@@ -12,7 +12,7 @@ import { createTag, listTags, saveTag, seedMeta, syncSongMetas, updateSongMeta, 
  * Song library store (F4): scanned files + meta.json + tags → songs.
  * Cached data is shown immediately, fresh data loads in the background (R-UX-07).
  *
- * Song sync (v1.0.1, F11 §4.7): the store remembers the tree version of every folder it has seen
+ * Song sync (v1.0.2, F11 §4.7): the store remembers the tree version of every folder it has seen
  * (`ScanSnapshot`, `SongFolderVersions`). The next scan / reload only reads folders that changed –
  * with nothing new that is ONE listing each instead of every folder and every song. Safety nets: the
  * refresh buttons always read everything (`scan({ full: true })`), and so does the first sync after

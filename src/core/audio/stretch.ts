@@ -32,7 +32,7 @@ export async function createStretch(ctx: AudioContext): Promise<StretchNode> {
   const node = await module.default(ctx);
   // Same block sizes as the library's presets ("default" 120/30 ms; "cheaper" 100/40 ms for older/smaller
   // devices, F9 §7 risk 2), but with the computation spread evenly over the audio callbacks instead of
-  // one burst per interval – bursts caused dropouts on Android with Bluetooth output (v1.0.1).
+  // one burst per interval – bursts caused dropouts on Android with Bluetooth output (v1.0.2).
   const cheaper = (navigator.hardwareConcurrency ?? 8) <= 4;
   node.configure(cheaper ? { blockMs: 100, intervalMs: 40, splitComputation: true } : { blockMs: 120, intervalMs: 30, splitComputation: true });
   node.connect(ctx.destination);

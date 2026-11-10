@@ -23,7 +23,7 @@ export function NotificationSettings() {
 
   useEffect(() => {
     if (!storage || !appRoot || !memberId || support !== 'available') return setLoaded(true);
-    // first repair a registration that was switched off or lost in the background (v1.0.1), then show the truth
+    // first repair a registration that was switched off or lost in the background (v1.0.2), then show the truth
     void repairPush(storage, appRoot, memberId)
       .catch(() => undefined)
       .then(() => thisDevice(storage, appRoot, memberId))

@@ -159,7 +159,7 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 - `usePwaUpdate()` registers the service worker – call it only in `UpdateToast`; elsewhere use `checkForUpdate()` / `applyUpdate()` (`core/pwa/usePwa.ts`).
 - The update toast only offers a service worker that answers `GET_VERSION` with a newer version (`sw-version-<version>.js`, generated in `vite.config.ts`); the app shell is precached as `index.html?v=<version>`. Both guard against the CDN serving old and new files for ~10 min after a deploy (F3 §6.4, v0.19.4).
 - `usePlayer()` in a list screen = full re-render ~4×/s while music plays (see §5).
-- Audio: only a changed **pitch** uses Web Audio (`AudioEngine.needsEffects`); tempo alone is the `<audio>` element's `playbackRate`. Keep real-time computing out of the page where the browser can do it – it stutters over Bluetooth on Android (F9, v1.0.1).
+- Audio: only a changed **pitch** uses Web Audio (`AudioEngine.needsEffects`); tempo alone is the `<audio>` element's `playbackRate`. Keep real-time computing out of the page where the browser can do it – it stutters over Bluetooth on Android (F9, v1.0.2).
 
 ## 8. Open items (as of v1.1.0)
 
