@@ -4,7 +4,8 @@ import type { Versioned } from '@/core/band/band';
 import { useSession } from '@/core/session/BandSession';
 import { ConflictError } from '@/core/storage';
 import { useCalendar } from '@/features/calendar/CalendarProvider';
-import { listDevices } from './push';
+import { listDevices, repairPush } from './push';
+import { onAppResume } from '@/core/resume';
 import {
   buildUpload,
   computeReminders,
@@ -114,6 +115,14 @@ export function ReminderProvider({ children }: { children: ReactNode }) {
       }),
     [save],
   );
+
+  // Notifications on this device repair themselves (v1.0.1): at the start and whenever the app comes back.
+  useEffect(() => {
+    if (mode === 'demo' || !storage || !appRoot || !memberId) return;
+    const repair = () => void repairPush(storage, appRoot, memberId).catch((error) => console.warn('Repairing notifications failed', error));
+    repair();
+    return onAppResume(repair);
+  }, [mode, storage, appRoot, memberId]);
 
   // Keep the token helper's list current: after the calendar was loaded from HiDrive and whenever
   // it or your settings change. Only uploads when the result differs from the last upload.

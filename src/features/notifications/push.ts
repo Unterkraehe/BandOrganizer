@@ -91,29 +91,112 @@ export async function currentSubscription(): Promise<PushSubscription | null> {
   return (await reg?.pushManager.getSubscription()) ?? null;
 }
 
+/**
+ * "Notifications wanted on this device" (per member, device-local) with the last registered push
+ * address. Lets the device repair its registration by itself (`repairPush`, v1.0.1).
+ */
+interface Wanted {
+  endpoint: string;
+  prefs: PushDevice['prefs'];
+}
+const wantedKey = (memberId: string) => `bandapp.push.wanted.${memberId}`;
+function readWanted(memberId: string): Wanted | null {
+  try {
+    const raw = localStorage.getItem(wantedKey(memberId));
+    return raw ? (JSON.parse(raw) as Wanted) : null;
+  } catch {
+    return null;
+  }
+}
+function writeWanted(memberId: string, wanted: Wanted | null) {
+  try {
+    if (wanted) localStorage.setItem(wantedKey(memberId), JSON.stringify(wanted));
+    else localStorage.removeItem(wantedKey(memberId));
+  } catch {
+    // storage full / blocked – the repair then relies on the existing subscription alone
+  }
+}
+
+async function subscribe(reg: ServiceWorkerRegistration): Promise<PushSubscription> {
+  return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToBytes(await publicKey()) as BufferSource });
+}
+
+async function register(storage: SafeStorage, appRoot: string, memberId: string, sub: PushSubscription, prefs: PushDevice['prefs'], createdAt?: string): Promise<PushDevice> {
+  const json = sub.toJSON() as { endpoint: string; keys: { p256dh: string; auth: string } };
+  const now = new Date().toISOString();
+  const device: PushDevice = { schemaVersion: 1, memberId, endpoint: json.endpoint, keys: json.keys, prefs, device: deviceLabel(), active: true, createdAt: createdAt ?? now, updatedAt: now };
+  await storage.writeJson(devicePath(appRoot, memberId, await deviceIdFor(json.endpoint)), device);
+  writeWanted(memberId, { endpoint: json.endpoint, prefs });
+  invalidateDevices();
+  return device;
+}
+
+export type RepairResult = 'off' | 'ok' | 'repaired';
+
+/**
+ * Keeps this device's notifications alive without the member doing anything (v1.0.1). Called when the
+ * app starts and when it comes back from the background. Notifications used to stop for good when
+ * - a sender's app switched this device off after one failed delivery (`sendPush` → 404/410), or
+ * - the browser replaced or dropped the push address (the stored one then leads nowhere).
+ * If the member turned notifications on here and the permission is still granted, this registers the
+ * device again: a registration found switched off gets a NEW push address (the old one is taken as dead).
+ * Never asks for permission – that needs a tap (`enablePush`).
+ */
+export async function repairPush(storage: SafeStorage, appRoot: string, memberId: string): Promise<RepairResult> {
+  if (!memberId || pushSupport() !== 'available' || Notification.permission !== 'granted') return 'off';
+  const reg = await navigator.serviceWorker.getRegistration();
+  if (!reg) return 'off';
+  let sub = await reg.pushManager.getSubscription();
+  const wanted = readWanted(memberId);
+  // "Ausschalten" removes both; a subscription alone = turned on before v1.0.1
+  if (!sub && !wanted) return 'off';
+
+  let stored: PushDevice | null = null;
+  if (sub) {
+    try {
+      stored = await storage.readJson<PushDevice>(devicePath(appRoot, memberId, await deviceIdFor(sub.endpoint)));
+    } catch (error) {
+      if (!(error instanceof NotFoundError)) throw error;
+    }
+    if (stored?.active) {
+      if (wanted?.endpoint !== sub.endpoint) writeWanted(memberId, { endpoint: sub.endpoint, prefs: stored.prefs });
+      return 'ok';
+    }
+    // switched off by a failed delivery: the address is taken as dead – get a fresh one
+    if (stored) {
+      await sub.unsubscribe().catch(() => undefined);
+      sub = null;
+    }
+  }
+  const prefs = stored?.prefs ?? wanted?.prefs ?? { chat: true, events: true, reminders: true };
+  sub ??= await subscribe(reg);
+  await register(storage, appRoot, memberId, sub, prefs);
+  // the address this device had before leads nowhere now
+  if (wanted && wanted.endpoint !== sub.endpoint) {
+    const oldPath = devicePath(appRoot, memberId, await deviceIdFor(wanted.endpoint));
+    const old = await storage.readJson<PushDevice>(oldPath).catch(() => null);
+    if (old?.active) await storage.writeJson(oldPath, { ...old, active: false, updatedAt: new Date().toISOString() }).catch(() => undefined);
+  }
+  return 'repaired';
+}
+
 /** Must be called from a tap (permission prompt). */
 export async function enablePush(storage: SafeStorage, appRoot: string, memberId: string, prefs: PushDevice['prefs']): Promise<PushDevice> {
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') throw new Error('permission-denied');
   const reg = await navigator.serviceWorker.ready;
-  const key = await publicKey();
-  const sub =
-    (await reg.pushManager.getSubscription()) ??
-    (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToBytes(key) as BufferSource }));
-  const json = sub.toJSON() as { endpoint: string; keys: { p256dh: string; auth: string } };
-  const now = new Date().toISOString();
-  const device: PushDevice = { schemaVersion: 1, memberId, endpoint: json.endpoint, keys: json.keys, prefs, device: deviceLabel(), active: true, createdAt: now, updatedAt: now };
-  await storage.writeJson(devicePath(appRoot, memberId, await deviceIdFor(json.endpoint)), device);
-  invalidateDevices();
-  return device;
+  const sub = (await reg.pushManager.getSubscription()) ?? (await subscribe(reg));
+  return register(storage, appRoot, memberId, sub, prefs);
 }
 
 export async function savePrefs(storage: SafeStorage, appRoot: string, device: PushDevice): Promise<void> {
   await storage.writeJson(devicePath(appRoot, device.memberId, await deviceIdFor(device.endpoint)), { ...device, updatedAt: new Date().toISOString() });
+  writeWanted(device.memberId, { endpoint: device.endpoint, prefs: device.prefs });
   invalidateDevices();
 }
 
 export async function disablePush(storage: SafeStorage, appRoot: string, device: PushDevice | null): Promise<void> {
+  if (device) writeWanted(device.memberId, null);
   const sub = await currentSubscription();
   await sub?.unsubscribe().catch(() => undefined);
   if (device) await markInactive(storage, appRoot, device);

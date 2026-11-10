@@ -5,7 +5,7 @@ import { useNotify } from '@/app/notify/NotifyProvider';
 import { useSession } from '@/core/session/BandSession';
 import { Button, Section } from '@/ui';
 import { ReminderSettings } from './ReminderSettings';
-import { disablePush, enablePush, pushSupport, PushNotConfiguredError, savePrefs, sendPush, thisDevice, type PushDevice, type PushKind } from './push';
+import { disablePush, enablePush, pushSupport, PushNotConfiguredError, repairPush, savePrefs, sendPush, thisDevice, type PushDevice, type PushKind } from './push';
 import styles from './Notifications.module.css';
 
 /** Einstellungen → Benachrichtigungen (F6 §4.5): per device, per member. */
@@ -23,7 +23,10 @@ export function NotificationSettings() {
 
   useEffect(() => {
     if (!storage || !appRoot || !memberId || support !== 'available') return setLoaded(true);
-    void thisDevice(storage, appRoot, memberId)
+    // first repair a registration that was switched off or lost in the background (v1.0.1), then show the truth
+    void repairPush(storage, appRoot, memberId)
+      .catch(() => undefined)
+      .then(() => thisDevice(storage, appRoot, memberId))
       .then(setDevice)
       .catch(() => undefined)
       .finally(() => setLoaded(true));

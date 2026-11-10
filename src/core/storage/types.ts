@@ -10,6 +10,13 @@ export interface FileEntry {
   modifiedAt?: string;
   /** Opaque version marker used for conflict checks (R-DATA-07), e.g. ETag or mtime. */
   version?: string;
+  /**
+   * Folders only, optional capability: an opaque marker that changes whenever ANYTHING below the folder
+   * changes (file added, removed, renamed or its content changed, at any depth). A folder whose marker
+   * is the same as last time need not be listed again (song sync, F11 §4.7). Providers that can't
+   * guarantee this leave it out – the folder is then always listed.
+   */
+  treeVersion?: string;
 }
 
 export type FileContent = string | Blob | Uint8Array;

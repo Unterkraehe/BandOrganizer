@@ -115,7 +115,7 @@ describe('feedback while loading and after failures', () => {
 
     // with practice settings the effects fail first ("effects" notice) – the reason shown is still the file
     const withTempo = new AudioEngine({ loadBlob, createAudio: () => audio });
-    await withTempo.playTrack({ id: 'r3', title: 'C', path: '/c.wav' }, undefined, { tempo: 0.8 });
+    await withTempo.playTrack({ id: 'r3', title: 'C', path: '/c.wav' }, undefined, { semitones: -2 });
     expect(withTempo.getState()).toMatchObject({ status: 'paused', error: 'decode' });
 
     const failing = new AudioEngine({ loadBlob: async () => Promise.reject(new Error('offline')), createAudio: fakeAudio });
@@ -141,6 +141,21 @@ describe('practice features (F9)', () => {
     expect(time).toBe(10);
     engine.setLoop(null);
     expect(onSettingsChange).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'r1' }), { tempo: 1, semitones: 0, loop: null });
+  });
+
+  it('changes the tempo alone with the built-in player – no Web Audio (smooth over Bluetooth, v1.0.1)', async () => {
+    const audio = fakeAudio();
+    Object.assign(URL, { createObjectURL: () => 'blob:x', revokeObjectURL: () => undefined });
+    const engine = new AudioEngine({ loadBlob: async () => new Blob(['x']), createAudio: () => audio });
+    await engine.playTrack({ id: 'r1', title: 'A', path: '/a.mp3' }, undefined, { tempo: 0.8 });
+    expect(engine.getState()).toMatchObject({ mode: 'element', error: null, tempo: 0.8, status: 'playing' });
+    expect(audio.playbackRate).toBe(0.8);
+    expect(audio.preservesPitch).toBe(true);
+    engine.setEffects({ tempo: 1.2 });
+    expect(audio.playbackRate).toBe(1.2);
+    expect(engine.getState()).toMatchObject({ mode: 'element', error: null });
+    engine.setEffects({ tempo: 1 });
+    expect(audio.playbackRate).toBe(1);
   });
 
   it('falls back to normal playback if effects are not available (no Web Audio)', async () => {

@@ -65,6 +65,8 @@
     "rescan": "Jetzt neu suchen",
     "folders_one": "{{count}} Ordner durchsucht",
     "folders_other": "{{count}} Ordner durchsucht",
+    "unchanged_one": "{{count}} unveränderter Ordner übersprungen",
+    "unchanged_other": "{{count}} unveränderte Ordner übersprungen",
     "failed_one": "{{count}} Ordner konnte nicht gelesen werden:",
     "failed_other": "{{count}} Ordner konnten nicht gelesen werden:",
     "suggestionFolders": "Ordner mit Song-Vorschlägen",

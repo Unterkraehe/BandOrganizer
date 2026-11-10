@@ -178,13 +178,16 @@ function SongScanSection() {
   return (
     <Section title={t('settings.title')}>
       <SettingRow label={when ? t('settings.summary', { count: songs.length, when }) : t('settings.never')}>
-        <Button icon={<Music size={18} />} onClick={() => void store.scan()} disabled={state.status === 'scanning'}>
+        <Button icon={<Music size={18} />} onClick={() => void store.scan({ full: true })} disabled={state.status === 'scanning'}>
           {state.status === 'scanning' ? t('scanning', { count: state.progress?.found ?? 0 }) : t('settings.rescan')}
         </Button>
       </SettingRow>
       {state.report && (
         <div className={styles.info} style={{ paddingTop: 'var(--space-2)' }}>
-          <p>{t('settings.folders', { count: state.report.folders })}</p>
+          <p>
+            {t('settings.folders', { count: state.report.folders })}
+            {state.report.unchanged ? ` · ${t('settings.unchanged', { count: state.report.unchanged })}` : ''}
+          </p>
           {state.report.failedFolders.length > 0 && (
             <>
               <p style={{ color: 'var(--warning)', fontWeight: 600 }}>{t('settings.failed', { count: state.report.failedFolders.length })}</p>

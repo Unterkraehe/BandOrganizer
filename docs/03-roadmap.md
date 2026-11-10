@@ -231,6 +231,7 @@ Done when: the band uses the app for a full rehearsal-and-gig cycle without fall
 | 0.19.5 | Every control answers at once (R-UX-10): play shows loading at once and says why a song doesn't play; chat edit/delete/reactions optimistic; busy states for test notification and opening lyrics files; tap tempo counts; drag handle explains itself; ⏮/⏭ disabled at the ends of a setlist |
 | 1.0.0 | **Version 1.0.** Tapping a chat notification opens the chat at the newest messages (also when the message is not loaded yet); Android steps for the calendar subscription mention "Synchronisieren"; band logo centred on the start screen; rule R-CODE-13 (changes on branches) |
 | 1.0.1 | **Beta version (release channel):** Einstellungen → Über die App → "Beta-Version" loads the beta published from the `beta` branch on that device; one site, one install, one login (§4d) |
+| 1.0.2 | Notifications repair themselves (a device switched off after a failed delivery or with a replaced push address registers again at start/resume); tempo alone plays through the `<audio>` element, pitch with larger buffers (Bluetooth on Android); song sync: only changed folders and songs are read (F11 §4.7) |
 
 Details per change: feature files (status blocks) and the "Was ist neu" texts in `src/locales/de/whatsNew.json`.
 

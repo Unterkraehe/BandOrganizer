@@ -131,7 +131,7 @@ export function SongsPage() {
           <IconButton
             label={t('rescan')}
             icon={<RefreshCw size={20} className={scanning ? styles.spin : undefined} />}
-            onClick={() => void store.scan()}
+            onClick={() => void store.scan({ full: true })}
             disabled={scanning}
           />
           <Button variant="primary" icon={<Plus size={18} />} iconOnlyOnPhone onClick={() => navigate('/songs/new')}>
@@ -230,7 +230,7 @@ export function SongsPage() {
           icon={<Music size={28} />}
           title={t('scanError')}
           text=""
-          action={<Button onClick={() => void store.scan()}>{t('retry')}</Button>}
+          action={<Button onClick={() => void store.scan({ full: true })}>{t('retry')}</Button>}
         />
       )}
 

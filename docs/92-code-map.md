@@ -77,7 +77,7 @@ Full tree with explanations: overview §8. Who reads/writes it:
 | `push/<memberId>/<deviceId>.json` | `features/notifications/push.ts` | Web Push subscription of one device |
 | `reminders/<memberId>.json` | `features/notifications/reminders.ts`, `ReminderProvider.tsx` | a member's reminder settings; the computed list goes to the token helper's KV (`PUT /reminders`), not to HiDrive |
 
-Device-local (localStorage, keys `bandapp.*`): tokens, theme, text size, song list view/sort/suggestions toggle, calendar view, caches per band (`bandapp.chat.<band>.<member>`, `bandapp.calendar.<band>`, …), last upload folders, search history, setlist mode, drafts.
+Device-local (localStorage, keys `bandapp.*`): tokens, "notifications wanted" per member (`bandapp.push.wanted.<member>`), folder versions of the song sync (in `bandapp.library.<band>.scan` / `.metaFolders`), theme, text size, song list view/sort/suggestions toggle, calendar view, caches per band (`bandapp.chat.<band>.<member>`, `bandapp.calendar.<band>`, …), last upload folders, search history, setlist mode, drafts.
 
 Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is an `mtime:chash` string; `writeJson(path, data, { expectedVersion })` throws `ConflictError` if the file changed.
 
@@ -87,6 +87,7 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 |---|---|
 | A store with cached-first loading | Class with `getState / subscribe / set`, a Provider using `useSyncExternalStore` (see `calendar/store.ts` + `CalendarProvider.tsx`); cache in `localStorage` via a `cacheKey` |
 | Instant feedback for writes | **Optimistic pattern:** apply the change to state → `await` the write → in `catch` restore the old state and rethrow (see `LibraryStore.update`, `CalendarStore.saveEvent/answer`, `SetlistStore.save`). Components close forms/dialogs at once and show a toast on failure |
+| Read only what changed on the storage | `FileEntry.treeVersion` on folders (changes when anything below changes; HiDrive `chash`, memory provider too). Remember it and skip unchanged folders: `scanFiles({ previous })` (`core/files/scan.ts`), `syncSongMetas` (`songs/repository.ts`). Always keep a full read as a fallback (no tree version, manual refresh) – F11 §4.7 |
 | Refresh after the app was in the background | `onAppResume(listener)` (`core/resume.ts`) – every provider that holds server data registers one |
 | Other members' changes while the app is open | Polling while visible, reading only changed files by `FileEntry.version`: chat (`ChatStore.poll`), calendar (`CalendarStore.refresh` + `useWatchCalendar()` on calendar screens for 20 s instead of 60 s). Apply results only to entries that didn't change locally during the read (see `refresh`) |
 | One feature tells another about a change | System event bus `core/events.ts` (`emitSystemEvent` / `onSystemEvent`); the chat turns events into info lines and pushes |
@@ -97,7 +98,7 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 | Long lists (> 60 rows) | `ui/VirtualList` with fixed-height rows (R-UI-13) |
 | Floating UI | `Dialog`, `ConfirmDialog`, `Menu` render through a portal – never position overlays inside sticky/transformed parents |
 | Hide something when printing | `data-no-print` attribute |
-| Push notifications | Client: `features/notifications/push.ts` (subscribe, `sendPush`); service worker: `public/push-sw.js`; worker: `token-helper/worker.js` (`/push`) |
+| Push notifications | Client: `features/notifications/push.ts` (subscribe, `sendPush`, `repairPush` = the device re-registers itself at start/resume, called in `ReminderProvider`); service worker: `public/push-sw.js`; worker: `token-helper/worker.js` (`/push`) |
 | Timed notifications (reminders) | `features/notifications/reminders.ts` computes every member's jobs for 8 weeks (`computeReminders`), `ReminderProvider` uploads them (`PUT /reminders`, only after a fresh calendar load – `CalendarStore.isFresh()` – and only if the hash changed); the worker's `scheduled()` (Cron every 5 min) sends jobs due in the last 5 min. Texts are rendered in the app at upload time: absolute dates only, never "Morgen" |
 | Search contribution | Add documents in `features/search/SearchProvider.tsx` (+ result route); text matching via `core/search/normalize.ts` |
 | Screen whose title is the main information | `Page titleBelow`: top bar keeps only ← and actions, the title is a large wrapping h1 below it (song page) |
@@ -158,7 +159,8 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 - `usePwaUpdate()` registers the service worker – call it only in `UpdateToast`; elsewhere use `checkForUpdate()` / `applyUpdate()` (`core/pwa/usePwa.ts`).
 - The update toast only offers a service worker that answers `GET_VERSION` with a newer version (`sw-version-<version>.js`, generated in `vite.config.ts`); the app shell is precached as `index.html?v=<version>`. Both guard against the CDN serving old and new files for ~10 min after a deploy (F3 §6.4, v0.19.4).
 - `usePlayer()` in a list screen = full re-render ~4×/s while music plays (see §5).
+- Audio: only a changed **pitch** uses Web Audio (`AudioEngine.needsEffects`); tempo alone is the `<audio>` element's `playbackRate`. Keep real-time computing out of the page where the browser can do it – it stutters over Bluetooth on Android (F9, v1.0.1).
 
-## 8. Open items (as of v1.0.0)
+## 8. Open items (as of v1.0.1)
 
 Device tests still open (`94-device-test-checklist.md`): S1/S2 (ETag, file IDs after rename), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with the keyboard on iPhone/Android, push notifications and reminders on real devices, `POST /file/copy`. S4 is answered (share links unsuitable → token helper, v0.19.1). Everything planned for v1 is built; what comes next is in `90-future-plans.md`.

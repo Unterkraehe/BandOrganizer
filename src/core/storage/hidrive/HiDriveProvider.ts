@@ -261,6 +261,8 @@ function toEntry(object: HiDriveObject, parentPath: string): FileEntry {
     size: object.size,
     modifiedAt: object.mtime !== undefined ? new Date(object.mtime * 1000).toISOString() : undefined,
     version: object.mtime !== undefined ? `${object.mtime}:${object.chash ?? object.size ?? ''}` : undefined,
+    // HiDrive's content hash of a directory is built from the names and content hashes of everything in it
+    treeVersion: object.type === 'dir' && object.chash ? object.chash : undefined,
   };
 }
 

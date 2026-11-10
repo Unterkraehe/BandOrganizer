@@ -192,7 +192,30 @@ export class MemoryStorageProvider implements StorageProvider {
   }
 
   private folderEntry(path: string): FileEntry {
-    return { path, name: path === '/' ? '' : basename(path), type: 'folder', id: `mem:${path}` };
+    return { path, name: path === '/' ? '' : basename(path), type: 'folder', id: `mem:${path}`, treeVersion: this.treeVersion(path) };
+  }
+
+  /** Changes whenever anything below the folder changes (like HiDrive's directory content hash). */
+  private treeVersion(path: string): string {
+    const prefix = path === '/' ? '/' : `${path}/`;
+    let hash = 2166136261;
+    const add = (text: string) => {
+      for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
+    };
+    let count = 0;
+    for (const folder of this.folders) {
+      if (folder.startsWith(prefix)) {
+        add(folder);
+        count += 1;
+      }
+    }
+    for (const [filePath, file] of this.files) {
+      if (filePath.startsWith(prefix)) {
+        add(`${filePath}|${file.version}|${file.modifiedAt}|${file.content.size}`);
+        count += 1;
+      }
+    }
+    return `${count}:${(hash >>> 0).toString(16)}`;
   }
 }
 

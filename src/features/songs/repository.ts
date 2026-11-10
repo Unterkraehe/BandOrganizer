@@ -38,19 +38,45 @@ async function mapLimited<T, R>(items: T[], limit: number, fn: (item: T) => Prom
 /* ---------------- song metadata ---------------- */
 
 export async function listSongMetas(storage: SafeStorage, appRoot: string): Promise<Record<string, Versioned<SongMeta>>> {
+  return (await syncSongMetas(storage, appRoot, null)).metas;
+}
+
+/** What `syncSongMetas` remembers: the tree version of each `songs/<id>/` folder (`FileEntry.treeVersion`). */
+export type SongFolderVersions = Record<string, string>;
+
+/**
+ * Song data of all songs. With `known` (the last result) only songs whose folder changed are read
+ * again – one listing instead of two requests per song when nothing changed (song sync, F11 §4.7).
+ */
+export async function syncSongMetas(
+  storage: SafeStorage,
+  appRoot: string,
+  known: { metas: Record<string, Versioned<SongMeta>>; folders: SongFolderVersions } | null,
+): Promise<{ metas: Record<string, Versioned<SongMeta>>; folders: SongFolderVersions; read: number }> {
   const folders = (await listOrEmpty(storage, songsDir(appRoot))).filter((e) => e.type === 'folder');
+  const versions: SongFolderVersions = {};
+  let read = 0;
   const loaded = await mapLimited(folders, 8, async (folder) => {
+    if (folder.treeVersion && known?.folders[folder.name] === folder.treeVersion) {
+      versions[folder.name] = folder.treeVersion;
+      const kept = known.metas[folder.name];
+      return kept ? ([folder.name, kept] as const) : null;
+    }
+    read += 1;
     try {
       const entry = await storage.stat(joinPath(folder.path, 'meta.json'));
       if (!entry) return null;
       const value = migrate<SongMeta>(await storage.readJson<unknown>(entry.path), SONG_SCHEMA_VERSION, []);
+      if (folder.treeVersion) versions[folder.name] = folder.treeVersion;
       return [folder.name, { value, version: entry.version }] as const;
     } catch (error) {
       console.warn('Skipping unreadable song meta', folder.path, error);
-      return null;
+      // keep what we had; no version remembered, so the next sync reads it again
+      const kept = known?.metas[folder.name];
+      return kept ? ([folder.name, kept] as const) : null;
     }
   });
-  return Object.fromEntries(loaded.filter((x): x is NonNullable<typeof x> => x !== null));
+  return { metas: Object.fromEntries(loaded.filter((x): x is NonNullable<typeof x> => x !== null)), folders: versions, read };
 }
 
 /** Initial meta.json for a song that only existed as scanned files so far. */

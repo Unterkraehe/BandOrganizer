@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConflictError, MemoryStorageProvider, SafeStorage } from '@/core/storage';
 import { LibraryStore } from './library';
 import { buildSongs, cleanTitle, recordingIdFor, songIdFor, sortSongs, versionSuggestions, type SongMeta } from './model';
@@ -142,6 +142,56 @@ describe('LibraryStore actions', () => {
     expect(byTitle('Open Road').recording!.durationSec).toBe(241);
     await store.setHidden(byTitle('Open Road (Demo)').id, true);
     expect(byTitle('Open Road (Demo)').hidden).toBe(true);
+  });
+});
+
+describe('song sync (v1.0.1, F11 §4.7)', () => {
+  it('a second start reads one folder listing each for files and song data, and still sees changes', async () => {
+    // this test file runs without a browser: a small stand-in for the device cache
+    const cache = new Map<string, string>();
+    vi.stubGlobal('localStorage', { getItem: (k: string) => cache.get(k) ?? null, setItem: (k: string, v: string) => void cache.set(k, v), removeItem: (k: string) => void cache.delete(k) });
+    const provider = new MemoryStorageProvider();
+    for (let i = 0; i < 5; i++) provider.seed(`${HOME}/Songs/Album ${i}/Song ${i}.mp3`, 'a');
+    const storage = new SafeStorage(provider, { appRoot: APP });
+    const open = () => new LibraryStore({ storage, home: HOME, appRoot: APP, skip: [APP], cacheKey: 'bandapp.library.test', memberId: () => 'm_lisa' });
+    const first = open();
+    await first.load();
+    for (const song of first.getState().songs) await first.setArchived(song.id, false); // every song gets a meta.json
+    await first.reloadMeta();
+
+    let requests = 0;
+    for (const method of ['list', 'stat', 'readText'] as const) {
+      const original = provider[method].bind(provider) as (path: string) => Promise<unknown>;
+      (provider as unknown as Record<string, unknown>)[method] = (path: string) => {
+        requests += 1;
+        return original(path);
+      };
+    }
+    const second = open(); // "the app starts again": cached list at once …
+    expect(second.getState().songs).toHaveLength(5);
+    expect(second.canSync).toBe(true);
+    await second.load();
+    // … and the check for changes: home listing + songs folder listing + tags folder (instead of 7 folders + 2 × 5 songs)
+    expect(requests).toBeLessThanOrEqual(3);
+    expect(second.getState().report).toMatchObject({ folders: 1, unchanged: 1 });
+    expect(second.getState().songs).toHaveLength(5);
+
+    // another member adds a recording and renames a song meanwhile
+    provider.seed(`${HOME}/Songs/Album 2/Neu.mp3`, 'b');
+    const other = open();
+    await other.load();
+    const target = other.getState().songs.find((s) => s.title === 'Song 4')!;
+    const unchanged = { displayTitle: null, key: null, bpm: null, tuning: null, tagIds: [] };
+    await other.updateDetails(target.id, { ...unchanged, displayTitle: 'Umbenannt' }, unchanged);
+    requests = 0;
+    await second.load();
+    expect(second.getState().songs.map((s) => s.title).sort()).toEqual(['Neu', 'Song 0', 'Song 1', 'Song 2', 'Song 3', 'Umbenannt']);
+    expect(requests).toBeLessThan(10);
+
+    // the refresh button reads everything
+    await second.scan({ full: true });
+    expect(second.getState().report).toMatchObject({ folders: 7 });
+    vi.unstubAllGlobals();
   });
 });
 

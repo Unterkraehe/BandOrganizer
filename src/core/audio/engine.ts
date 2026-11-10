@@ -7,8 +7,11 @@ import { createStretch, type StretchNode } from './stretch';
  * Two modes:
  * - "element": a plain <audio> element with a blob URL – default, best background/lock-screen
  *   behaviour on iPhones (spike S3 passed). A–B loops work here too.
- * - "effects": Web Audio + Signalsmith Stretch (WASM/AudioWorklet), only while tempo ≠ 100 %
- *   or pitch ≠ 0 (F9 §7 fallback plan). Tempo and pitch are independent of each other.
+ * - "effects": Web Audio + Signalsmith Stretch (WASM/AudioWorklet), only while pitch ≠ 0
+ *   (F9 §7 fallback plan). Tempo and pitch are independent of each other.
+ * A changed tempo alone stays in element mode (v1.0.1): the browser's own player changes the speed
+ * and keeps the pitch (`playbackRate` + `preservesPitch`) – no real-time computing in the page, so
+ * it also plays smoothly over Bluetooth and with the screen locked.
  * The engine switches seamlessly at the current position.
  */
 
@@ -147,7 +150,7 @@ export class AudioEngine {
    */
   unlock() {
     // AudioContext must be created/resumed inside a user gesture on iOS (effects mode)
-    if (this.state.tempo !== 1 || this.state.semitones !== 0 || this.ctx) this.ensureContext();
+    if (this.state.semitones !== 0 || this.ctx) this.ensureContext();
     if (this.unlocked) return;
     this.unlocked = true;
     if (this.state.track) return;
@@ -269,8 +272,8 @@ export class AudioEngine {
 
   /** Tempo (0.5–1.5) and pitch (±12 semitones), independent of each other (F9). */
   setEffects(effects: { tempo?: number; semitones?: number }) {
-    this.ensureContext(); // inside the tap (iOS)
     const next = normalizeSettings({ ...this.currentSettings(), ...effects });
+    if (next.semitones !== 0) this.ensureContext(); // inside the tap (iOS); only pitch needs Web Audio
     const wasFx = this.state.mode === 'effects';
     this.set({ tempo: next.tempo, semitones: next.semitones });
     this.notifySettings();
@@ -279,6 +282,7 @@ export class AudioEngine {
     if (needFx && !wasFx) void this.switchToEffects();
     else if (!needFx && wasFx) void this.switchToElement();
     else if (wasFx) this.stretch?.schedule({ rate: next.tempo, semitones: next.semitones });
+    else this.applyElementRate();
   }
 
   /** A–B loop (F4 §6.9). null removes it. */
@@ -334,8 +338,19 @@ export class AudioEngine {
     this.updateElementLoopWatch();
   }
 
+  /** Tempo in element mode: the browser changes the speed and keeps the pitch (also the fallback without Web Audio). */
   private applyElementRate() {
-    this.audio.playbackRate = 1;
+    const a = this.audio as HTMLAudioElement & { webkitPreservesPitch?: boolean; mozPreservesPitch?: boolean };
+    try {
+      a.preservesPitch = true;
+      if ('webkitPreservesPitch' in a) a.webkitPreservesPitch = true;
+      if ('mozPreservesPitch' in a) a.mozPreservesPitch = true;
+      // a new `src` resets playbackRate to the default rate – set both
+      a.defaultPlaybackRate = this.state.tempo;
+      a.playbackRate = this.state.tempo;
+    } catch {
+      // rate not supported by this element (tests) – plays at the original tempo
+    }
   }
 
   private onElementTime() {
@@ -382,7 +397,7 @@ export class AudioEngine {
   /* ---------------- effects mode ---------------- */
 
   private needsEffects() {
-    return this.state.tempo !== 1 || this.state.semitones !== 0;
+    return this.state.semitones !== 0;
   }
 
   private ensureContext(): AudioContext | null {
@@ -392,7 +407,13 @@ export class AudioEngine {
     }
     const Ctx = typeof window !== 'undefined' ? (window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext) : undefined;
     if (!Ctx) return null;
-    this.ctx = new Ctx();
+    // "playback" = larger output buffers than the default "interactive": the stretcher then survives
+    // the irregular audio callbacks of Android phones with Bluetooth headphones/speakers (v1.0.1)
+    try {
+      this.ctx = new Ctx({ latencyHint: 'playback' });
+    } catch {
+      this.ctx = new Ctx();
+    }
     void this.ctx.resume().catch(() => undefined);
     return this.ctx;
   }
@@ -474,6 +495,7 @@ export class AudioEngine {
     if (!ok) {
       // no Web Audio: tempo via the element (pitch not possible), see error "effects"
       this.set({ mode: 'element', status: wasPlaying ? 'playing' : 'paused' });
+      this.applyElementRate();
       if (wasPlaying) void this.startElement();
       return;
     }
@@ -490,6 +512,7 @@ export class AudioEngine {
     if (!track) return;
     const { url } = await this.fileFor(track.path);
     if (this.audio.src !== url) this.audio.src = url;
+    this.applyElementRate();
     this.pendingSeek = position;
     try {
       this.audio.currentTime = position;

@@ -2,16 +2,32 @@ import type { Versioned } from '@/core/band/band';
 import { newId } from '@/core/data/ids';
 import { touchRecord } from '@/core/data/record';
 import { emitSystemEvent } from '@/core/events';
-import { scanFiles, type ScannedFile, type ScanReport } from '@/core/files/scan';
+import { scanFiles, type ScannedFile, type ScanReport, type ScanSnapshot } from '@/core/files/scan';
 import { ConflictError, type FileEntry, type SafeStorage } from '@/core/storage';
 import { buildSongs, recordingIdFor, type Song, type SongMeta, type Tag } from './model';
 import { PracticeStore } from './practice';
-import { createTag, listSongMetas, listTags, saveTag, seedMeta, updateSongMeta } from './repository';
+import { createTag, listTags, saveTag, seedMeta, syncSongMetas, updateSongMeta, type SongFolderVersions } from './repository';
 
 /**
  * Song library store (F4): scanned files + meta.json + tags → songs.
  * Cached data is shown immediately, fresh data loads in the background (R-UX-07).
+ *
+ * Song sync (v1.0.1, F11 §4.7): the store remembers the tree version of every folder it has seen
+ * (`ScanSnapshot`, `SongFolderVersions`). The next scan / reload only reads folders that changed –
+ * with nothing new that is ONE listing each instead of every folder and every song. Safety nets: the
+ * refresh buttons always read everything (`scan({ full: true })`), and so does the first sync after
+ * FULL_SCAN_DAYS. Storage without tree versions behaves as before (everything is read).
  */
+
+const FULL_SCAN_DAYS = 7;
+
+interface ScanCache {
+  files: ScannedFile[];
+  documents?: ScannedFile[];
+  scannedAt: string;
+  snapshot?: ScanSnapshot;
+  fullScanAt?: string;
+}
 
 export interface LibraryState {
   status: 'idle' | 'scanning' | 'ready' | 'error';
@@ -54,10 +70,16 @@ export class LibraryStore {
   private abort: AbortController | null = null;
   /** Tempo / pitch / loop per member, song and version (F4 §7.4) */
   readonly practice: PracticeStore;
+  private snapshot: ScanSnapshot | null;
+  private fullScanAt: string | null;
+  private metaFolders: SongFolderVersions;
 
   constructor(private options: LibraryOptions) {
     this.practice = new PracticeStore(options.storage, options.appRoot, options.memberId);
-    const cached = this.read<{ files: ScannedFile[]; documents?: ScannedFile[]; scannedAt: string }>('scan');
+    const cached = this.read<ScanCache>('scan');
+    this.snapshot = cached?.snapshot ?? null;
+    this.fullScanAt = cached?.fullScanAt ?? null;
+    this.metaFolders = this.read<SongFolderVersions>('metaFolders') ?? {};
     const metas = this.read<Record<string, Versioned<SongMeta>>>('metas') ?? {};
     const files = cached?.files ?? [];
     const documents = cached?.documents ?? [];
@@ -131,12 +153,19 @@ export class LibraryStore {
     await Promise.all([this.reloadMeta(), this.scan()]);
   }
 
+  /** True when the next scan only needs to read what changed (the storage reports tree versions). */
+  get canSync(): boolean {
+    return this.snapshot !== null && Object.keys(this.snapshot.folders).length > 0;
+  }
+
   async reloadMeta(): Promise<void> {
     try {
-      const [metas, tags] = await Promise.all([
-        listSongMetas(this.options.storage, this.options.appRoot),
+      const [{ metas, folders }, tags] = await Promise.all([
+        syncSongMetas(this.options.storage, this.options.appRoot, { metas: this.state.metas, folders: this.metaFolders }),
         listTags(this.options.storage, this.options.appRoot),
       ]);
+      this.metaFolders = folders;
+      this.write('metaFolders', folders);
       this.write('metas', metas);
       this.write('tags', tags);
       this.set({ metas, tags });
@@ -145,21 +174,30 @@ export class LibraryStore {
     }
   }
 
-  async scan(): Promise<void> {
+  /**
+   * Looks for new, changed and removed files. Normally a sync (only changed folders are read);
+   * `full` reads every folder – the refresh buttons, and automatically once every FULL_SCAN_DAYS.
+   */
+  async scan(options: { full?: boolean } = {}): Promise<void> {
     if (this.state.status === 'scanning') return;
+    const due = !this.fullScanAt || Date.now() - Date.parse(this.fullScanAt) > FULL_SCAN_DAYS * 86_400_000;
+    const full = options.full || due || !this.snapshot;
     this.abort = new AbortController();
     this.set({ status: 'scanning', progress: { folders: 0, found: 0 } });
     const report: ScanReport = { folders: 0, failedFolders: [] };
     try {
-      const { audio: files, documents } = await scanFiles(this.options.storage, {
+      const { audio: files, documents, snapshot } = await scanFiles(this.options.storage, {
         root: this.options.home,
         skip: this.options.skip,
         signal: this.abort.signal,
         onProgress: (progress) => this.set({ progress }),
         report,
+        previous: full || !this.snapshot ? undefined : { snapshot: this.snapshot, audio: this.state.files, documents: this.state.documents },
       });
       const scannedAt = new Date().toISOString();
-      this.write('scan', { files, documents, scannedAt });
+      this.snapshot = snapshot;
+      if (full && report.failedFolders.length === 0) this.fullScanAt = scannedAt;
+      this.writeScan(files, documents, scannedAt);
       this.set({ status: 'ready', files, documents, scannedAt, progress: null, report });
     } catch (error) {
       if ((error as Error).name === 'AbortError') return;
@@ -347,7 +385,7 @@ export class LibraryStore {
     const recordingId = recordingIdFor(file);
     const memberId = this.options.memberId();
     const files = [...this.state.files.filter((f) => f.path !== file.path), file];
-    this.write('scan', { files, documents: this.state.documents, scannedAt: this.state.scannedAt });
+    this.writeScan(files, this.state.documents, this.state.scannedAt);
     this.set({ files });
     await this.update(songId, (meta) => {
       const first = meta.recordings.length === 0 && !this.song(songId)?.recording;
@@ -364,7 +402,7 @@ export class LibraryStore {
     if (!this.state.documents.some((d) => d.path === path)) {
       const name = path.slice(path.lastIndexOf('/') + 1);
       const documents = [...this.state.documents, { path, name, id: fileId }];
-      this.write('scan', { files: this.state.files, documents, scannedAt: this.state.scannedAt });
+      this.writeScan(this.state.files, documents, this.state.scannedAt);
       this.set({ documents });
     }
     await this.update(songId, (meta) => {
@@ -434,6 +472,10 @@ export class LibraryStore {
   dispose() {
     this.abort?.abort();
     this.listeners.clear();
+  }
+
+  private writeScan(files: ScannedFile[], documents: ScannedFile[], scannedAt: string | null) {
+    this.write('scan', { files, documents, scannedAt, snapshot: this.snapshot ?? undefined, fullScanAt: this.fullScanAt ?? undefined });
   }
 
   private read<T>(suffix: string): T | null {

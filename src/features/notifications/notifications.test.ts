@@ -3,7 +3,7 @@ import i18n from '@/core/i18n';
 import { MemoryStorageProvider, SafeStorage } from '@/core/storage';
 import type { ChatMessage } from '@/features/chat/model';
 import { pushPayloadFor } from './payload';
-import { listDevices, sendPush, type PushDevice } from './push';
+import { listDevices, repairPush, sendPush, type PushDevice } from './push';
 
 vi.mock('@/core/auth/tokens', () => ({ getAccessToken: async () => 'access-token' }));
 
@@ -61,5 +61,95 @@ describe('sending', () => {
     expect(delivered).toBe(1);
     expect(bodies[0]!.subscriptions.map((s) => s.endpoint).sort()).toEqual(['https://fcm.googleapis.com/tom', 'https://web.push.apple.com/tom-old']);
     expect((await listDevices(storage, APP)).map((d) => d.endpoint)).not.toContain('https://web.push.apple.com/tom-old');
+  });
+});
+
+describe('this device repairs its registration by itself (v1.0.1)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    localStorage.clear();
+  });
+
+  /** A browser with granted permission and a push manager handing out the given addresses. */
+  function browser(first: string | null, next: string[]) {
+    const make = (endpoint: string) => ({
+      endpoint,
+      toJSON: () => ({ endpoint, keys: { p256dh: 'p', auth: 'a' } }),
+      unsubscribe: vi.fn(async () => {
+        current = null;
+        return true;
+      }),
+    });
+    let current = first ? make(first) : null;
+    const pushManager = {
+      getSubscription: async () => current,
+      subscribe: vi.fn(async () => (current = make(next.shift()!))),
+    };
+    vi.stubGlobal('Notification', { permission: 'granted' });
+    vi.stubGlobal('PushManager', class {});
+    Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: { getRegistration: async () => ({ pushManager }) } });
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ publicKey: 'AAAA' })));
+    return pushManager;
+  }
+  const setup = () => {
+    const provider = new MemoryStorageProvider();
+    provider.seedFolder('/h');
+    return new SafeStorage(provider, { appRoot: APP });
+  };
+  /** read straight from the files: `listDevices` caches for 5 minutes across tests */
+  const stored = async (storage: SafeStorage) => {
+    const devices: PushDevice[] = [];
+    for (const folder of await storage.list(`${APP}/push`).catch(() => [])) {
+      for (const file of await storage.list(folder.path)) devices.push(await storage.readJson<PushDevice>(file.path));
+    }
+    return devices.filter((d) => d.active);
+  };
+  const active = async (storage: SafeStorage) => (await stored(storage)).map((d) => d.endpoint);
+
+  it('a device switched off after a failed delivery gets a new address and is on again', async () => {
+    const storage = setup();
+    const pushManager = browser('https://fcm.googleapis.com/one', ['https://fcm.googleapis.com/two']);
+    // turned on before v1.0.1 (subscription, no local mark), nothing stored yet → registered
+    expect(await repairPush(storage, APP, 'm_tom')).toBe('repaired');
+    expect(await active(storage)).toEqual(['https://fcm.googleapis.com/one']);
+    expect(await repairPush(storage, APP, 'm_tom')).toBe('ok');
+
+    // a sender's delivery fails with 410 → the device is switched off …
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (_url, init) => {
+      const body = JSON.parse(String(init!.body));
+      return new Response(JSON.stringify({ results: body.subscriptions.map((s: { endpoint: string }) => ({ endpoint: s.endpoint, status: 410 })) }));
+    });
+    await sendPush(storage, APP, 'm_lisa', 'chat', { title: 'Lisa', body: 'Hi', url: 'chat' });
+    expect(await active(storage)).toEqual([]);
+
+    // … and comes back by itself the next time the app is opened, with a fresh address
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ publicKey: 'AAAA' })));
+    expect(await repairPush(storage, APP, 'm_tom')).toBe('repaired');
+    expect(pushManager.subscribe).toHaveBeenCalledTimes(1);
+    expect(await active(storage)).toEqual(['https://fcm.googleapis.com/two']);
+  });
+
+  it('a push address the browser dropped is replaced; a device that never had notifications stays off', async () => {
+    const storage = setup();
+    browser(null, ['https://fcm.googleapis.com/new']);
+    expect(await repairPush(storage, APP, 'm_tom')).toBe('off');
+    expect(await active(storage)).toEqual([]);
+
+    // notifications were on (local mark + stored registration), the browser lost the subscription
+    localStorage.setItem('bandapp.push.wanted.m_tom', JSON.stringify({ endpoint: 'https://fcm.googleapis.com/lost', prefs: { chat: true, events: false } }));
+    await storage.writeJson(`${APP}/push/m_tom/x.json`, { schemaVersion: 1, memberId: 'm_tom', endpoint: 'https://fcm.googleapis.com/other', keys: { p256dh: 'p', auth: 'a' }, prefs: {}, device: 'Mac', active: true, createdAt: '', updatedAt: '' });
+    expect(await repairPush(storage, APP, 'm_tom')).toBe('repaired');
+    const devices = await stored(storage);
+    expect(devices.map((d) => d.endpoint).sort()).toEqual(['https://fcm.googleapis.com/new', 'https://fcm.googleapis.com/other']);
+    expect(devices.find((d) => d.endpoint.endsWith('/new'))!.prefs).toEqual({ chat: true, events: false }); // the member's choices survive
+  });
+
+  it('does nothing without permission', async () => {
+    const storage = setup();
+    browser('https://fcm.googleapis.com/one', []);
+    vi.stubGlobal('Notification', { permission: 'default' });
+    expect(await repairPush(storage, APP, 'm_tom')).toBe('off');
+    expect(await active(storage)).toEqual([]);
   });
 });

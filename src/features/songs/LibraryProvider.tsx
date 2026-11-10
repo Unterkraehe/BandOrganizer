@@ -30,11 +30,12 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     void store.load();
-    // back after a while: fresh song data from the band; a new file scan only if the last one is old
+    // back after a while: fresh song data from the band. Files: a sync is cheap (only changed folders
+    // are read) – without it (storage reports no tree versions) a new scan only if the last one is old
     const off = onAppResume(() => {
       void store.reloadMeta();
       const last = store.getState().scannedAt;
-      if (!last || Date.now() - Date.parse(last) > 6 * 3_600_000) void store.scan();
+      if (store.canSync || !last || Date.now() - Date.parse(last) > 6 * 3_600_000) void store.scan();
     });
     return () => {
       off();

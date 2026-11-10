@@ -26,6 +26,14 @@ function setup(handler: Handler) {
 const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status });
 
 describe('HiDriveProvider (request shapes, to be verified in S1)', () => {
+  it('reports a tree version for folders (their content hash) and none for files', async () => {
+    const { provider } = setup(() =>
+      json({ members: [{ name: 'a.mp3', type: 'file', mtime: 1, chash: 'f' }, { name: 'Sub', type: 'dir', mtime: 2, chash: 'd1' }, { name: 'NoHash', type: 'dir' }] }),
+    );
+    const entries = await provider.list('/users/band/Songs');
+    expect(entries.map((e) => e.treeVersion)).toEqual([undefined, 'd1', undefined]);
+  });
+
   it('lists a folder with member fields', async () => {
     const { provider, calls } = setup(() =>
       json({ members: [{ name: 'a.mp3', type: 'file', id: 'b1', size: 3, mtime: 1_790_000_000, chash: 'h' }, { name: 'Sub', type: 'dir' }] }),

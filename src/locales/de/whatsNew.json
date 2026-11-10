@@ -1,4 +1,9 @@
 {
+  "1.0.2": [
+    "Benachrichtigungen bleiben an: Fiel ein Handy bisher einmal aus der Zustellung, blieb es stumm, bis man die Benachrichtigungen in den Einstellungen neu eingeschaltet hat. Jetzt meldet sich das Handy bei jedem Öffnen der App von selbst wieder an.",
+    "Üben mit Bluetooth-Kopfhörern oder -Boxen (Android): Langsamer oder schneller abspielen läuft jetzt über den eingebauten Player des Handys und ruckelt nicht mehr. Auch mit geänderter Tonhöhe sollte es jetzt flüssig laufen.",
+    "Songs sind viel schneller da: Die App durchsucht beim Öffnen nicht mehr alle Ordner, sondern liest nur noch, was sich seit dem letzten Mal geändert hat. Der Knopf „Neu suchen“ durchsucht weiterhin alles."
+  ],
   "1.0.1": [
     "Neu in Einstellungen → Über die App: „Beta-Version“. Wer mag, testet damit neue Funktionen vorab – nur auf dem eigenen Gerät, mit denselben Band-Daten, und jederzeit wieder zurück. Für alle anderen ändert sich nichts."
   ],

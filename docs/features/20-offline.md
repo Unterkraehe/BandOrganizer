@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **ID** | F11 (was future plan L1) |
-| **Status** | Planned (2026-10-05) – milestone M10, after spike S8 |
+| **Status** | Planned (2026-10-05) – milestone M10, after spike S8. **Built ahead (v1.0.1): song sync (§4.7)** |
 | **Depends on** | F1 (session, storage), F3 (shell, settings), F4 (songs, lyrics), F9 (audio engine) |
 | **Used by** | F12 Several bands (device data per band) |
 
@@ -67,6 +67,16 @@ Downloads run one at a time in the background while the app is open and online, 
 
 ### 4.6 Permanent storage
 When the user first saves something, the app asks for `navigator.storage.persist()`. Whether phones keep the data (especially iPhones) is spike **S8**.
+
+### 4.7 Song sync instead of a full scan (built in v1.0.1)
+Before, every app start listed every folder of the cloud storage and read every song's `meta.json` (two requests per song). Now the app remembers a **tree version** per folder – a marker that changes when anything below the folder changes (`FileEntry.treeVersion`; HiDrive: the directory's content hash `chash`) – and only reads folders whose marker changed:
+- **Files** (`scanFiles` with `previous`, `LibraryStore.scan()`): the home folder is listed; an unchanged sub-folder is not opened, its files are taken over from the last result. A new file costs the listings on its path only. Nothing new = **one** request.
+- **Song data** (`syncSongMetas`, `LibraryStore.reloadMeta()`): one listing of `_BandApp/songs/`; only songs whose folder changed are read.
+- The sync runs at every start and every return from the background (it is cheap); the song list shows the cached songs at once, as before.
+- **Safety nets:** the refresh buttons ("Neu suchen" in Songs and in the settings) always read everything; the first sync after 7 days does too; a changed list of excluded folders does too. A folder that can't be read keeps its songs and is tried again next time. Storage that reports no tree versions is read completely, as before.
+- Einstellungen → "Songs finden" shows what the last run did: "1 Ordner durchsucht · 12 unveränderte Ordner übersprungen".
+- Remembered in the device cache next to the song list (`bandapp.library.<band>.scan` → `snapshot`, `fullScanAt`; `.metaFolders`).
+- **To verify on the real HiDrive** (checklist A): that the directory `chash` really changes for every change below (new file, changed file, deleted file, renamed file, in a sub-sub-folder).
 
 ## 5. Data Model & Storage
 
