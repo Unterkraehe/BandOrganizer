@@ -108,7 +108,7 @@ Tabs (phone bottom bar: Start · Songs · Kalender · Chat · Mehr; "Mehr" holds
 ```
 Start (/)                       widgets: chat → Chat; next events → Termin (event cards: "Setlist abspielen" → Player)
 Songs (/songs)                  list / folders, search, tags; ⋯ per row
-  Song (/songs/:id)             *from search, chat cards, setlists, player ⋯ "Zum Song"*; Abspielen · Üben (→ Player); tabs Songtext · Notizen · Versionen · Infos
+  Song (/songs/:id)             *from search, chat cards, setlists, mini player*; full screen: tabs Üben (tempo, pitch, loop, notes) · Songtext; playback controls at the bottom; ⓘ → Infos panel (tags, versions, setlists, discussion)
     Song bearbeiten (/edit) · Songtext (/lyrics) · Zusammenführen (/merge)
   Neuer Song (/songs/new)
 Kalender (/calendar)            list / month (phone: day panel)
@@ -124,17 +124,19 @@ Mehr (/more)
   Einstellungen (/settings) → Band (/settings/band) · Tags (/settings/tags) · Profil (/profile)
                                 "Über die App": Beta-Version an/aus (loads the other published version on this device, roadmap §4d)
 Suche (/search, top bar 🔍)     results open the item's own screen
-Player (/player)                full-screen sheet, grows out of the mini player, ⌄ / back gesture closes (back to where you were)
-                                *from mini player; song page "Üben" (?song=…&view=practice); "Setlist abspielen" on setlist,
-                                setlists list, event, event card, chat card (?view=queue)*; tabs Songtext · Üben · Setlist; ⋯ → Zum Song / Zur Setlist
-Mini player (all screens)       → Player (hidden only while the player is open)
-Old addresses                   /songs/:id/practice → /player?song=:id&view=practice; /songs?setlist=:id → plays nothing, opens the player queue
+Setlist abspielen               *on setlist, setlists list, event, event card, chat card*: plays the first song and opens ITS song screen with the
+                                setlist panel (?panel=setlist); the line above the seek bar ("Stadtfest · 3 / 12 · Nächster: …") opens the panel again
+Mini player (all screens)       → the playing song's screen (hidden only on a song screen)
+Old addresses                   /player[?view=…] → the playing song's screen (nothing playing: hint); /songs/:id/practice → /songs/:id;
+                                /songs?setlist=:id → plays nothing, opens the song screen with the setlist panel
 ```
 
 All five steps of "Navigation & clarity" are done (roadmap §4b). New screens follow R-UX-09 and are added here.
 
 ## 5. Setlist Mode (cross-feature)
 
+> **v1.1.0:** the player is the song screen now (F4 §4.2): "Setlist abspielen" opens the first song's screen with the setlist as a panel; a line above the seek bar shows the position and opens the panel; ⏮ / ⏭ step through and the screen follows the playing song.
+>
 > **v0.16.0 – the setlist plays in the player, not in the Songs tab (R-UX-09 "no hidden modes"):** "Setlist abspielen" (setlist page, setlists row menu, event page, event card, chat card – one hook `useStartSetlist()`) starts the setlist, plays its first playable song and opens the player on its **Setlist** tab: queue in setlist order with block headers, pauses, interludes, direct transitions, "Automatisch weiter" and "Beenden" (`SetlistQueue`, ex `SetlistModeView`). The player's subtitle shows "Stadtfest · 3 / 12", ⏮ / ⏭ appear in its transport. The Songs tab always shows the song list. The text below describes the original v0.8 design (banner in Songs) – superseded where it differs.
 
 Opening a setlist "in Songs" turns the song list into a practice/rehearsal queue. Triggered by "Setlist üben" on the dashboard, event detail (F5) or setlist detail (F7).

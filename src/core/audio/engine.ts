@@ -53,6 +53,8 @@ export interface PlayerState {
   tempo: number;
   semitones: number;
   loop: Loop | null;
+  /** "A" is marked, "B" not yet (v1.1.0): the song keeps playing, the loop starts when B is set */
+  loopStart: number | null;
   mode: 'element' | 'effects';
   /** increases every time a track plays to its end (setlist queue, F3 §5) */
   ended: number;
@@ -102,6 +104,7 @@ export class AudioEngine {
     tempo: 1,
     semitones: 0,
     loop: null,
+    loopStart: null,
     mode: 'element',
     ended: 0,
   };
@@ -183,7 +186,7 @@ export class AudioEngine {
     this.pauseAll();
     this.decoded = null;
     this.loadedId = null;
-    this.set({ track, status: 'loading', position: startAt ?? 0, duration: 0, error: null, ...normalizeSettings(pending ? null : settings) });
+    this.set({ track, status: 'loading', position: startAt ?? 0, duration: 0, error: null, loopStart: null, ...normalizeSettings(pending ? null : settings) });
     this.updateMediaMetadata(track);
     try {
       const [{ url }, resolved] = await Promise.all([this.fileFor(track.path), pending ? settings.catch(() => null) : null]);
@@ -285,10 +288,25 @@ export class AudioEngine {
     else this.applyElementRate();
   }
 
-  /** A–B loop (F4 §6.9). null removes it. */
+  /**
+   * Marks the loop start "A" at the current position WITHOUT looping yet (v1.1.0): playback simply
+   * continues until `setLoop` gets the end. An existing loop is removed (a new one is being set).
+   */
+  markLoopStart(position = this.state.position) {
+    if (!this.state.track) return;
+    const hadLoop = this.state.loop !== null;
+    this.set({ loop: null, loopStart: Math.max(0, position) });
+    if (hadLoop) {
+      this.notifySettings();
+      if (this.state.mode === 'effects') this.scheduleFxLoop();
+      else this.updateElementLoopWatch();
+    }
+  }
+
+  /** A–B loop (F4 §6.9). null removes it (and a marked "A"). */
   setLoop(loop: Loop | null) {
     const next = normalizeSettings({ ...this.currentSettings(), loop }).loop;
-    this.set({ loop: next });
+    this.set({ loop: next, loopStart: null });
     this.notifySettings();
     if (this.state.mode === 'effects') this.scheduleFxLoop();
     else this.updateElementLoopWatch();
@@ -310,7 +328,7 @@ export class AudioEngine {
     this.audio.removeAttribute('src');
     this.decoded = null;
     this.stretch?.dropBuffers?.();
-    this.set({ track: null, status: 'idle', position: 0, duration: 0, error: null, mode: 'element' });
+    this.set({ track: null, status: 'idle', position: 0, duration: 0, error: null, loopStart: null, mode: 'element' });
     if ('mediaSession' in navigator) navigator.mediaSession.metadata = null;
   }
 

@@ -12,10 +12,12 @@ interface SeekBarProps {
   markers?: number[];
   /** A–B loop range (F4 §6.9) */
   loop?: { start: number; end: number; enabled: boolean } | null;
+  /** Loop start "A" that is marked while "B" is still missing */
+  loopStart?: number | null;
 }
 
 /** Seek slider with elapsed / remaining time (F4 §4.2). Keyboard: arrows = 5 s steps. */
-export function SeekBar({ label, position, duration, disabled, onSeek, markers = [], loop }: SeekBarProps) {
+export function SeekBar({ label, position, duration, disabled, onSeek, markers = [], loop, loopStart }: SeekBarProps) {
   const max = duration > 0 ? duration : 1;
   const percent = Math.min(100, (position / max) * 100);
   return (
@@ -28,6 +30,9 @@ export function SeekBar({ label, position, duration, disabled, onSeek, markers =
             style={{ left: `${(loop.start / duration) * 100}%`, width: `${((loop.end - loop.start) / duration) * 100}%` }}
             aria-hidden="true"
           />
+        )}
+        {duration > 0 && typeof loopStart === 'number' && !loop && (
+          <span className={styles.loopStart} style={{ left: `${Math.min(100, (loopStart / duration) * 100)}%` }} aria-hidden="true" />
         )}
         {duration > 0 &&
           markers

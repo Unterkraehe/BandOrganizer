@@ -1,4 +1,4 @@
-import { CircleStop, Mic, Pin, Play, Trash2 } from 'lucide-react';
+import { CircleStop, Mic, Pin, Play, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePlayer, usePlayerEngine } from '@/core/audio/PlayerProvider';
@@ -21,24 +21,36 @@ interface NotesSectionProps {
   onJump: (entry: NoteEntry) => void;
 }
 
-/** Public and private notes with pins and time markers (F4 §4.2 tabs, §6.4). */
+/**
+ * Public and private notes with pins and time markers (F4 §6.4). Since v1.1.0 part of "Üben": the
+ * notes come first (reading them is the point while practising), writing one opens on request.
+ */
 export function NotesSection({ scope, song, recording, notes, onJump }: NotesSectionProps) {
   const { t } = useTranslation('songs');
   const visible = sortNotes(notes.entries.filter((e) => e.scope === scope));
+  const [adding, setAdding] = useState<NoteScope | null>(null);
 
   return (
     <section className={styles.notes}>
       {scope === 'private' && <p className={styles.hint}>{t('notes.privateHint')}</p>}
-      <NoteForm key={scope} song={song} recording={recording} scope={scope} onSave={notes.add} />
       {notes.status === 'error' && <p className={styles.hint}>{t('notes.loadError')}</p>}
       {notes.status === 'ready' && visible.length === 0 && (
         <p className={styles.hint}>{scope === 'public' ? t('notes.empty') : t('notes.emptyPrivate')}</p>
       )}
-      <ul className={styles.noteList}>
-        {visible.map((entry) => (
-          <NoteItem key={entry.note.id} entry={entry} song={song} recording={recording} notes={notes} onJump={onJump} />
-        ))}
-      </ul>
+      {visible.length > 0 && (
+        <ul className={styles.noteList}>
+          {visible.map((entry) => (
+            <NoteItem key={entry.note.id} entry={entry} song={song} recording={recording} notes={notes} onJump={onJump} />
+          ))}
+        </ul>
+      )}
+      {adding === scope ? (
+        <NoteForm key={scope} song={song} recording={recording} scope={scope} onSave={notes.add} onDone={() => setAdding(null)} />
+      ) : (
+        <Button icon={<Plus size={18} />} onClick={() => setAdding(scope)}>
+          {t('notes.add')}
+        </Button>
+      )}
     </section>
   );
 }
@@ -56,7 +68,7 @@ function sortNotes(entries: NoteEntry[]) {
   });
 }
 
-function NoteForm({ song, recording, scope, onSave }: { song: Song; recording: Recording | null; scope: NoteScope; onSave: ReturnType<typeof useSongNotes>['add'] }) {
+function NoteForm({ song, recording, scope, onSave, onDone }: { song: Song; recording: Recording | null; scope: NoteScope; onSave: ReturnType<typeof useSongNotes>['add']; onDone: () => void }) {
   const { t } = useTranslation('songs');
   const { state } = usePlayer();
   const engine = usePlayerEngine();
@@ -86,6 +98,7 @@ function NoteForm({ song, recording, scope, onSave }: { song: Song; recording: R
     recorder.reset();
     try {
       await onSave(scope, sentText, sentPosition, sentPosition !== null ? (recording?.id ?? null) : null, audio);
+      onDone();
     } catch {
       setText(sentText);
       setPosition(sentPosition);
@@ -144,6 +157,9 @@ function NoteForm({ song, recording, scope, onSave }: { song: Song; recording: R
             {t('notes.usePosition', { time: formatDuration(position ?? state.position) })}
           </label>
         )}
+        <Button variant="ghost" onClick={onDone} disabled={rec.kind === 'recording'}>
+          {t('common:actions.cancel')}
+        </Button>
         <Button variant="primary" onClick={() => void save()} disabled={!canSave}>
           {t('notes.save')}
         </Button>

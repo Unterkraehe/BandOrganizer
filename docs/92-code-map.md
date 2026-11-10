@@ -51,7 +51,7 @@ Texts: `src/locales/de/<same name>.json`. Docs: `docs/features/`. Flow tests (wh
 | F1 HiDrive connection (10) | `core/storage/`, `core/storage/hidrive/`, `core/auth/`, `core/files/`, `core/session/`, `token-helper/`, `public/callback.html` | `guard.ts` (safety guard), `HiDriveProvider.ts`, `BandSession.tsx`, `scan.ts`, `worker.js` | `guard.test`, `HiDriveProvider.test`, `scan.test`, `tokens.test`, `token-helper/worker.test` |
 | F2 Member login (11) | `features/members/`, `features/profile/`, `app/gate/` | `repository.ts`, `MembersPage`, `ProfileForm`, `ProfileSelectScreen` | `members.test`, `flows` (App.test) |
 | F3 App shell (12) | `app/`, `ui/layout/`, `ui/swipe.ts`, `features/start/`, `features/more/` | `routes.tsx`, `AppShell.tsx`, `Page.tsx`, `StartPage` | `App.test`, `flows/touch` |
-| F4 Songs (13) | `features/songs/` (+ `lyrics/`, `practice/` (controls), `player/`, `uploads/`), `core/lyrics/` | `model.ts` (songs from files + meta), `library.ts` (store), `repository.ts`, `SongsPage`, `SongDetailPage`, `VersionsSection`, `NotesSection`, `player/PlayerPage` (full-screen player, F9 §8a) | `songs.test`, `flows/songs`, `flows/uploads-lyrics`, `flows/player` |
+| F4 Songs (13) | `features/songs/` (+ `lyrics/`, `practice/` (controls), `player/`, `uploads/`), `core/lyrics/` | `model.ts` (songs from files + meta), `library.ts` (store), `repository.ts`, `SongsPage`, `player/SongScreen` (the one screen of a song = song page + player, F4 §4.2), `practice/PracticeControls`, `VersionsSection`, `NotesSection` | `songs.test`, `flows/songs`, `flows/uploads-lyrics`, `flows/player` |
 | F5 Calendar (14) | `features/calendar/` | `store.ts`, `recurrence.ts`, `time.ts`, `subscription.ts`, `ics.ts`, `EventFormPage` | `recurrence.test`, `store.test`, `flows/calendar` |
 | F6 Chat (15) | `features/chat/`, `core/events.ts`, `features/notifications/` | `store.ts`, `ChatProvider`, `Composer`, `MessageItem`, `push.ts`, `payload.ts` | `chat.test`, `notifications.test`, `flows/chat` |
 | F7 Setlists (16) | `features/setlists/` | `store.ts`, `model.ts`, `SetlistEditorPage`, `PrintSheet` + `Print.module.css`, `SetlistModeProvider` (+ `useStartSetlist`), `SetlistQueue` (player tab) | `setlists.test`, `PrintSheet.test`, `flows/setlists` |
@@ -91,9 +91,9 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 | Refresh after the app was in the background | `onAppResume(listener)` (`core/resume.ts`) – every provider that holds server data registers one |
 | Other members' changes while the app is open | Polling while visible, reading only changed files by `FileEntry.version`: chat (`ChatStore.poll`), calendar (`CalendarStore.refresh` + `useWatchCalendar()` on calendar screens for 20 s instead of 60 s). Apply results only to entries that didn't change locally during the read (see `refresh`) |
 | One feature tells another about a change | System event bus `core/events.ts` (`emitSystemEvent` / `onSystemEvent`); the chat turns events into info lines and pushes |
-| Play a setlist | `useStartSetlist()(setlistId)` (`setlists/SetlistModeProvider.tsx`) from the tap: plays the first playable song (iOS unlock) and opens `/player?view=queue`. Never navigate to `/songs?setlist=` (old address, only redirects) |
+| Play a setlist | `useStartSetlist()(setlistId)` (`setlists/SetlistModeProvider.tsx`) from the tap: plays the first playable song (iOS unlock) and opens its song screen with the setlist panel (via `/player?view=queue`, which redirects). Never navigate to `/songs?setlist=` (old address, only redirects) |
 | Open a setlist editor for a new setlist | `navigate(`/setlists/${id}/edit`, { state: { created: true } })` – after saving it shows the setlist page (replace); otherwise the editor goes back (`useBack`) |
-| Open the player | `navigate('/player')` (+ `?song=<id>&view=practice` from a song); it is an overlay (`overlays` in `app/routes.tsx` → no screen slide), closes with `useBack` after its 200 ms closing animation |
+| Open a song / the player | `navigate(`/songs/${id}`)` (+ `?view=lyrics`, `?panel=info\|setlist`) – one screen for song and player (`SongScreen`). It is an overlay (`overlays` in `app/routes.tsx` → the screen below doesn't slide; it has its own slide-in), closes with `useBack` after its 200 ms closing animation. `/player` only redirects to the playing song |
 | Player state in lists | `usePlaySong()` (track + status) or `usePlayerSelect(selector)` – **never** `usePlayer()` outside player UI (position changes ~4×/s) |
 | Long lists (> 60 rows) | `ui/VirtualList` with fixed-height rows (R-UI-13) |
 | Floating UI | `Dialog`, `ConfirmDialog`, `Menu` render through a portal – never position overlays inside sticky/transformed parents |
@@ -135,7 +135,7 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 
 **Tests**
 - Flow tests drive the real UI in demo mode with German labels: `enterDemo(user, path)` from `src/test/demo.tsx`, `beforeEach(() => localStorage.clear())`. Row menus are named `Weitere Aktionen für <Titel>`.
-- The player closes after a 200 ms animation: in flow tests `await waitForElementToBeRemoved(player)` before checking the screen below (its title is still in the document meanwhile).
+- The song screen closes after a 200 ms animation: in flow tests wait for `[data-song-screen]` to be gone (or `findBy…` the screen below) before checking it.
 - jsdom has no layout: `VirtualList` renders plainly up to 60 rows; stand-ins for `matchMedia`, audio and `URL.createObjectURL` are in `src/test/setup.ts`.
 - `src/config.ts` holds the band's HiDrive client ID (empty in a fresh checkout). Tests pass either way; **never put it into a delivery** – `npm run pack` excludes it.
 - A targeted flow run takes ~10–15 s; the full suite ~1–1.5 min on one CPU.
@@ -161,6 +161,6 @@ Conflicts: no `If-Match` (not allowed by CORS) – every `FileEntry.version` is 
 - `usePlayer()` in a list screen = full re-render ~4×/s while music plays (see §5).
 - Audio: only a changed **pitch** uses Web Audio (`AudioEngine.needsEffects`); tempo alone is the `<audio>` element's `playbackRate`. Keep real-time computing out of the page where the browser can do it – it stutters over Bluetooth on Android (F9, v1.0.1).
 
-## 8. Open items (as of v1.0.1)
+## 8. Open items (as of v1.1.0)
 
 Device tests still open (`94-device-test-checklist.md`): S1/S2 (ETag, file IDs after rename), S5 (.ics on phones), S6 (large uploads), iPhone with tempo/pitch + lock screen, chat input with the keyboard on iPhone/Android, push notifications and reminders on real devices, `POST /file/copy`. S4 is answered (share links unsuitable → token helper, v0.19.1). Everything planned for v1 is built; what comes next is in `90-future-plans.md`.

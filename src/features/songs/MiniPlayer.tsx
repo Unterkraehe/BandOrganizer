@@ -1,10 +1,11 @@
 import { Loader2, Pause, Play, SkipForward } from 'lucide-react';
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { usePlayer } from '@/core/audio/PlayerProvider';
 import { formatDuration } from '@/core/i18n/format';
 import { IconButton } from '@/ui';
+import { isOverlay, NavigationContext } from '@/ui/layout/navigation';
 import { playbackProblem, practiceSummary } from './practice/summary';
 import { useSetlistMode } from '@/features/setlists/SetlistModeProvider';
 import styles from './MiniPlayer.module.css';
@@ -19,7 +20,9 @@ export function MiniPlayer() {
   const setlistMode = useSetlistMode();
   const { pathname } = useLocation();
   const track = state.track;
-  const visible = Boolean(track) && pathname !== '/player';
+  const info = useContext(NavigationContext);
+  // the song screen has the full controls at its bottom – no second player on top of it
+  const visible = Boolean(track) && !isOverlay(pathname, info);
   // Tells things pinned to the bottom (chat input, upload indicator) to sit above the mini player
   useEffect(() => {
     document.documentElement.toggleAttribute('data-miniplayer', visible);
@@ -44,7 +47,7 @@ export function MiniPlayer() {
   return (
     <div className={styles.mini} role="region" aria-label={t('player.nowPlaying')}>
       <div className={styles.progress} style={{ width: `${progress}%` }} aria-hidden="true" />
-      <Link to="/player" className={styles.info} aria-label={`${t('player.open')}: ${track.title}`}>
+      <Link to={track.songId ? `/songs/${track.songId}` : '/player'} className={styles.info} aria-label={`${t('player.open')}: ${track.title}`}>
         <span className={styles.title}>{track.title}</span>
         <span className={styles.status} data-problem={problem ? '' : undefined}>
           {inQueue >= 0 ? `${t('setlists:mode.position', { n: setlistMode.index + 1, total: setlistMode.queue.length })} · ` : ''}

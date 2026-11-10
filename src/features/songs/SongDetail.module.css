@@ -238,9 +238,15 @@
 
 .version {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
   padding-right: var(--space-2);
+}
+
+/* a wide button ("Als Version hinzufügen") goes below the name on phones instead of squeezing it */
+.version > button {
+  margin: 0 0 var(--space-2) var(--space-4);
 }
 
 .version + .version {
@@ -248,7 +254,7 @@
 }
 
 .versionMain {
-  flex: 1;
+  flex: 1 1 12em;
   min-width: 0;
   display: grid;
   gap: 2px;

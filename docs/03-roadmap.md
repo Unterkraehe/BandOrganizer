@@ -232,6 +232,7 @@ Done when: the band uses the app for a full rehearsal-and-gig cycle without fall
 | 1.0.0 | **Version 1.0.** Tapping a chat notification opens the chat at the newest messages (also when the message is not loaded yet); Android steps for the calendar subscription mention "Synchronisieren"; band logo centred on the start screen; rule R-CODE-13 (changes on branches) |
 | 1.0.1 | **Beta version (release channel):** Einstellungen → Über die App → "Beta-Version" loads the beta published from the `beta` branch on that device; one site, one install, one login (§4d) |
 | 1.0.2 | Notifications repair themselves (a device switched off after a failed delivery or with a replaced push address registers again at start/resume); tempo alone plays through the `<audio>` element, pitch with larger buffers (Bluetooth on Android); song sync: only changed folders and songs are read (F11 §4.7) |
+| 1.1.0 | **One song screen:** song page and player merged (`/songs/:id`): tabs Üben (tempo, pitch, loop, notes) · Songtext, playback controls always at the bottom, ⓘ infos panel, setlist line + panel; loop redone (A marks the start and the song plays on, B starts the loop, ±1 s per end) |
 
 Details per change: feature files (status blocks) and the "Was ist neu" texts in `src/locales/de/whatsNew.json`.
 

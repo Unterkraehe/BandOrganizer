@@ -18,7 +18,8 @@ export function buildRoutes(features: FeatureRegistration[]): RouteObject[] {
   const navigation: NavigationInfo = {
     roots: [...features.map((f) => f.path), '/more'],
     routes: [...features.flatMap((f) => f.routes ?? []).map(({ path, parent }) => ({ path, parent })), { path: '/search' }],
-    overlays: ['/player'],
+    // the song screen is full screen with its own motion; the screen below stays still
+    overlays: ['/songs/:songId'],
   };
   return [
     {

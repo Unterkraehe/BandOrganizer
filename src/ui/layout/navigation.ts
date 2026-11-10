@@ -9,13 +9,15 @@ import { matchPath, useLocation, useNavigate, useNavigationType } from 'react-ro
 export interface NavigationInfo {
   roots: string[];
   routes: { path: string; parent?: string }[];
-  /** full-screen views that come up as a sheet (player): the screen below doesn't slide (route patterns) */
+  /** full-screen views with their own motion (song screen): the screen below doesn't slide (route patterns) */
   overlays?: string[];
 }
 
 export const NavigationContext = createContext<NavigationInfo>({ roots: ['/'], routes: [] });
 
-export const isOverlay = (pathname: string, info: NavigationInfo) => (info.overlays ?? []).some((path) => matchPath({ path, end: true }, pathname));
+export const isOverlay = (pathname: string, info: NavigationInfo) =>
+  // a fixed route like /songs/new also fits the pattern /songs/:songId – it is its own screen, not the overlay
+  !info.routes.some((route) => route.path === pathname) && (info.overlays ?? []).some((path) => matchPath({ path, end: true }, pathname));
 
 /**
  * How many screens deep the user is in this visit – fallback when the browser doesn't tell us

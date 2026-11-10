@@ -24,7 +24,7 @@ for label, kw in [('phone-dark', dict(scheme='dark')), ('desktop-light', dict(sc
         pg.evaluate(AXE)
         # the player (v0.16.0) with a playing song, on its "Üben" and "Songtext" tabs
         nav(pg, 'songs', wait=900); pg.get_by_role('button', name='abspielen', exact=False).first.click(); pg.wait_for_timeout(800)
-        for path in SCREENS + ['player?view=practice', 'player?view=lyrics']:
+        for path in SCREENS + ['player', 'player?view=lyrics']:
             nav(pg, path, wait=900)
             for v in pg.evaluate(RUN):
                 f = findings.setdefault(v['id'], {'impact': v['impact'], 'help': v['help'], 'where': []})

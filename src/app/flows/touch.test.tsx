@@ -83,12 +83,18 @@ describe('Screen motion shows the direction (v0.15.0, R-UX-09)', () => {
     const user = userEvent.setup();
     await enterDemo(user, '/songs');
     const direction = () => document.querySelector('[data-nav]')?.getAttribute('data-nav');
-    await user.click(await screen.findByRole('link', { name: /Rust and Thunder/ }));
-    await screen.findByRole('heading', { level: 1, name: 'Rust and Thunder' });
+    await user.click(await screen.findByRole('button', { name: 'Neuer Song' }));
+    await screen.findByRole('heading', { level: 1, name: 'Neuer Song' });
     expect(direction()).toBe('push');
     await user.click(screen.getByRole('button', { name: 'Zurück' }));
     await screen.findByRole('heading', { level: 1, name: 'Songs' });
     expect(direction()).toBe('back');
+    // the song screen is full screen and brings its own motion – the list below stays still
+    await user.click(await screen.findByRole('link', { name: /Rust and Thunder/ }));
+    await screen.findByRole('heading', { level: 1, name: 'Rust and Thunder' });
+    expect(direction()).toBeUndefined();
+    await user.click(screen.getByRole('button', { name: 'Zurück' }));
+    await screen.findByRole('heading', { level: 1, name: 'Songs' });
     await user.click(screen.getByRole('link', { name: 'Kalender' }));
     await screen.findByRole('heading', { level: 1, name: 'Kalender' });
     expect(direction()).toBe('tab');

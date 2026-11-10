@@ -12,6 +12,7 @@ describe('Search (M8 in demo mode)', () => {
     await screen.findByText('6 Songs');
     // link the suggested lyrics so their text gets indexed
     await user.click(screen.getByRole('link', { name: /^Midnight Engine(?! \()/ }));
+    await user.click(await screen.findByRole('radio', { name: 'Songtext' }));
     await user.click(await screen.findByRole('button', { name: 'Verknüpfen' }));
     await screen.findByText(/Scheinwerfer im Regen/);
     // a rehearsal in October for the date search

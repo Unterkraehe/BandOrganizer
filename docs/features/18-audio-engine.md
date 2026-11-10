@@ -127,6 +127,8 @@ interface AudioEngine {
 
 ## 8a. Player (v0.16.0)
 
+> **v1.1.0:** the player and the song page are one screen now – see F4 §4.2 (`features/songs/player/SongScreen.tsx`). The text below describes the v0.16.0 player and is superseded where it differs (tabs, header, notes panel, `/player` address).
+
 One full-screen player for listening and practising (`features/songs/player/PlayerPage.tsx`, route `/player`) – it grows out of the mini player (clip-path from the bottom edge, `--dur-sheet` 280 ms) and closes back down (⌄, back gesture; ← back logic of `useBack`). Replaces the practice view and the setlist banner in Songs.
 
 - **Which song:** `?song=<id>` (from a song page) → the playing track → the first playable song of the playing setlist; nothing at all → "Gerade läuft nichts." + "Zu den Songs".

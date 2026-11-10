@@ -186,17 +186,17 @@ def seed(pg):
 with session(query=f'?demo-songs=12&demo-latency={LATENCY}') as s:
     pg = s.pg
     event, song, setlist = seed(pg)
-    for path in ['', 'songs', song, f'{song}?tab=notes', f'{song}?tab=versions', f'{song}?tab=infos', f'{song}/edit',
+    for path in ['', 'songs', song, f'{song}?view=lyrics', f'{song}/edit',
                  f'{song}/lyrics', 'songs/new', 'calendar', 'calendar/new', event, f'{event}/edit', 'chat', 'setlists', setlist,
                  f'{setlist}/edit', f'{setlist}/stage', 'more', 'settings', 'settings/band', 'settings/tags', 'members',
                  'profile', 'calendar/subscribe', 'search']:
         if ONLY in path:
             check_screen(pg, path)
-    # the player opens from the mini player
+    # the song screen while its song plays (practice controls active)
     nav(pg, song, 900)
-    pg.get_by_role('button', name='Abspielen').first.click()
+    pg.get_by_role('button', name='Abspielen', exact=True).click()
     pg.wait_for_timeout(800)
-    check_screen(pg, 'player')
+    check_screen(pg, song)
 
 print()
 print(f"ok: {results['ok']}  already selected: {results['current']}  late: {len(results['late'])}  dead: {len(results['dead'])}  "

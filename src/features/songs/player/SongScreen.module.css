@@ -1,0 +1,322 @@
+/* The song screen (v1.1.0): full screen – header, tabs, content, playback controls at the bottom. */
+
+.page {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  /* surface, not bg: the band color is only guaranteed readable on surfaces (bandTheme.ts, WCAG AA) */
+  background: var(--surface);
+  /* a detail screen comes in from the right and leaves to the right (R-UX-09 §4) */
+  animation: song-in var(--dur-sheet) var(--ease);
+}
+
+.page[data-closing] {
+  animation: song-out 200ms var(--ease) forwards;
+}
+
+@keyframes song-in {
+  from {
+    transform: translateX(24%);
+    opacity: 0;
+  }
+}
+
+@keyframes song-out {
+  to {
+    transform: translateX(24%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page,
+  .page[data-closing] {
+    animation: none;
+  }
+}
+
+.frame {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.frame[data-dragging] {
+  outline: 3px dashed var(--accent);
+  outline-offset: -6px;
+}
+
+.dropHint {
+  padding: var(--space-2) var(--space-4);
+  text-align: center;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: calc(env(safe-area-inset-top) + var(--space-2)) var(--space-2) var(--space-2);
+}
+
+.heading {
+  flex: 1;
+  min-width: 0;
+  padding: 0 var(--space-1);
+}
+
+/* up to two lines: long titles stay readable; the height is always two-line-safe (R-UI-11) */
+.title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-lg);
+  line-height: 1.2;
+  text-transform: uppercase;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.subtitle {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.banners {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+  padding: 0 var(--space-4) var(--space-2);
+}
+
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  font-size: var(--fs-sm);
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 0 var(--space-4) var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.body[data-wide] {
+  grid-template-columns: minmax(320px, 440px) minmax(0, 1fr);
+  border-top: 1px solid var(--border);
+}
+
+.body[data-wide] > [data-pane='practice'] {
+  border-right: 1px solid var(--border);
+}
+
+.pane {
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-4);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: var(--space-4);
+}
+
+.body:not([data-wide]) > .pane {
+  width: 100%;
+  max-width: 640px;
+  justify-self: center;
+}
+
+.notes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.notesHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-md);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 var(--space-2);
+}
+
+.notesHead > .sectionTitle {
+  margin: 0;
+}
+
+/* ---------- playback controls ---------- */
+
+.dock {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4) calc(env(safe-area-inset-bottom) + var(--space-3));
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 -6px 16px rgb(0 0 0 / 0.06);
+}
+
+.setlistLine {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  min-width: 0;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.setlistLine:active {
+  background: var(--accent-soft);
+}
+
+.setlistText {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.bigPlay {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  cursor: pointer;
+  transition: transform 80ms var(--ease);
+}
+
+.bigPlay:active {
+  transform: scale(0.94);
+}
+
+.bigPlay:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* a <select> is as wide as its longest option – long file names must not push the screen sideways (R-UI-14) */
+.versionSelect {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  min-height: 40px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: var(--fs-md);
+}
+
+.noRecording {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.hint {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.problem {
+  font-size: var(--fs-sm);
+  color: var(--danger);
+  text-align: center;
+}
+
+/* ---------- infos panel ---------- */
+
+.info {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.infoActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+@media (min-width: 768px) {
+  .dock {
+    justify-items: center;
+  }
+
+  .dock > * {
+    width: min(100%, 640px);
+  }
+}

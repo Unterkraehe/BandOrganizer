@@ -1,4 +1,11 @@
 {
+  "1.1.0": [
+    "Ein Bildschirm pro Song: Songseite und Player sind jetzt eins. Tippst du auf einen Song, bist du gleich bei „Üben“ – mit Tempo, Tonhöhe, Schleife und den Notizen. Daneben „Songtext“. Abspielen, Vor- und Zurückspulen bleiben immer unten.",
+    "Schleife neu gemacht: „A setzen“ merkt sich nur den Anfang, der Song läuft weiter. Erst mit „B setzen“ am Ende startet die Schleife. Mit − und + verschiebst du Anfang und Ende sekundengenau.",
+    "Notizen stehen jetzt direkt beim Üben – erst die vorhandenen, darunter „Notiz hinzufügen“.",
+    "Versionen, Tags, Setlists und die Diskussion zu einem Song findest du über das ⓘ oben rechts, „Bearbeiten“ im ⋯-Menü.",
+    "Setlist abspielen: Über dem Zeitbalken steht, wo ihr seid („Stadtfest · 3 / 12 · Nächster: …“). Ein Tipp darauf zeigt die ganze Setlist."
+  ],
   "1.0.2": [
     "Benachrichtigungen bleiben an: Fiel ein Handy bisher einmal aus der Zustellung, blieb es stumm, bis man die Benachrichtigungen in den Einstellungen neu eingeschaltet hat. Jetzt meldet sich das Handy bei jedem Öffnen der App von selbst wieder an.",
     "Üben mit Bluetooth-Kopfhörern oder -Boxen (Android): Langsamer oder schneller abspielen läuft jetzt über den eingebauten Player des Handys und ruckelt nicht mehr. Auch mit geänderter Tonhöhe sollte es jetzt flüssig laufen.",

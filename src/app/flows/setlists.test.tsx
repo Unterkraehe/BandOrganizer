@@ -44,15 +44,19 @@ describe('Setlists (M6 in demo mode)', () => {
     expect(await screen.findByRole('dialog', { name: 'Stadtfest' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Bühnenansicht schließen' }));
 
-    // playing the setlist opens the player on its queue (v0.16.0) – the Songs tab stays the song list
+    // playing the setlist opens the first song's screen with the setlist as a panel (v1.1.0) – the Songs tab stays the song list
     await user.click(await screen.findByRole('button', { name: 'Abspielen' }));
-    const player = await screen.findByRole('dialog', { name: 'Player: Open Road' });
-    expect(within(player).getByRole('radio', { name: 'Setlist' })).toBeChecked();
-    expect(within(player).getByRole('link', { name: 'Setlist: Stadtfest' })).toBeInTheDocument();
-    expect(within(player).getByText(/Stadtfest · 1 \/ 2/)).toBeInTheDocument();
-    await user.click(within(player).getByRole('button', { name: 'Nächster' }));
-    expect(await within(screen.getByRole('dialog', { name: 'Player: Rust and Thunder' })).findByText(/Stadtfest · 2 \/ 2/)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Player schließen' }));
+    await screen.findByRole('heading', { level: 1, name: 'Open Road' });
+    const queue = await screen.findByRole('dialog', { name: 'Setlist' });
+    expect(within(queue).getByRole('link', { name: 'Setlist: Stadtfest' })).toBeInTheDocument();
+    await user.click(within(queue).getByRole('button', { name: 'Schließen' }));
+    // a line above the seek bar says where we are and opens the setlist again
+    expect(screen.getByRole('button', { name: 'Setlist anzeigen: Stadtfest' })).toHaveTextContent(/Stadtfest · 1 \/ 2 · Nächster: Rust and Thunder/);
+    // ⏭ plays the next song and the screen follows it
+    await user.click(screen.getByRole('button', { name: 'Nächster' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Rust and Thunder' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Setlist anzeigen: Stadtfest' })).toHaveTextContent(/Stadtfest · 2 \/ 2/);
+    await user.click(screen.getByRole('button', { name: 'Zurück' }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Stadtfest' })).toBeInTheDocument();
     expect(await screen.findByRole('region', { name: 'Läuft gerade' })).toHaveTextContent('2 / 2');
     await user.click(within(screen.getByRole('navigation', { name: 'Hauptmenü' })).getByRole('link', { name: 'Songs' }));

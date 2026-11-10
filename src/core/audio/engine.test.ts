@@ -143,6 +143,28 @@ describe('practice features (F9)', () => {
     expect(onSettingsChange).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'r1' }), { tempo: 1, semitones: 0, loop: null });
   });
 
+  it('"A" only marks the start – the song plays on until "B" closes the loop (v1.1.0)', async () => {
+    const audio = fakeAudio();
+    let time = 0;
+    Object.defineProperty(audio, 'currentTime', { get: () => time, set: (v: number) => (time = v), configurable: true });
+    Object.assign(URL, { createObjectURL: () => 'blob:x', revokeObjectURL: () => undefined });
+    const engine = new AudioEngine({ loadBlob: async () => new Blob(['x']), createAudio: () => audio });
+    await engine.playTrack({ id: 'r1', songId: 's1', title: 'A', path: '/a.mp3' });
+    time = 12;
+    audio.dispatchEvent(new Event('timeupdate'));
+    engine.markLoopStart();
+    expect(engine.getState()).toMatchObject({ loopStart: 12, loop: null });
+    time = 40; // far beyond the old "A + 8 s": nothing jumps back
+    audio.dispatchEvent(new Event('timeupdate'));
+    expect(time).toBe(40);
+    engine.setLoop({ start: 12, end: 40, enabled: true });
+    expect(engine.getState()).toMatchObject({ loopStart: null, loop: { start: 12, end: 40, enabled: true } });
+    audio.dispatchEvent(new Event('timeupdate'));
+    expect(time).toBe(12); // now it loops
+    engine.markLoopStart(); // setting a new A removes the loop
+    expect(engine.getState()).toMatchObject({ loopStart: 12, loop: null });
+  });
+
   it('changes the tempo alone with the built-in player – no Web Audio (smooth over Bluetooth, v1.0.1)', async () => {
     const audio = fakeAudio();
     Object.assign(URL, { createObjectURL: () => 'blob:x', revokeObjectURL: () => undefined });

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **ID** | F4 |
-| **Status** | Implemented (v0.13.4) incl. lyrics, folder view, practice view (§4.3), member suggestions and version similarity. Open: desktop master–detail, "Mit Notizen" filter (M8). Spike: HiDrive file ID stability (§6.1) |
+| **Status** | Implemented (v0.13.4); **v1.1.0: one song screen (song page + player), new loop controls** – see §4.2. Incl. lyrics, folder view, practice view (§4.3), member suggestions and version similarity. Open: desktop master–detail, "Mit Notizen" filter (M8). Spike: HiDrive file ID stability (§6.1) |
 
 > **v0.11.0 performance:** the song list is windowed (`VirtualList`, above 60 rows), rows are memoized with fixed heights (title and details on one line), row menus are built lazily, sorting/filtering use one shared collator and pre-normalized search text, and the list no longer re-renders on playback position ticks. Measured with 300 songs at 4× CPU slowdown: tab tap 510–640 ms → 75–100 ms. Test with `?demo-songs=300` in demo mode.
 >
@@ -123,6 +123,17 @@ Optional view of the song list that mirrors the HiDrive folder structure.
 - **Sorting:** folders A–Z first, then songs according to the chosen sort.
 
 ### 4.2 Song-Detail (`/songs/:songId`)
+
+> **v1.1.0 – one song screen (song page and player in one, R-UX-09 §1):** `/songs/:songId` is the only screen of a song (`features/songs/player/SongScreen.tsx`); the separate player (`/player`) is gone – the address only redirects to the playing song. Full screen (the bottom bar and the mini player are covered), slides in from the right, ← back.
+> - **Header:** ← · title (up to two lines) + one line "version · 80 % · −2 HT · Schleife" · ⓘ · ⋯ (phones: "Bearbeiten" is the first ⋯ entry; tablets/desktop show ✎ too).
+> - **Tabs** (`?view=practice|lyrics`, "Üben" first and the default): **Üben** = key/BPM/tuning chips, tempo + pitch card, loop card, then the **notes** (Für alle / Nur für mich, list first, "Notiz hinzufügen" opens the form). **Songtext** = `LyricsTab`. Tablets and desktops show both side by side, without tabs.
+> - **Bottom, always:** while a setlist plays a line "Stadtfest · 3 / 12 · Nächster: …" (opens the setlist as a panel, `SetlistQueue`), seek bar with note markers and loop, ⏮ ↺10 ⏯ ↻10 ⏭, version choice (only with several versions). A song without a recording shows "Aufnahme hinzufügen" there.
+> - **ⓘ Infos** (panel; `?panel=info`): tags, "Song bearbeiten", versions + suggestions, "In Setlists", discussion.
+> - Tempo, pitch and loop act on the playing track, so their controls are visible but disabled until this song plays (hint in the loop card).
+> - The screen follows the music: ⏭ / automatic advance / a tap in the setlist panel shows the next song on the same tab.
+> - Old links keep working: `?tab=lyrics|public|private|versions|info`, `/player?view=…`, `/songs/:id/practice`.
+> - The mini player (all other screens) opens this screen for the playing song.
+> The descriptions below (v0.17.0 song page, practice view) are superseded where they differ.
 
 > **v0.17.0 – the song page is about the song (R-UX-09):** top bar ← · ✎ · ⋯ · 🔍, the title large below it (wraps, never cut – `Page titleBelow`), banners (archive, suggestion), chips, then **one action pair: "Abspielen" (toggles to "Pause") and "Üben"** (plays and opens the player on its Üben tab). No player block any more – seek, versions while listening, tempo/pitch/loop are in the player (F9 §8a); the mini player shows on the song page too. Tabs sharing the width: **Songtext · Notizen (n) · Versionen · Infos** – Notizen with a "Für alle (n) / Nur für mich" switch (links `?tab=public|private` still work), Versionen = versions, Band-Version and "Als Version hinzufügen" suggestions, Infos = "In Setlists" + Diskussion. Without lyrics one button "Songtext hinzufügen" opens the three ways (auswählen / hochladen / eintippen). The description below is the original design; it is superseded where it differs.
 
@@ -274,7 +285,8 @@ From the file name: remove extension, leading track numbers ("01 - ", "03_"), re
 - Version labels are optional and free text; default label = the cleaned file name.
 
 ### 6.9 A–B loop
-- Set A and B at the current position (buttons) or by dragging the two handles on the seek bar; minimum length 1 s.
+- **v1.1.0:** "A setzen" only marks the start (`AudioEngine.markLoopStart`, `PlayerState.loopStart`, a line on the seek bar) – the song keeps playing; "B setzen" at the end creates the loop and switches it on. Before, A placed B eight seconds later at once, so the song jumped back before the real end. Inside a running loop "A setzen" / "B setzen" move that end to the current position. − / + next to A and B move an end by one second and play from where the change is heard (A: from A; B: the last two seconds). B is disabled until A is set and the position is at least 1 s after it.
+- Set A and B at the current position (buttons); minimum length 1 s.
 - Loop on/off toggle; loop is shown as a highlighted range on the seek bar.
 - Works together with tempo and pitch (F9).
 - Remembered per member, song and version together with tempo/pitch (§11); "Schleife löschen" removes it.

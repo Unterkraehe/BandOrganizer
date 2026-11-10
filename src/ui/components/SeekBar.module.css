@@ -91,3 +91,15 @@
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
+
+/* "A" is marked, "B" still missing: a single line where the loop will start */
+.loopStart {
+  position: absolute;
+  top: 4px;
+  width: 3px;
+  height: 20px;
+  margin-left: -1px;
+  border-radius: 2px;
+  background: var(--accent);
+  pointer-events: none;
+}

@@ -1,60 +1,117 @@
+/* Practice controls (v1.1.0): two calm cards – playback (tempo, pitch) and loop. */
+
 .controls {
   display: grid;
   /* minmax(0, 1fr): a grid column otherwise grows to its widest content (R-UI-14) */
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-4);
-}
-
-.compact {
   gap: var(--space-3);
 }
 
-.control {
+.card {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-1);
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
 }
 
-.controlHead {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-
-.controlLabel {
+.label {
+  flex: 1;
+  min-width: 0;
   font-weight: 600;
 }
 
+/* label · − · value · + : the buttons never move, the value has a fixed slot (R-UI-11) */
+.stepper,
+.cardHead,
+.edge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* five things in one row on a 360 px phone */
+.edge {
+  gap: var(--space-1);
+}
+
+.step {
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+}
+
 .value {
-  font-variant-numeric: tabular-nums;
+  width: 6.8em;
+  flex: none;
+  text-align: center;
+  font-size: var(--fs-md);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.value[data-active] {
   color: var(--accent);
 }
 
-.row {
+.sliderRow {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
+  min-width: 0;
 }
 
 .slider {
   flex: 1;
-  min-width: 120px;
-  accent-color: var(--accent);
+  width: 100%;
+  min-width: 0;
   height: 32px;
+  margin: 0;
+  accent-color: var(--accent);
 }
 
-.pitchValue {
-  min-width: 3.6ch;
+.mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--text-faint);
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+}
+
+.mark[data-set] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.time {
+  width: 3.4em;
+  flex: none;
   text-align: center;
-  font-size: var(--fs-xl);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
+.setButton {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+}
+
 .hint {
+  /* two lines reserved */
+  min-height: 2.9em;
   font-size: var(--fs-sm);
+  line-height: 1.45;
   color: var(--text-muted);
 }
 

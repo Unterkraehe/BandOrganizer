@@ -34,8 +34,8 @@ describe('Songs (M2 in demo mode)', () => {
     expect(screen.getByText('1 Song')).toBeInTheDocument();
     await user.click(screen.getByRole('link', { name: /Slow Burn/ }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Slow Burn (Probe)' })).toBeInTheDocument();
-    await user.click(screen.getByRole('tab', { name: /Versionen/ }));
-    expect(screen.getByText(/Proben\/2026-09-17/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Infos zum Song' }));
+    expect(within(screen.getByRole('dialog', { name: 'Infos' })).getByText(/Proben\/2026-09-17/)).toBeInTheDocument();
   });
 });
 
@@ -51,7 +51,8 @@ describe('Song library (M3a in demo mode)', () => {
   it('edits key, BPM and tuning', async () => {
     const user = userEvent.setup();
     await openSong(user, /^Open Road/);
-    await user.click(await screen.findByRole('button', { name: 'Bearbeiten' }));
+    await user.click(await screen.findByRole('button', { name: 'Weitere Aktionen für Open Road' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Bearbeiten' }));
     await user.selectOptions(await screen.findByRole('combobox', { name: 'Tonart' }), 'A');
     await user.click(screen.getByRole('checkbox', { name: 'Moll' }));
     await user.type(screen.getByRole('textbox', { name: 'BPM' }), '104');
@@ -66,8 +67,10 @@ describe('Song library (M3a in demo mode)', () => {
     const user = userEvent.setup();
     await openSong(user, /^Open Road/);
     await user.click(await screen.findByRole('button', { name: 'Abspielen' }));
-    await user.click(screen.getByRole('tab', { name: /Notizen/ }));
+    // the notes are part of "Üben", the first tab – no extra tap
+    expect(screen.getByRole('radio', { name: 'Üben' })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'Für alle' })).toBeChecked();
+    await user.click(screen.getByRole('button', { name: 'Notiz hinzufügen' }));
     await user.type(screen.getByRole('textbox', { name: 'Notiz für die Band …' }), 'Bridge ab jetzt 2×');
     await user.click(screen.getByRole('checkbox', { name: /Position übernehmen/ }));
     await user.click(screen.getByRole('button', { name: 'Notiz speichern' }));
@@ -75,7 +78,9 @@ describe('Song library (M3a in demo mode)', () => {
     expect(screen.getByRole('button', { name: /springen/ })).toBeInTheDocument();
 
     await user.click(screen.getByRole('radio', { name: 'Nur für mich' }));
+    expect(screen.getByRole('radio', { name: 'Für alle (1)' })).toBeInTheDocument();
     expect(screen.getByText('Nur für dich sichtbar in der App')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Notiz hinzufügen' }));
     await user.type(screen.getByRole('textbox', { name: 'Notiz nur für dich …' }), 'Solo: Kapo 3');
     await user.click(screen.getByRole('button', { name: 'Notiz speichern' }));
     expect(await screen.findByText('Solo: Kapo 3')).toBeInTheDocument();
@@ -112,7 +117,7 @@ describe('Song library (M3a in demo mode)', () => {
   it('groups a similar file as version and makes it the Band-Version', async () => {
     const user = userEvent.setup();
     await openSong(user, /^Midnight Engine(?! \()/);
-    await user.click(await screen.findByRole('tab', { name: /Versionen/ }));
+    await user.click(await screen.findByRole('button', { name: 'Infos zum Song' }));
     await user.click(await screen.findByRole('button', { name: 'Als Version hinzufügen' }));
     expect(await screen.findByText(/ist jetzt eine Version/)).toBeInTheDocument();
     const versions = screen.getByRole('heading', { name: 'Versionen' }).closest('section')!;
@@ -121,7 +126,8 @@ describe('Song library (M3a in demo mode)', () => {
     await user.click(screen.getByRole('menuitem', { name: 'Als Band-Version festlegen' }));
     await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Als Band-Version festlegen' }));
     expect(await within(live).findByText('Band-Version')).toBeInTheDocument();
-    await user.click(screen.getByRole('link', { name: 'Songs' }));
+    await user.click(within(screen.getByRole('dialog', { name: 'Infos' })).getByRole('button', { name: 'Schließen' }));
+    await user.click(screen.getByRole('button', { name: 'Zurück' }));
     expect(await screen.findByText('5 Songs')).toBeInTheDocument();
     expect(screen.getByText(/2 Versionen/)).toBeInTheDocument();
   });
@@ -167,28 +173,41 @@ describe('Adopting a suggestion (v0.13.3)', () => {
   });
 });
 
-describe('Song page = about the song (v0.17.0)', () => {
+describe('One song screen: song page and player in one (v1.1.0)', () => {
   beforeEach(() => localStorage.clear());
 
-  it('one "Abspielen", tabs Songtext / Notizen / Versionen / Infos, "Üben" opens the player', async () => {
+  it('opens on "Üben" with playback controls and notes; Songtext is the second tab; ⓘ shows the infos', async () => {
     const user = userEvent.setup();
     await enterDemo(user, '/songs');
     await screen.findByText('6 Songs');
     await user.click(screen.getByRole('link', { name: /^Open Road/ }));
     await screen.findByRole('heading', { level: 1, name: 'Open Road' });
-    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual(['Songtext', expect.stringMatching(/^Notizen/), expect.stringMatching(/^Versionen/), 'Infos']);
-    expect(screen.queryByRole('slider')).not.toBeInTheDocument(); // no player block on the song page any more
+    expect(screen.getAllByRole('radio', { name: /^(Üben|Songtext)$/ }).map((r) => (r as HTMLInputElement).value)).toEqual(['practice', 'lyrics']);
+    expect(screen.getByRole('radio', { name: 'Üben' })).toBeChecked();
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument(); // the four tabs of the old song page are gone
+    // nothing plays yet: the practice controls are there but wait for the song
+    expect(screen.getByRole('button', { name: 'Langsamer' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'A setzen' })).toBeDisabled();
+    expect(screen.getByRole('heading', { name: 'Notizen' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Abspielen' }));
-    expect(await within(screen.getByRole('main')).findByRole('button', { name: 'Pause' })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'Läuft gerade' })).toHaveTextContent('Open Road'); // mini player on the song page too
+    expect(await screen.findByRole('button', { name: 'Pause' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Läuft gerade' })).not.toBeInTheDocument(); // this screen is the player
+    expect(screen.getByRole('button', { name: 'Langsamer' })).toBeEnabled();
 
-    await user.click(screen.getByRole('tab', { name: 'Infos' }));
-    expect(screen.getByText(/Diskussion/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Infos zum Song' }));
+    const infos = screen.getByRole('dialog', { name: 'Infos' });
+    expect(within(infos).getByRole('heading', { name: 'Versionen' })).toBeInTheDocument();
+    expect(within(infos).getByText(/Diskussion/)).toBeInTheDocument();
+    await user.click(within(infos).getByRole('button', { name: 'Schließen' }));
 
-    await user.click(screen.getByRole('button', { name: 'Üben' }));
-    const player = await screen.findByRole('dialog', { name: 'Player: Open Road' });
-    expect(within(player).getByRole('radio', { name: 'Üben' })).toBeChecked();
+    // leaving the screen: the song keeps playing in the mini player, which leads back to this same screen
+    await user.click(screen.getByRole('button', { name: 'Zurück' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Songs' })).toBeInTheDocument();
+    const mini = await screen.findByRole('region', { name: 'Läuft gerade' });
+    await user.click(within(mini).getByRole('link', { name: 'Song öffnen: Open Road' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Open Road' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument();
   });
 });
 
@@ -226,7 +245,8 @@ describe('Voice notes (v0.19.0)', () => {
     await enterDemo(user, '/songs');
     await screen.findByText('6 Songs');
     await user.click(screen.getByRole('link', { name: /^Open Road/ }));
-    await user.click(await screen.findByRole('tab', { name: /Notizen/ }));
+    await screen.findByRole('heading', { level: 1, name: 'Open Road' });
+    await user.click(screen.getByRole('button', { name: 'Notiz hinzufügen' }));
 
     await user.click(screen.getByRole('button', { name: 'Sprachnotiz aufnehmen' }));
     expect(await screen.findByText(/Aufnahme läuft · 0:00 \/ 3:00/)).toBeInTheDocument();
@@ -249,7 +269,8 @@ describe('Voice notes (v0.19.0)', () => {
     await enterDemo(user, '/songs');
     await screen.findByText('6 Songs');
     await user.click(screen.getByRole('link', { name: /^Open Road/ }));
-    await user.click(await screen.findByRole('tab', { name: /Notizen/ }));
+    await screen.findByRole('heading', { level: 1, name: 'Open Road' });
+    await user.click(screen.getByRole('button', { name: 'Notiz hinzufügen' }));
     await user.click(screen.getByRole('button', { name: 'Sprachnotiz aufnehmen' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(/Mikrofon ist für die App blockiert/);
   });

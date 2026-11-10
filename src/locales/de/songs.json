@@ -40,23 +40,20 @@
     "decodeError": "Diese Datei kann hier nicht abgespielt werden.",
     "blocked": "Tippe auf Abspielen, um zu starten.",
     "nowPlaying": "Läuft gerade",
-    "open": "Player öffnen",
+    "open": "Song öffnen",
     "title": "Player",
-    "dialog": "Player: {{title}}",
-    "close": "Player schließen",
-    "menu": "Weitere Aktionen im Player",
     "viewLabel": "Ansicht",
     "views": {
       "lyrics": "Songtext",
       "practice": "Üben",
       "queue": "Setlist"
     },
-    "toSong": "Zum Song",
-    "toSetlist": "Zur Setlist",
     "empty": "Gerade läuft nichts.",
-    "emptyText": "Spiel einen Song oder eine Setlist ab – dann geht hier der Player auf.",
+    "emptyText": "Spiel einen Song oder eine Setlist ab – dann siehst du ihn hier.",
     "toSongs": "Zu den Songs",
-    "playToPractice": "Spiel den Song ab, dann kannst du Tempo, Tonhöhe und eine Schleife einstellen."
+    "playToPractice": "Spiel den Song ab, dann kannst du Tempo, Tonhöhe und eine Schleife einstellen.",
+    "info": "Infos zum Song",
+    "setlistOpen": "Setlist anzeigen: {{name}}"
   },
   "settings": {
     "title": "Songs finden",
@@ -190,7 +187,8 @@
       "unsupported": "Auf diesem Gerät kann die App nicht aufnehmen.",
       "denied": "Das Mikrofon ist für die App blockiert. Erlaube es in den Einstellungen des Browsers bzw. Handys und versuch es noch einmal.",
       "failed": "Die Aufnahme hat nicht geklappt. Bitte versuch es noch einmal."
-    }
+    },
+    "add": "Notiz hinzufügen"
   },
   "versions": {
     "title": "Versionen",
@@ -294,7 +292,6 @@
     "path": "Ordnerpfad"
   },
   "practice": {
-    "open": "Üben",
     "tempo": "Tempo",
     "tempoValue": "{{value}} %",
     "slower": "Langsamer",
@@ -305,28 +302,21 @@
     "pitchZero": "Original",
     "lower": "Tiefer",
     "higher": "Höher",
-    "original": "Original",
-    "loop": "A–B-Schleife",
+    "loop": "Schleife",
     "setA": "A setzen",
     "setB": "B setzen",
     "loopOn": "Schleife an",
     "loopOff": "Schleife aus",
     "clearLoop": "Schleife löschen",
-    "loopRange": "{{start}} – {{end}}",
-    "loopHint": "A und B an der aktuellen Position setzen.",
-    "active": "Übungseinstellungen aktiv",
-    "activeSummary": "{{parts}}",
-    "reset": "Zurücksetzen",
+    "reset": "Tempo und Tonhöhe zurücksetzen",
     "semitonesShort": "{{value}} HT",
     "loopShort": "Schleife",
     "effectsUnavailable": "Tonhöhe und Tempo werden auf diesem Gerät nicht unterstützt.",
-    "notes": "Notizen",
-    "forAll": "Für alle",
-    "onlyMe": "Nur für mich",
-    "noNotes": "Keine Notizen.",
-    "noLyrics": "Kein Songtext verknüpft.",
-    "textSize": "Schrift größer",
-    "smaller": "Schrift kleiner"
+    "nudgeBack": "{{mark}} eine Sekunde früher",
+    "nudgeForward": "{{mark}} eine Sekunde später",
+    "loopHintStart": "Tippe am Anfang der Stelle auf „A setzen“ – der Song läuft weiter.",
+    "loopHintEnd": "A ist gesetzt. Tippe am Ende der Stelle auf „B setzen“ – dann startet die Schleife.",
+    "loopHintSet": "Mit − und + verschiebst du Anfang und Ende um je eine Sekunde."
   },
   "suggested": {
     "title": "Vorschläge",
@@ -348,7 +338,6 @@
     "adoptConfirm": "Übernehmen"
   },
   "detail": {
-    "tabs": "Bereiche des Songs",
     "info": "Infos"
   }
 }

@@ -13,6 +13,7 @@ describe('Lyrics, uploads and folder view (M3b in demo mode)', () => {
     await enterDemo(user, '/songs');
     await screen.findByText('6 Songs');
     await user.click(screen.getByRole('link', { name: /^Midnight Engine(?! \()/ }));
+    await user.click(await screen.findByRole('radio', { name: 'Songtext' }));
     expect(await screen.findByText(/Songtext gefunden/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Verknüpfen' }));
     expect(await screen.findByText(/Scheinwerfer im Regen/)).toBeInTheDocument();
@@ -23,6 +24,7 @@ describe('Lyrics, uploads and folder view (M3b in demo mode)', () => {
     await enterDemo(user, '/songs');
     await screen.findByText('6 Songs');
     await user.click(screen.getByRole('link', { name: /^Rust and Thunder/ }));
+    await user.click(await screen.findByRole('radio', { name: 'Songtext' }));
     await user.click(await screen.findByRole('button', { name: 'Songtext hinzufügen' }));
     await user.click(within(screen.getByRole('dialog', { name: 'Songtext hinzufügen' })).getByRole('button', { name: 'Songtext eintippen' }));
     await user.type(await screen.findByRole('textbox', { name: 'Songtext' }), 'Rost und Donner');
@@ -43,9 +45,11 @@ describe('Lyrics, uploads and folder view (M3b in demo mode)', () => {
     expect(screen.getByText('Band-App Uploads')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Song anlegen' }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Neuer Hit' })).toBeInTheDocument();
-    await user.click(screen.getByRole('tab', { name: /Versionen/ }));
-    expect(await screen.findByText(/Band-App Uploads/)).toBeInTheDocument();
-    await user.click(screen.getByRole('link', { name: 'Songs' }));
+    await user.click(screen.getByRole('button', { name: 'Infos zum Song' }));
+    const infos = screen.getByRole('dialog', { name: 'Infos' });
+    expect(await within(infos).findByText(/Band-App Uploads/)).toBeInTheDocument();
+    await user.click(within(infos).getByRole('button', { name: 'Schließen' }));
+    await user.click(screen.getByRole('button', { name: 'Zurück' }));
     expect(await screen.findByText('7 Songs')).toBeInTheDocument();
   });
 

@@ -20,7 +20,7 @@ with sync_playwright() as p:
     def open_notes():
         nav(pg, 'songs', wait=900)
         pg.get_by_role('link', name='Open Road', exact=False).first.click(); pg.wait_for_timeout(800)
-        pg.get_by_role('tab', name='Notizen').click(); pg.wait_for_timeout(300)
+        pg.get_by_role('button', name='Notiz hinzufügen').click(); pg.wait_for_timeout(300)  # notes are on the first tab (v1.1.0)
 
     open_notes()
     pg.get_by_role('button', name='Sprachnotiz aufnehmen').click(); pg.wait_for_timeout(3200)
