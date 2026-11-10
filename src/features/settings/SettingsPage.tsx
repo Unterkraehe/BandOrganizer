@@ -1,4 +1,4 @@
-import { CalendarSync, Cloud, LogOut, Music, Palette, RefreshCw, Tags, UserRoundPen, Users } from 'lucide-react';
+import { CalendarSync, Cloud, FlaskConical, LogOut, Music, Palette, RefreshCw, Tags, Undo2, UserRoundPen, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_SUGGESTION_FOLDERS } from '@/core/band/band';
@@ -6,6 +6,7 @@ import { NotificationSettings } from '@/features/notifications/NotificationSetti
 import { readTextSize, writeTextSize, type TextSize } from '@/core/theme/textSize';
 import { useNavigate } from 'react-router-dom';
 import { formatRelativeDay, formatTime } from '@/core/i18n/format';
+import { isBeta, switchChannel } from '@/core/channel/channel';
 import { checkForUpdate } from '@/core/pwa/usePwa';
 import { useSession } from '@/core/session/BandSession';
 import { useTheme } from '@/core/theme/ThemeProvider';
@@ -25,6 +26,18 @@ export function SettingsPage() {
   const { currentMember, band, mode, alias, switchProfile, disconnect } = useSession();
   const [updateState, setUpdateState] = useState<'idle' | 'checking' | 'done' | 'unavailable'>('idle');
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
+  const [switching, setSwitching] = useState(false);
+  const notify = useNotify();
+
+  // Beta version on this device (roadmap §4d): the page is replaced by the other version
+  const onChannel = async () => {
+    setSwitching(true);
+    const result = await switchChannel(isBeta ? 'stable' : 'beta').catch(() => 'unavailable' as const);
+    if (result === 'unavailable') {
+      setSwitching(false);
+      notify({ message: t('about.betaUnavailable') });
+    }
+  };
 
   const onCheck = async () => {
     setUpdateState('checking');
@@ -124,7 +137,7 @@ export function SettingsPage() {
       </Section>
 
       <Section title={t('about.title')}>
-        <SettingRow label={t('common:app.name')} hint={`${t('about.version')} ${__APP_VERSION__}`}>
+        <SettingRow label={t('common:app.name')} hint={`${t('about.version')} ${__APP_VERSION__}${isBeta ? ` · ${t('about.betaMark')}` : ''}`}>
           <Button icon={<RefreshCw size={18} />} onClick={() => void onCheck()} disabled={updateState === 'checking'}>
             {updateState === 'checking' ? t('about.checking') : t('about.checkUpdates')}
           </Button>
@@ -132,6 +145,11 @@ export function SettingsPage() {
         {(updateState === 'done' || updateState === 'unavailable') && (
           <SettingRow label={updateState === 'done' ? t('about.upToDate') : t('about.offline')} />
         )}
+        <SettingRow label={t('about.beta')} hint={isBeta ? t('about.betaOnHint') : t('about.betaHint')}>
+          <Button icon={isBeta ? <Undo2 size={18} /> : <FlaskConical size={18} />} onClick={() => void onChannel()} disabled={switching}>
+            {switching ? t('about.betaSwitching') : isBeta ? t('about.betaLeave') : t('about.betaUse')}
+          </Button>
+        </SettingRow>
       </Section>
 
       <ConfirmDialog

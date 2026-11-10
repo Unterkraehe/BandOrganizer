@@ -16,6 +16,7 @@ Band PWA ("Overload App") on top of HiDrive. UI language **German**, code/commen
 - Phones never scroll sideways (R-UI-14): nothing may be wider than a 360 px screen; check UI changes with `scripts/qa/overflow-check.py`.
 - Never commit secrets (R-CODE-04): HiDrive client secret and VAPID private key live only in the Cloudflare worker. Don't read, print or ask for `.env*` / `.dev.vars`.
 - Work on a branch, never commit directly on `main`; merge into `main` only when the maintainer says so (R-CODE-13) – a push to `main` deploys.
+- `beta` is the testing branch: a push there publishes the beta version (Einstellungen → "Beta-Version", `docs/03-roadmap.md` §4d). Path: feature branch → `beta` → `main`, each step only when the maintainer says so. A beta must keep stored data (HiDrive and device) readable for the released version.
 - `src/config.ts` holds the band's HiDrive client ID – don't change it unless asked.
 - Don't change appearance or behaviour when the task is only structure/docs/tooling. If in doubt, compare the build output before/after (content hashes of `dist/`).
 

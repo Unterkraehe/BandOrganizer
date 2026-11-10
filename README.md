@@ -46,7 +46,7 @@ npm run pack -- --out release      # delivery zip (never contains src/config.ts)
 
 ## Deployment
 
-Every push to `main` runs lint, tests and build, then deploys to GitHub Pages (`.github/workflows/deploy.yml`).
+Every push to `main` runs lint, tests and build, then deploys to GitHub Pages (`.github/workflows/deploy.yml`). A push to `beta` publishes the beta version into the same site (`beta/`, chosen per device in the settings; `docs/03-roadmap.md` §4d).
 Repository setting required: **Settings → Pages → Source: GitHub Actions**.
 
 ## Project structure

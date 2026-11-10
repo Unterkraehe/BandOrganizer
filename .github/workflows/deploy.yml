@@ -1,5 +1,8 @@
 name: Test & deploy to GitHub Pages
 
+# One site, two versions (docs/03-roadmap.md §4d): the released app from `main` and – when a `beta`
+# branch exists – the beta version in its `beta/` folder. A push to `beta` starts this workflow on
+# `main` (see beta.yml), so the site is always published from `main`.
 on:
   push:
     branches: [main]
@@ -28,6 +31,32 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+
+      - name: Is there a beta branch?
+        id: beta
+        if: github.ref == 'refs/heads/main'
+        run: |
+          if git ls-remote --exit-code --heads origin beta > /dev/null; then echo "exists=true" >> "$GITHUB_OUTPUT"; else echo "exists=false" >> "$GITHUB_OUTPUT"; fi
+      - name: Check out the beta
+        if: steps.beta.outputs.exists == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: beta
+          path: beta-src
+      # Tests of the beta run on its own push (beta.yml). A beta that doesn't build stops the deploy:
+      # the site stays as it is instead of losing its beta folder.
+      - name: Build the beta into beta/
+        if: steps.beta.outputs.exists == 'true'
+        working-directory: beta-src
+        env:
+          BANDAPP_CHANNEL: beta
+        run: |
+          npm ci
+          npm run build
+          rm -f dist/404.html
+          rm -rf ../dist/beta
+          cp -r dist ../dist/beta
+
       - uses: actions/upload-pages-artifact@v3
         if: github.ref == 'refs/heads/main'
         with:

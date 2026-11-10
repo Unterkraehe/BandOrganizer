@@ -5,6 +5,7 @@
 
 ## A. Real HiDrive (one person, any device)
 
+- [ ] **Beta version (v1.0.1):** Einstellungen → Über die App → "Beta verwenden" → the app reloads, the version line shows "· Beta", you are still logged in with the same band data; close and reopen the installed app → still the beta; tap a notification → opens in the beta; "Zur normalen Version" → the released version again. Log out and in again inside the beta (HiDrive returns to the released address and must end up in the beta). Also once: `…/BandOrganizer/?kanal=stabil` ends the beta. iPhone and Android, installed app.
 - [ ] **Updates stick:** change a setlist twice, a song's key twice, your answer to an event, edit a chat message – each change is still there after a reload (v0.9.1 fix: `PUT /file` by `dir` + `name`).
 - [ ] **S1/S2 – file IDs:** rename or move a song file in the HiDrive web interface, tap "Neu suchen" → the song and its notes are still together (F4 §6.1).
 - [ ] **Conflicts:** open the same song on two devices, change the key on both, save one after the other → the second shows who changed it (F4 §4.4).

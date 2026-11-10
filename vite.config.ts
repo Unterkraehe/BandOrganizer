@@ -4,11 +4,22 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath, URL } from 'node:url';
 import { readFileSync } from 'node:fs';
+import { channelLoader } from './scripts/channel-loader.mjs';
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string };
 
-// The app is served from https://unterkraehe.github.io/BandOrganizer/ (R-CODE-09).
-const BASE = '/BandOrganizer/';
+// The app is served from https://unterkraehe.github.io/BandOrganizer/ (R-CODE-09). The beta version
+// (BANDAPP_CHANNEL=beta, built from the `beta` branch by the deploy workflow) lives in its `beta/` folder –
+// same site, same install, same login (roadmap §4d, src/core/channel/channel.ts).
+const STABLE_BASE = '/BandOrganizer/';
+const CHANNEL: 'stable' | 'beta' = process.env.BANDAPP_CHANNEL === 'beta' ? 'beta' : 'stable';
+const BASE = CHANNEL === 'beta' ? `${STABLE_BASE}beta/` : STABLE_BASE;
+
+// Sends a device to the version it chose before the app starts (scripts/channel-loader.mjs).
+const channelRedirect = (): Plugin => ({
+  name: 'bandapp-channel-loader',
+  transformIndexHtml: () => [{ tag: 'script', children: channelLoader(CHANNEL, STABLE_BASE), injectTo: 'head-prepend' }],
+});
 
 // The service worker tells the app which version it is (F3 §6.4, v0.19.4): right after a deploy the
 // CDN serves old and new files for a few minutes, and an old service worker must not be offered as
@@ -33,13 +44,14 @@ self.addEventListener('message', (event) => {
 
 export default defineConfig({
   base: BASE,
-  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
+  define: { __APP_VERSION__: JSON.stringify(pkg.version), __APP_CHANNEL__: JSON.stringify(CHANNEL), __STABLE_BASE__: JSON.stringify(STABLE_BASE) },
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
   plugins: [
     react(),
     swVersion(),
+    channelRedirect(),
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['icons/apple-touch-icon.png', 'icons/favicon.svg'],
@@ -49,8 +61,10 @@ export default defineConfig({
         short_name: 'Overload App',
         description: 'Songs, Termine, Setlists und Chat für die Band',
         lang: 'de',
-        start_url: BASE,
-        scope: BASE,
+        // both versions are the same installed app: it always starts at the released address
+        id: STABLE_BASE,
+        start_url: STABLE_BASE,
+        scope: STABLE_BASE,
         display: 'standalone',
         background_color: '#0E0E10',
         theme_color: '#0E0E10',
@@ -67,7 +81,8 @@ export default defineConfig({
         navigateFallback: APP_SHELL,
         manifestTransforms: [async (entries) => ({ manifest: entries.map((entry) => (entry.url === 'index.html' ? { ...entry, url: APP_SHELL } : entry)), warnings: [] })],
         // The OAuth callback must always come from the network.
-        navigateFallbackDenylist: [/callback\.html/],
+        // … and the beta's addresses belong to the beta's own service worker, never to the released app shell.
+        navigateFallbackDenylist: [/callback\.html/, ...(CHANNEL === 'stable' ? [new RegExp(`^${STABLE_BASE}beta(/|$)`)] : [])],
         // push notifications: handlers live in public/push-sw.js (F6 §4.5); version answer: see swVersion above
         importScripts: ['push-sw.js', SW_VERSION_FILE],
       },

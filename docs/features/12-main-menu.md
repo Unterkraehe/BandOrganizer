@@ -122,6 +122,7 @@ Mehr (/more)
       Bearbeiten (/edit) · Bühnenansicht (/stage, full screen, ✕) · Drucken (/print)
   Mitglieder (/members) → Mitglied (/members/:id)
   Einstellungen (/settings) → Band (/settings/band) · Tags (/settings/tags) · Profil (/profile)
+                                "Über die App": Beta-Version an/aus (loads the other published version on this device, roadmap §4d)
 Suche (/search, top bar 🔍)     results open the item's own screen
 Player (/player)                full-screen sheet, grows out of the mini player, ⌄ / back gesture closes (back to where you were)
                                 *from mini player; song page "Üben" (?song=…&view=practice); "Setlist abspielen" on setlist,
