@@ -1,7 +1,7 @@
-import { ChevronRight, ListMusic, Pencil, Play, Plus, Repeat, Unlink } from 'lucide-react';
+import { ChevronRight, ListMusic, Play, Plus, Repeat, Unlink } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useNotify } from '@/app/notify/NotifyProvider';
 import { useCalendar } from '@/features/calendar/CalendarProvider';
 import type { Occurrence } from '@/features/calendar/model';
@@ -15,7 +15,6 @@ import styles from './Setlists.module.css';
 /** Setlist section on the event detail (F5 §4.2, F7 §5). */
 export function EventSetlist({ occ, title }: { occ: Occurrence; title: string }) {
   const { t } = useTranslation('setlists');
-  const navigate = useNavigate();
   const notify = useNotify();
   const { store: calendar } = useCalendar();
   const { setlists } = useSetlists();
@@ -46,9 +45,6 @@ export function EventSetlist({ occ, title }: { occ: Occurrence; title: string })
           <div className={styles.actions}>
             <Button variant="primary" icon={<Play size={18} />} onClick={() => startSetlist(setlist.id)}>
               {t('actions.practice')}
-            </Button>
-            <Button icon={<Pencil size={18} />} onClick={() => navigate(`/setlists/${setlist.id}/edit`)}>
-              {t('actions.editSetlist')}
             </Button>
             <Menu
               label={t('link.menu')}

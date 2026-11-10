@@ -1,4 +1,3 @@
-import { Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatMinutes } from '@/core/i18n/format';
 import type { Song } from '@/features/songs/model';
@@ -12,13 +11,12 @@ interface SetlistSheetProps {
   showPersonal?: boolean;
   currentEntryId?: string | null;
   onEntryClick?: (entryId: string) => void;
-  onEditPersonal?: (entryId: string) => void;
   /** print: "Set 1 (Fortsetzung)" is handled by the browser; blocks avoid page breaks */
   fontScale?: number;
 }
 
-/** Read-only rendering used by detail, stage view and print (F7 §4.2, §4.4, §4.5). */
-export function SetlistSheet({ setlist, songById, personal, showPersonal = true, currentEntryId, onEntryClick, onEditPersonal, fontScale = 1 }: SetlistSheetProps) {
+/** Read-only rendering of the stage view (F7 §4.4): large, tap marks your place. Everywhere else: `SetlistList`. */
+export function SetlistSheet({ setlist, songById, personal, showPersonal = true, currentEntryId, onEntryClick, fontScale = 1 }: SetlistSheetProps) {
   const { t } = useTranslation('setlists');
   const numbers = numbering(setlist);
   const d = durations(setlist, (id) => songById.get(id)?.recording?.durationSec);
@@ -59,11 +57,6 @@ export function SetlistSheet({ setlist, songById, personal, showPersonal = true,
                     </span>
                     {entry.note && <span className={styles.notes}>{entry.note}</span>}
                     {showPersonal && mine && <span className={styles.myNote}>{mine}</span>}
-                    {onEditPersonal && (
-                      <button type="button" className={styles.editNote} onClick={() => onEditPersonal(entry.id)} aria-label={`${t('myNote')}: ${song?.title ?? ''}`}>
-                        <Pencil size={12} aria-hidden="true" /> {mine ? t('myNote') : `+ ${t('myNote')}`}
-                      </button>
-                    )}
                   </div>
                   {entry.segueToNext && (
                     <div className={styles.segue} role="img" aria-label={t('segue')}>

@@ -1,4 +1,11 @@
 {
+  "1.2.0": [
+    "Setlists zum Antippen: Auf der Setlist-Seite startet ein Tipp auf einen Song die Setlist genau dort. Der laufende Song ist markiert.",
+    "Überall dieselbe Liste: Die Setlist-Seite und die Setlist im Song-Bildschirm sehen jetzt gleich aus – mit Dauer, Infos, deinen Notizen und den „Direkt weiter“-Pfeilen.",
+    "Läuft eine Setlist, stehen „Automatisch weiter“ und „Beenden“ direkt über der Liste. Aus „Abspielen“ wird dann „Fortsetzen“.",
+    "„Meine Notiz“ und „Song öffnen“ findest du im ⋯-Menü hinter jedem Song der Setlist.",
+    "Aufgeräumt: Beim Termin gibt es nur noch „Setlist abspielen“ – bearbeitet wird auf der Setlist-Seite (✎). In der Setlist-Übersicht bleiben im ⋯-Menü „Duplizieren“ und „Löschen“."
+  ],
   "1.1.0": [
     "Ein Bildschirm pro Song: Songseite und Player sind jetzt eins. Tippst du auf einen Song, bist du gleich bei „Üben“ – mit Tempo, Tonhöhe, Schleife und den Notizen. Daneben „Songtext“. Abspielen, Vor- und Zurückspulen bleiben immer unten.",
     "Schleife neu gemacht: „A setzen“ merkt sich nur den Anfang, der Song läuft weiter. Erst mit „B setzen“ am Ende startet die Schleife. Mit − und + verschiebst du Anfang und Ende sekundengenau.",

@@ -10,7 +10,7 @@ import { rememberSong } from '@/features/search/recent';
 import { useHighlightElement } from '@/features/search/useHighlightTarget';
 import { InSetlists } from '@/features/setlists/InSetlists';
 import { useSetlistMode } from '@/features/setlists/SetlistModeProvider';
-import { SetlistQueue } from '@/features/setlists/SetlistQueue';
+import { SetlistList } from '@/features/setlists/SetlistList';
 import { Button, Dialog, EmptyState, IconButton, Menu, Page, SegmentedControl, SeekBar } from '@/ui';
 import { useBack } from '@/ui/layout/navigation';
 import { useIsWide } from '@/ui/useMediaQuery';
@@ -96,7 +96,8 @@ export function SongScreen() {
     const previous = before.current;
     before.current = playingSongId;
     if (previous && playingSongId && previous !== playingSongId && previous === song?.id) {
-      navigate(`/songs/${playingSongId}?view=${view}`, { replace: true });
+      // an open panel (the setlist) stays open: the list just moves its highlight
+      navigate(`/songs/${playingSongId}?view=${view}${panel ? `&panel=${panel}` : ''}`, { replace: true });
     }
   }, [playingSongId]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -362,7 +363,7 @@ function SongView({ song, view, setView, initialScope, panel, setPanel, close }:
         </div>
       </Dialog>
       <Dialog open={panel === 'setlist' && Boolean(mode.setlist)} title={t('player.views.queue')} closeLabel={t('common:actions.close')} onClose={() => setPanel(null)} fullScreenOnPhone>
-        <SetlistQueue />
+        {mode.setlist && <SetlistList setlist={mode.setlist} nameLink />}
       </Dialog>
 
       {tagOpen && <TagDialog song={song} onClose={() => setTagOpen(false)} />}

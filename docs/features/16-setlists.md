@@ -3,7 +3,17 @@
 | | |
 |---|---|
 | **ID** | F7 |
-| **Status** | Implemented (v0.8.0); print layout reworked in v0.12.1 – v0.12.3 |
+| **Status** | Implemented (v0.8.0); print layout reworked in v0.12.1 – v0.12.3; one playable list in v1.2.0 |
+
+> **v1.2.0 – one setlist list (`SetlistList.tsx`)** – band feedback: a setlist was drawn in four different ways and the setlist page could not be played from.
+> - The **setlist page** and the **setlist panel of the song screen** show the same component: block heads with duration, rows with number, title, duration, public note, own note, red ↓ for direct transitions, interludes, pauses.
+> - **A tap on a song plays the setlist from that song** (`mode.startAndPlay(setlistId, entryId)`) and stays on the screen; the playing song is highlighted (`aria-current`) and scrolled into view; a tap on it pauses/resumes. Songs without a file are disabled.
+> - **While this setlist plays** a line above the list shows "Läuft: 3 / 12" (panel: the setlist's name as a link to its page), "Automatisch weiter" and "Beenden".
+> - Row ⋯: **Song öffnen**, **Meine Notiz** (the small ✎ under each title is gone; the note dialog lives in the list, so it also works in the panel).
+> - Setlist page: primary button **"Abspielen"** (first song, opens its song screen) or **"Fortsetzen"** while this setlist is running (continues at the current song and opens it).
+> - "Setlist abspielen" from an event, event card or chat card opens the first song's screen without the panel – the line above the seek bar shows the position and opens the list. The panel stays open while the songs change.
+> - **Event section:** card + "Setlist abspielen" + ⋯ (Andere Setlist / Verknüpfung entfernen); editing only on the setlist page (✎). **Setlists overview row menu:** Duplizieren, Löschen.
+> - `SetlistSheet` remains only for the stage view (large, tap marks your place). Editor and print unchanged. No change to stored data.
 
 > **Print layout (v0.12.1)** – modelled on the band's own sheet "Playlist Beimerstetten":
 > - Every block on its own A4 page: header row with the block name (large) and "<Setlist name> - Stand: <last change, dd.mm.yy>".
@@ -85,7 +95,7 @@ Setlist "Stadtfest 2026"                     (linked to: Auftritt Sa, 10. Okt.)
 - Button **"Neue Setlist"** → choice:
   - "Leer beginnen"
   - "Aus vorheriger Setlist" → pick a setlist → creates a **copy** (§6.5)
-- Row menu: "Duplizieren", "Drucken", "Bühnenansicht", "Setlist üben", "Löschen".
+- Row menu: "Duplizieren", "Löschen" (v1.2.0; everything else is on the setlist page).
 
 ### 4.2 Setlist-Detail (`/setlists/:id`)
 
@@ -94,7 +104,7 @@ Read view (default for everyone):
 - Blocks with numbered songs, interludes, arrows, notes (public + my personal ones)
 - **v0.18.0 (R-UX-09):** the setlist page is the one setlist screen for every entry point (list, event card, chat card, player queue). Layout like the song page: ← · ✎ · ⋯ in the top bar, title large below, one action pair **"Abspielen"** + **"Bühnenansicht"**; ⋯ = Drucken, Duplizieren, Mit Termin verknüpfen. The editor closes after "Speichern" like every form (back where you came from); a new or duplicated setlist shows its page instead. Row menu in the list also has "Bearbeiten".
 - Actions (original design): **"Setlist abspielen"** (until v0.15 "Setlist üben"; plays in the player, F3 §5), **"Bühnenansicht"**, **"Drucken"**, "Bearbeiten", "Duplizieren", "Mit Termin verknüpfen"
-- My personal notes can be edited inline here without entering edit mode (small ✎ next to each song).
+- My personal notes can be edited here without entering edit mode (row ⋯ → "Meine Notiz", v1.2.0).
 
 ### 4.3 Setlist-Editor (`/setlists/:id/edit`)
 

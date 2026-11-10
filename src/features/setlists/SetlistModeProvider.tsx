@@ -24,8 +24,11 @@ interface ModeValue {
   index: number;
   autoAdvance: boolean;
   start: (setlistId: string) => void;
-  /** start a setlist and play its first playable song – call from a tap (iOS audio unlock) */
-  startAndPlay: (setlistId: string) => void;
+  /**
+   * Start a setlist and play its first playable song – or, with `fromEntryId`, that entry (a tap on a row,
+   * v1.2.0). Call from a tap (iOS audio unlock). Returns the id of the song that starts, or null.
+   */
+  startAndPlay: (setlistId: string, fromEntryId?: string) => string | null;
   end: () => void;
   setAutoAdvance: (value: boolean) => void;
   playAt: (index: number) => void;
@@ -116,14 +119,19 @@ export function SetlistModeProvider({ children }: { children: ReactNode }) {
     index: mode.index,
     autoAdvance: mode.autoAdvance,
     start: (setlistId) => setMode((m) => ({ ...m, setlistId, index: 0 })),
-    startAndPlay: (setlistId) => {
+    startAndPlay: (setlistId, fromEntryId) => {
       const target = setlists.find((s) => s.id === setlistId);
-      if (!target) return;
+      if (!target) return null;
       // computed here: the queue state of the new setlist only exists after the next render
-      const songs = songEntries(target).map((entry) => songById.get(entry.songId));
-      const first = songs.findIndex((song) => song?.recording && !song.recording.missing);
+      const entries = songEntries(target);
+      const songs = entries.map((entry) => songById.get(entry.songId));
+      const playable = (song: Song | undefined) => Boolean(song?.recording && !song.recording.missing);
+      const first = fromEntryId ? entries.findIndex((entry, i) => entry.id === fromEntryId && playable(songs[i])) : songs.findIndex(playable);
+      if (fromEntryId && first < 0) return null;
       setMode((m) => ({ ...m, setlistId, index: Math.max(0, first) }));
-      if (first >= 0) play(songs[first]!);
+      if (first < 0) return null;
+      play(songs[first]!);
+      return songs[first]!.id;
     },
     end: () => setMode((m) => ({ ...m, setlistId: null, index: 0 })),
     setAutoAdvance: (autoAdvance) => setMode((m) => ({ ...m, autoAdvance })),
@@ -136,15 +144,18 @@ export function SetlistModeProvider({ children }: { children: ReactNode }) {
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
-/** "Setlist abspielen" from anywhere (setlist, event, chat card): plays it and opens the player's queue (R-UX-09). */
+/**
+ * "Setlist abspielen" from anywhere (setlist, event, chat card): plays it and opens the first song's screen –
+ * its setlist line shows where we are (R-UX-09). A setlist without a playable song opens its page instead.
+ */
 // eslint-disable-next-line react-refresh/only-export-components
 export function useStartSetlist() {
   const mode = useSetlistMode();
   const navigate = useNavigate();
   return useCallback(
     (setlistId: string) => {
-      mode.startAndPlay(setlistId);
-      navigate('/player?view=queue');
+      const songId = mode.startAndPlay(setlistId);
+      navigate(songId ? `/songs/${encodeURIComponent(songId)}` : `/setlists/${setlistId}`);
     },
     [mode, navigate],
   );

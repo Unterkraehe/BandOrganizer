@@ -1,7 +1,7 @@
 {
   "name": "band-organizer",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "description": "Overload App – PWA for band organization on top of HiDrive",
   "engines": {

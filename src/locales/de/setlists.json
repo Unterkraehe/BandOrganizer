@@ -35,8 +35,8 @@
     "deleted": "Setlist gelöscht",
     "menu": "Aktionen für {{name}}",
     "open": "Setlist öffnen",
-    "editSetlist": "Setlist bearbeiten",
-    "play": "Abspielen"
+    "play": "Abspielen",
+    "resume": "Fortsetzen"
   },
   "linkedTo": "Termine",
   "noEvent": "Mit keinem Termin verknüpft",
@@ -52,6 +52,8 @@
   "myNote": "Meine Notiz",
   "myNotePlaceholder": "nur für dich",
   "myNoteHint": "Nur für dich sichtbar – auch beim Drucken.",
+  "entryMenu": "Aktionen für {{title}}",
+  "openSong": "Song öffnen",
   "missingSong": "Song nicht mehr vorhanden",
   "archived": "archiviert",
   "noFile": "Datei fehlt",
@@ -139,15 +141,14 @@
   },
   "mode": {
     "banner": "Setlist: {{name}}",
-    "count_one": "{{count}} Song",
-    "count_other": "{{count}} Songs",
     "end": "Beenden",
     "autoAdvance": "Automatisch weiter",
     "next": "Nächster",
     "previous": "Vorheriger",
     "position": "{{n}} / {{total}}",
     "nextSong": "Nächster: {{title}}",
-    "segueNext": "direkt weiter"
+    "segueNext": "direkt weiter",
+    "playing": "Läuft: {{n}} / {{total}}"
   },
   "inSetlists": "In Setlists",
   "loading": "Setlists werden geladen …",

@@ -253,17 +253,6 @@
   padding: 0.3em 0;
 }
 
-.editNote {
-  grid-column: 2;
-  justify-self: start;
-  border: none;
-  background: none;
-  padding: 0;
-  font-size: 0.8em;
-  color: var(--text-faint);
-  cursor: pointer;
-}
-
 /* ---------- stage view ---------- */
 
 .stage {
@@ -566,23 +555,47 @@
   font-size: var(--fs-md);
 }
 
-/* ---------- setlist mode banner ---------- */
+/* ---------- the playable setlist (setlist page + song screen panel, v1.2.0) ---------- */
 
-.banner {
+.playList {
   display: grid;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-lg);
-  background: var(--accent-soft);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
 }
 
-.bannerHead {
+/* while the setlist plays: where we are, "Automatisch weiter", "Beenden" */
+.modeLine {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  font-size: var(--fs-sm);
+}
+
+.modeName {
+  flex: 1 1 8em;
+  min-width: 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.modeCheck {
+  display: inline-flex;
+  align-items: center;
   gap: var(--space-2);
+  min-height: var(--touch);
+  cursor: pointer;
+}
+
+.modeCheck input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
 }
 
 .modeList {
@@ -590,17 +603,20 @@
   padding: 0;
   list-style: none;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .modeRow {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
+  min-width: 0;
   border-bottom: 1px solid var(--border);
 }
 
 .modeRow[data-current] {
   background: var(--accent-soft);
+  border-radius: var(--radius-sm);
 }
 
 .modeRow button.modeMain {
@@ -608,13 +624,69 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   min-height: var(--touch-lg);
-  padding: 0 var(--space-3);
+  padding: var(--space-2) var(--space-1);
   border: none;
+  border-radius: var(--radius-sm);
   background: none;
+  color: var(--text);
+  font: inherit;
   text-align: left;
   cursor: pointer;
+}
+
+.modeRow button.modeMain:active:not(:disabled) {
+  background: var(--accent-soft);
+}
+
+.modeRow button.modeMain:disabled {
+  cursor: default;
+  color: var(--text-muted);
+}
+
+.modeRow .num {
+  flex: none;
+  min-width: 1.8em;
+}
+
+.modeIcon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+}
+
+.modeMain:disabled .modeIcon {
+  visibility: hidden;
+}
+
+.modeText {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+
+.modeText strong {
+  overflow-wrap: anywhere;
+}
+
+.modeText strong[data-missing] {
+  font-style: italic;
+  font-weight: 500;
+}
+
+.rowNote {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.rowMine {
+  font-size: var(--fs-sm);
+  font-style: italic;
+  color: var(--accent);
+  overflow-wrap: anywhere;
 }
 
 .modeSep {
@@ -622,13 +694,7 @@
   font-size: var(--fs-sm);
   color: var(--text-muted);
   font-style: italic;
-}
-
-.modeBlock {
-  padding: var(--space-3) var(--space-3) var(--space-1);
-  font-family: var(--font-display);
-  font-weight: 600;
-  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
 }
 
 .bar {
